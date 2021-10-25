@@ -1,0 +1,13 @@
+{"eventTime":"1629144401850",
+  "transaction":"",
+  "positions":[{
+    "symbol":"CHZUSDT",
+    "positionSide":"LONG",
+    "positionAmount":"612",
+    "unrealizedPnL":"-11.079036",
+    "markPrice":"0.352187",
+    "requiredMaintenanceMargin":"2.586461",
+    "marginType":"ISOLATED",
+    "isolatedWallet":"14.16253185"}],
+  "crossWalletBalance":""},
+"eventType":"MARGIN_CALL","type":"MARGIN_CALL"}
