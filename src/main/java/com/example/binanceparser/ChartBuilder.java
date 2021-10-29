@@ -11,8 +11,8 @@ import java.util.List;
 // it can be named a 'LineMoneyChart'
 public class ChartBuilder {
 
-    public JFreeChart buildLineChart(List<BalanceState> balanceStates){
-        final DefaultCategoryDataset dataset = createDataset(balanceStates);
+    public JFreeChart buildLineChart(List<BalanceState> balanceStates, String assetToTrack){
+        final DefaultCategoryDataset dataset = createDataset(balanceStates, assetToTrack);
 
         return ChartFactory.createLineChart(
                 "Account balance", "Years", "Wallet", dataset, PlotOrientation.VERTICAL, true, true, false
@@ -20,12 +20,12 @@ public class ChartBuilder {
     }
 
 
-    private DefaultCategoryDataset createDataset(List<BalanceState> balanceStates)  {
+    private DefaultCategoryDataset createDataset(List<BalanceState> balanceStates, String assetToTrack)  {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
         for(BalanceState balanceState: balanceStates) {
-
-            dataset.addValue(balanceState.getAssets().get(0).getAvailableBalance(), "Money", balanceState.getDateTime());
+            final BalanceState.Asset asset = balanceState.getAssets().stream().
+                    filter(a -> a.getAsset().equals(assetToTrack)).findFirst().get();
+            dataset.addValue(asset.getAvailableBalance(), "Money", balanceState.getDateTime());
         }
        return dataset;
     }

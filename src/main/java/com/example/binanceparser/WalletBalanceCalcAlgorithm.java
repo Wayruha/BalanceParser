@@ -13,8 +13,12 @@ import static com.example.binanceparser.domain.EventType.FUTURES_ACCOUNT_UPDATE;
 /**
  * this algorithm just uses AccUpdate.walletBalance, without any calculations
  */
-public class SimpleCalculationAlgorithm implements CalculationAlgorithm {
-    public static final String ASSET_TO_TRACK = "USDT";
+public class WalletBalanceCalcAlgorithm implements CalculationAlgorithm {
+    public final String assetToTrack;
+
+    public WalletBalanceCalcAlgorithm(String assetToTrack) {
+        this.assetToTrack = assetToTrack;
+    }
 
     @Override
     public List<BalanceState> processEvents(List<AbstractEvent> allEvents) {
@@ -22,7 +26,7 @@ public class SimpleCalculationAlgorithm implements CalculationAlgorithm {
         final List<FuturesAccountUpdateEvent> events = allEvents.stream()
                 .filter(e -> e.getEventType() == FUTURES_ACCOUNT_UPDATE)
                 .map(e -> (FuturesAccountUpdateEvent) e)
-                .filter(e -> e.getBalances().stream().anyMatch(bal -> bal.getAsset().equals(ASSET_TO_TRACK)))
+                .filter(e -> e.getBalances().stream().anyMatch(bal -> bal.getAsset().equals(assetToTrack)))
                 .collect(Collectors.toList());
 
 

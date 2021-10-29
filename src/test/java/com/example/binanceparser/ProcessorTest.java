@@ -13,7 +13,10 @@ class ProcessorTest {
     @Test
     public void testProcessor() throws IOException {
         Processor processor = new Processor();
-
-        processor.run("TestLine.jpg");
+        Processor.Config config = new Processor.Config();
+        config.setSourceToTrack("FUTURES_PRODUCER_Kozhukhar");
+        config.setInputFilepath("/Users/roman/Desktop/BinanceParser/logs");
+        config.setOutputDir("/Users/roman/Desktop");
+        processor.run(config);
     }
 }
