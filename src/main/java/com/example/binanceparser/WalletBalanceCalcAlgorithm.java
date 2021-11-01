@@ -14,6 +14,7 @@ import static com.example.binanceparser.domain.EventType.FUTURES_ACCOUNT_UPDATE;
  * this algorithm just uses AccUpdate.walletBalance, without any calculations
  */
 public class WalletBalanceCalcAlgorithm implements CalculationAlgorithm {
+
     public final String assetToTrack;
 
     public WalletBalanceCalcAlgorithm(String assetToTrack) {

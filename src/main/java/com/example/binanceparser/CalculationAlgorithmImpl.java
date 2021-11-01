@@ -18,6 +18,7 @@ import static com.example.binanceparser.domain.EventType.FUTURES_ORDER_TRADE_UPD
  * Therefore, it does not represent the real amount of money spent
  */
 public class CalculationAlgorithmImpl implements CalculationAlgorithm {
+
     final String assetToTrack;
 
     public CalculationAlgorithmImpl(String assetToTrack) {

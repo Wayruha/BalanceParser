@@ -4,19 +4,26 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @SpringBootTest
 class ProcessorTest {
+
+    final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Test
     public void testProcessor() throws IOException {
         Processor processor = new Processor();
         Processor.Config config = new Processor.Config();
+
+        LocalDateTime start = LocalDateTime.parse("2021-08-16 06:17:56", dateFormat);
+        LocalDateTime finish = LocalDateTime.parse("2021-09-15 13:15:50", dateFormat);
+        config.setStartBalanceTrackDate(start);
+        config.setFinishBalanceTrackDate(finish);
         config.setSourceToTrack("FUTURES_PRODUCER_Kozhukhar");
-        config.setInputFilepath("/Users/roman/Desktop/BinanceParser/logs");
-        config.setOutputDir("/Users/roman/Desktop");
-        processor.run(config);
+        config.setInputFilepath("src/main/resources/log");
+        config.setOutputDir("C:\\Users\\yarik\\Desktop");
+        System.out.println(processor.run(config));
     }
 }

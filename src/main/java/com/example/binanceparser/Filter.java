@@ -1,18 +1,8 @@
 package com.example.binanceparser;
 
-import com.example.binanceparser.domain.AbstractEvent;
-import com.example.binanceparser.domain.EventType;
-import com.example.binanceparser.domain.FuturesAccountUpdateEvent;
-import com.example.binanceparser.domain.FuturesOrderTradeUpdateEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.Objects;
 
 @Service
 public class Filter {
