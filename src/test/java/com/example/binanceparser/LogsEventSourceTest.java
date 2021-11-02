@@ -1,5 +1,6 @@
 package com.example.binanceparser;
 
+import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.domain.AbstractEvent;
 import com.example.binanceparser.domain.FuturesOrderTradeUpdateEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;

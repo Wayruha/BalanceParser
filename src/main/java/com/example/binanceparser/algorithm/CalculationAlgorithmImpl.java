@@ -1,4 +1,4 @@
-package com.example.binanceparser;
+package com.example.binanceparser.algorithm;
 
 import com.example.binanceparser.domain.AbstractEvent;
 import com.example.binanceparser.domain.BalanceState;

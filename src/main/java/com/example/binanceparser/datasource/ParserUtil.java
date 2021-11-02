@@ -1,11 +1,8 @@
-package com.example.binanceparser;
-
-import org.springframework.stereotype.Service;
+package com.example.binanceparser.datasource;
 
 import java.util.Objects;
 
-@Service
-public class Filter {
+public class ParserUtil {
 
     //1. Not a good idea to build json manually in order to de-serialize it later. However, let it be like that for now
     //2. Too specific. For example, it would be easier to understand it having signature like 'AbstractEvent *name*(String logLine) {...'
@@ -20,12 +17,10 @@ public class Filter {
                 sb.delete(0, sb.lastIndexOf("[") + 1);
                 sb.insert(0, "{");
                 sb.insert(sb.length(), "\"");
-            }
-            else if(string.contains("[]")){
+            } else if (string.contains("[]")) {
                 sb.replace(sb.indexOf("]"), sb.lastIndexOf("]") + 1, "]");
                 emptyArray = true;
-            }
-            else if (string.contains("]}]")) {
+            } else if (string.contains("]}]")) {
                 sb.replace(string.indexOf(']'), string.lastIndexOf(']') + 1, "\"}]");
             } else if (string.contains("[")) {
                 if (string.contains("{")) {
@@ -37,16 +32,14 @@ public class Filter {
                 sb.replace(string.indexOf("]"), string.indexOf("}") + 1, "\"}]");
             } else if (string.contains("]")) {
                 sb.replace(string.indexOf("]"), string.indexOf("]") + 1, "\"}");
-            }
-            else if(string.contains("true") || string.contains("false")) {
+            } else if (string.contains("true") || string.contains("false")) {
                 resultString += booleanValue(sb, sb.lastIndexOf(":"));
                 continue;
-            }
-            else sb.insert(sb.length(), "\"");
+            } else sb.insert(sb.length(), "\"");
             int equalsChar = sb.lastIndexOf(":");
 
             sb.insert(equalsChar, '"');
-            if(!emptyArray) sb.insert(equalsChar + 2, '"');
+            if (!emptyArray) sb.insert(equalsChar + 2, '"');
             if (sb.toString().startsWith("{")) sb.insert(1, "\"");
             else sb.insert(0, "\"");
             if (!string.equals(plainTextArray[plainTextArray.length - 1])) sb.insert(sb.length(), ',');
@@ -58,15 +51,14 @@ public class Filter {
     public static StringBuilder booleanValue(StringBuilder logString, int equalsChar) {
         logString.insert(equalsChar, '"');
         logString.insert(0, "\"");
-        if(String.valueOf(logString).contains("true")){
-            logString.replace(equalsChar + 3, logString.length(),"1");
-        }
-        else logString.replace(equalsChar + 3, logString.length(),"0");
+        if (String.valueOf(logString).contains("true")) {
+            logString.replace(equalsChar + 3, logString.length(), "1");
+        } else logString.replace(equalsChar + 3, logString.length(), "0");
 
         logString.insert(logString.length(), ',');
 
         return logString;
     }
-    }
+}
 
 

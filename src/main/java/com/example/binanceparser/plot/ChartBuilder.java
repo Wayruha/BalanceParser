@@ -1,4 +1,4 @@
-package com.example.binanceparser;
+package com.example.binanceparser.plot;
 
 import com.example.binanceparser.domain.BalanceState;
 import org.jfree.chart.ChartFactory;

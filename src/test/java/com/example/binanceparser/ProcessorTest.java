@@ -15,12 +15,12 @@ class ProcessorTest {
     @Test
     public void testProcessor() throws IOException {
         Processor processor = new Processor();
-        Processor.Config config = new Processor.Config();
+        Config config = new Config();
 
         LocalDateTime start = LocalDateTime.parse("2021-08-16 06:17:56", dateFormat);
         LocalDateTime finish = LocalDateTime.parse("2021-09-15 13:15:50", dateFormat);
-        config.setStartBalanceTrackDate(start);
-        config.setFinishBalanceTrackDate(finish);
+        config.setStartTrackDate(start);
+        config.setFinishTrackDate(finish);
         config.setSourceToTrack("FUTURES_PRODUCER_Kozhukhar");
         config.setInputFilepath("src/main/resources/log");
         config.setOutputDir("C:\\Users\\yarik\\Desktop");

@@ -1,4 +1,4 @@
-package com.example.binanceparser;
+package com.example.binanceparser.datasource;
 
 import com.example.binanceparser.domain.AbstractEvent;
 import com.example.binanceparser.domain.EventType;
@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.binanceparser.Filter.fromPlainToJson;
+import static com.example.binanceparser.datasource.ParserUtil.fromPlainToJson;
 
 /**
  * read directory with logs to provide the events
@@ -25,9 +25,9 @@ public class LogsEventSource implements EventSource {
     final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     final ObjectMapper objectMapper = new ObjectMapper();
 
-    public List<AbstractEvent> readEvents(File logsDir, LocalDateTime startTrackBalance, LocalDateTime finishTrackBalance) throws IOException {
+    public List<AbstractEvent> readEvents(File logsDir, List<Filter> filters) throws IOException {
         String[] dirFiles = logsDir.list();
-        if(dirFiles == null) throw new RuntimeException("Can`t find any files in directory.");
+        if (dirFiles == null) throw new RuntimeException("Can`t find any files in directory.");
 
         List<AbstractEvent> allEvents = new ArrayList<>();
         for (String filePath : dirFiles) {
@@ -37,13 +37,17 @@ public class LogsEventSource implements EventSource {
             messageList.remove(0); // remove first element of logs table (bc it`s table header)
             for (Element element : messageList) {
                 LocalDateTime date = LocalDateTime.parse(element.getElementsByClass("Date").text(), dateFormat);
-                if(date.isAfter(finishTrackBalance) || date.isBefore(startTrackBalance)) continue;
                 final String logLine = element.getElementsByClass("Message").text();
                 final AbstractEvent event = parseLogLine(date, logLine);
-                if (event != null) allEvents.add(event);
+                if (event != null && fitsToAllFilters(event, filters))
+                    allEvents.add(event);
             }
         }
         return allEvents;
+    }
+
+    private static boolean fitsToAllFilters(AbstractEvent event, List<Filter> filters) {
+        return true; //TODO implement
     }
 
     public AbstractEvent parseLogLine(LocalDateTime date, String logLine) throws JsonProcessingException {
@@ -52,7 +56,7 @@ public class LogsEventSource implements EventSource {
         final EventType eventType = EventType.valueOf(logParts[1]);
         final String eventStr = logParts[3];
         final String[] eventProperties = eventStr.split(",");
-        if(EventType.TRANSFER == eventType || EventType.ACCOUNT_CONFIG_UPDATE == eventType || EventType.CONVERT_FUNDS == eventType ||
+        if (EventType.TRANSFER == eventType || EventType.ACCOUNT_CONFIG_UPDATE == eventType || EventType.CONVERT_FUNDS == eventType ||
                 EventType.MARGIN_CALL == eventType) return null;
         AbstractEvent event = objectMapper.readValue(fromPlainToJson(eventProperties), AbstractEvent.class);
         setCommons(date, eventType, source, event);
