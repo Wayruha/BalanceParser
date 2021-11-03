@@ -9,5 +9,5 @@ import java.util.List;
  * takes a full list of events and produces the extract balance-change data
  */
 public interface CalculationAlgorithm {
-    List<BalanceState> processEvents(List<AbstractEvent> events);
+    List<BalanceState> processEvents(List<AbstractEvent> events, String assetToTrack);
 }

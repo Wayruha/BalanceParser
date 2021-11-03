@@ -15,14 +15,9 @@ import static com.example.binanceparser.domain.EventType.FUTURES_ACCOUNT_UPDATE;
  */
 public class WalletBalanceCalcAlgorithm implements CalculationAlgorithm {
 
-    public final String assetToTrack;
-
-    public WalletBalanceCalcAlgorithm(String assetToTrack) {
-        this.assetToTrack = assetToTrack;
-    }
 
     @Override
-    public List<BalanceState> processEvents(List<AbstractEvent> allEvents) {
+    public List<BalanceState> processEvents(List<AbstractEvent> allEvents, String assetToTrack) {
         //leave only FUTURES_ACCOUNT_UPDATE events
         final List<FuturesAccountUpdateEvent> events = allEvents.stream()
                 .filter(e -> e.getEventType() == FUTURES_ACCOUNT_UPDATE)

@@ -25,7 +25,7 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
         this.assetToTrack = assetToTrack;
     }
 
-    public List<BalanceState> processEvents(List<AbstractEvent> events) {
+    public List<BalanceState> processEvents(List<AbstractEvent> events, String assetToTrack) {
         final List<BalanceState> balances = new ArrayList<>();
         for (int i = 0; i < events.size() - 1; i++) {
             if (events.get(i).getEventType() != FUTURES_ACCOUNT_UPDATE || events.get(i + 1).getEventType() != FUTURES_ORDER_TRADE_UPDATE)

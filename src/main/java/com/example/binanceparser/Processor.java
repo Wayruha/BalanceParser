@@ -9,44 +9,46 @@ import com.example.binanceparser.datasource.SourceFilter;
 import com.example.binanceparser.domain.AbstractEvent;
 import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.plot.ChartBuilder;
+import com.example.binanceparser.plot.LineConfig;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.ReportGenerator;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Processor {
-    private static final String ASSET_TO_TRACK = "USDT";
-    final EventSource eventSource;
-    final CalculationAlgorithm algorithm;
-    final ChartBuilder chartBuilder;
-    final ReportGenerator reportGenerator;
+        final EventSource eventSource;
+        final CalculationAlgorithm algorithm;
+        final ChartBuilder chartBuilder;
+        final ReportGenerator reportGenerator;
 
-    public Processor() {
-        this.eventSource = new LogsEventSource();
-        this.algorithm = new WalletBalanceCalcAlgorithm(ASSET_TO_TRACK);
-        this.chartBuilder = new ChartBuilder();
-        this.reportGenerator = new ReportGenerator(chartBuilder);
-    }
+        public Processor() {
+            this.eventSource = new LogsEventSource();
+            this.algorithm = new WalletBalanceCalcAlgorithm();
+            this.chartBuilder = new ChartBuilder();
+            this.reportGenerator = new ReportGenerator(chartBuilder);
+        }
 
-    public BalanceReport run(Config config) throws IOException {
-        final File logsDir = new File(config.getInputFilepath());
-        Filter sourceFilter = new SourceFilter(config.getSourceToTrack());
+        public BalanceReport run(Config config) throws IOException {
+            final File logsDir = new File(config.getInputFilepath());
+            Filter sourceFilter = new SourceFilter(config.getSourceToTrack());
+            // read and filter events from data source
+            List<AbstractEvent> events = eventSource.readEvents(logsDir, List.of(sourceFilter)).stream()
+                    .filter(event -> event.getDate().isAfter(config.startTrackDate) && event.getDate().isBefore(config.getFinishTrackDate()))
+                    .collect(Collectors.toList());
+            if (events.size() == 0) throw new RuntimeException("Can't find any relevant events");
 
-        // read and filter events from data source
-        List<AbstractEvent> events = eventSource.readEvents(logsDir, List.of(sourceFilter)).stream()
-                .filter(event -> event.getDate().isAfter(config.startTrackDate) && event.getDate().isBefore(config.getFinishTrackDate()))
-                .collect(Collectors.toList());
-        if (events.size() == 0) throw new RuntimeException("Can't find any relevant events");
+            // retrieve balance changes
 
-        // retrieve balance changes
-        final List<BalanceState> balanceStates = algorithm.processEvents(events);
+            final List<BalanceState> balanceStates = algorithm.processEvents(events, config.getAssetToTrack());
 
-        final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
+            final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
 
-        System.out.println("Processor done for config: " + config);
-        return balanceReport;
-    }
+            System.out.println("Processor done for config: " + config);
+            return balanceReport;
+        }
 }

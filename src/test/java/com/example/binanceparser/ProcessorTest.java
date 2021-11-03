@@ -21,9 +21,10 @@ class ProcessorTest {
         LocalDateTime finish = LocalDateTime.parse("2021-09-15 13:15:50", dateFormat);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
+        config.setAssetToTrack("USDT");
         config.setSourceToTrack("FUTURES_PRODUCER_Kozhukhar");
         config.setInputFilepath("src/main/resources/log");
-        config.setOutputDir("C:\\Users\\yarik\\Desktop");
+        config.setOutputDir("C:/Users/yarik/Desktop");
         System.out.println(processor.run(config));
     }
 }

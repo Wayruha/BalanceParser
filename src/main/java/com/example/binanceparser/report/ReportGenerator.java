@@ -3,9 +3,11 @@ package com.example.binanceparser.report;
 import com.example.binanceparser.Config;
 import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.plot.ChartBuilder;
+import com.example.binanceparser.plot.LineConfig;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -21,6 +23,7 @@ public class ReportGenerator {
 
     public BalanceReport getBalanceReport(Config config, List<BalanceState> balanceStates) throws IOException {
         //build a plot
+
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates, config.getAssetToTrack());
         final List<BalanceState.Asset> assetList = balanceStates.stream()
                 .flatMap(bal -> bal.getAssets().stream())
@@ -28,7 +31,7 @@ public class ReportGenerator {
                 .collect(Collectors.toList());
 
         final String filename = "temp.jpg"; // config.outputDir + "/" + algorithm.getClass().getSimpleName() + "_" + config.getSourceToTrack() + ".jpg";
-        final String chartPath = filename + "/" + config.getOutputDir();
+        final String chartPath =  config.getOutputDir()+ "\\" + filename;
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
         final BigDecimal delta = calculateBalanceDelta(assetList);
 
