@@ -12,5 +12,5 @@ public class Config {
     String sourceToTrack;
     String inputFilepath;
     String outputDir;
-    String assetToTrack;
+    List<String> assetsToTrack;
 }

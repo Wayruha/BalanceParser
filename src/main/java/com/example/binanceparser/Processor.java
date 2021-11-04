@@ -9,14 +9,11 @@ import com.example.binanceparser.datasource.SourceFilter;
 import com.example.binanceparser.domain.AbstractEvent;
 import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.plot.ChartBuilder;
-import com.example.binanceparser.plot.LineConfig;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.ReportGenerator;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,8 +40,7 @@ public class Processor {
             if (events.size() == 0) throw new RuntimeException("Can't find any relevant events");
 
             // retrieve balance changes
-
-            final List<BalanceState> balanceStates = algorithm.processEvents(events, config.getAssetToTrack());
+            final List<BalanceState> balanceStates = algorithm.processEvents(events, config.getAssetsToTrack());
 
             final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
 

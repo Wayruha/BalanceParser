@@ -19,7 +19,7 @@ public class BalanceState {
     @NoArgsConstructor
     @Data
     public static class Asset {
-        String asset; //in our case it's always USDT ???
-        BigDecimal availableBalance;//
+        String asset;
+        BigDecimal availableBalance;
     }
 }

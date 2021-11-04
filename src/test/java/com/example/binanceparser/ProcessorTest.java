@@ -6,6 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @SpringBootTest
 class ProcessorTest {
@@ -21,7 +23,10 @@ class ProcessorTest {
         LocalDateTime finish = LocalDateTime.parse("2021-09-15 13:15:50", dateFormat);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
-        config.setAssetToTrack("USDT");
+        List<String> assetsToTrack = new ArrayList<>();
+        assetsToTrack.add("USDT");
+        assetsToTrack.add("BUSD");
+        config.setAssetsToTrack(assetsToTrack);
         config.setSourceToTrack("FUTURES_PRODUCER_Kozhukhar");
         config.setInputFilepath("src/main/resources/log");
         config.setOutputDir("C:/Users/yarik/Desktop");
