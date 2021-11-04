@@ -9,14 +9,18 @@ import org.jfree.chart.JFreeChart;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ReportGenerator {
     final ChartBuilder chartBuilder;
 
-    final BigDecimal USDT_COURSE_RATE = new BigDecimal(1);
-    final BigDecimal BUSD_COURSE_RATE = new BigDecimal("0.5");
+    Map<String, BigDecimal> currencyRate = new HashMap<>();
+    {
+        currencyRate.put("BUSD", new BigDecimal(1));
+    }
 
     public ReportGenerator(ChartBuilder chartBuilder) {
         this.chartBuilder = chartBuilder;
@@ -41,10 +45,10 @@ public class ReportGenerator {
         return balanceReport;
     }
 
+    // у 2 випадках повертажться значення в $, а чому в інших - ні?
     public BigDecimal assetToUSD(BalanceState.Asset asset) {
-        if(asset.getAsset().equals("USDT")) return asset.getAvailableBalance().multiply(USDT_COURSE_RATE);
-        else if(asset.getAsset().equals("BUSD")) return asset.getAvailableBalance().multiply(BUSD_COURSE_RATE);
-        return asset.getAvailableBalance();
+        if(!currencyRate.containsKey(asset.getAsset())) return null;
+        return asset.getAvailableBalance().multiply(currencyRate.get(asset.getAsset()));
     }
 
     private BigDecimal calculateBalanceDelta(List<BalanceState.Asset> assetList) {

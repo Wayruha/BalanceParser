@@ -7,18 +7,16 @@ import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ChartBuilder {
 
-    public JFreeChart buildLineChart(List<BalanceState> balanceStates, List<String> assetToTrack){
+    public JFreeChart buildLineChart(List<BalanceState> balanceStates, List<String> assetsToTrack) {
         final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
 
-        for(String asset: assetToTrack){
-            List<BalanceState> balanceStateAsset = balanceStates.stream().filter(e -> e.getAssets()
-                    .stream().anyMatch(a -> a.getAsset().equals(asset))).collect(Collectors.toList());
-            dataSeries.addSeries(createTimeSeries(balanceStateAsset, asset));
+        for (String asset : assetsToTrack) {
+            dataSeries.addSeries(createTimeSeries(balanceStates, asset));
         }
         return ChartFactory.createTimeSeriesChart(
                 "Account balance", "Date", "Balance", dataSeries
@@ -28,12 +26,16 @@ public class ChartBuilder {
 
     private TimeSeries createTimeSeries(List<BalanceState> balanceStates, String assetToTrack) {
         final TimeSeries series = new TimeSeries(assetToTrack);
-        for(BalanceState balanceState: balanceStates) {
+        for (BalanceState balanceState : balanceStates) {
             final BalanceState.Asset asset = balanceState.getAssets().stream().
                     filter(a -> a.getAsset().equals(assetToTrack)).findFirst().get();
-            series.addOrUpdate(new Day(balanceState.getDateTime().getDayOfMonth(), balanceState.getDateTime().getMonthValue(),
-                    balanceState.getDateTime().getYear()), asset.getAvailableBalance());
+            series.addOrUpdate(dateTimeToDay(balanceState.getDateTime()), asset.getAvailableBalance());
         }
         return series;
+    }
+
+    private Day dateTimeToDay(LocalDate dateTime) {
+        return new Day(dateTime.getDayOfMonth(), dateTime.getMonthValue(),
+                dateTime.getYear());
     }
 }

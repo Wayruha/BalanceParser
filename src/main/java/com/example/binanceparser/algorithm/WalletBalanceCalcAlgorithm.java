@@ -21,11 +21,15 @@ public class WalletBalanceCalcAlgorithm implements CalculationAlgorithm {
     public List<BalanceState> processEvents(List<AbstractEvent> allEvents, List<String> assetsToTrack) {
         //leave only FUTURES_ACCOUNT_UPDATE events
         final List<FuturesAccountUpdateEvent> events = new ArrayList<>();
+
+        //TODO тобто, для кожного елемента з цього масиву ми будемо заново проходити по всі цій великій пачці івентів? не виглядає як оптимальна ідея
+        //TODO питання 2. який time complexity на операцію contains в ArrayList, LinkedList i HashSet?
         for (String asset: assetsToTrack) {
             events.addAll(allEvents.stream()
                     .filter(e -> e.getEventType() == FUTURES_ACCOUNT_UPDATE)
                     .map(e -> (FuturesAccountUpdateEvent) e)
-                    .filter(e -> e.getBalances().stream().anyMatch(bal -> bal.getAsset().equals(asset)))
+                    .filter(state -> state.getBalances().stream().anyMatch(bal -> assetsToTrack.contains(bal.getAsset())))
+                    //.filter(state -> state.getBalances().stream().anyMatch(bal -> bal.getAsset().equals(asset)))
                     .collect(Collectors.toList()));
         }
         events.forEach(System.out::println);

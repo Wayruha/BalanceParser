@@ -37,7 +37,7 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
                 continue;
 
             Double currentBalance = accUpdate.getBalances().stream()
-                    .filter(e -> e.getAsset().equals(assetToTrack)).findFirst()
+                    .filter(asset -> asset.getAsset().equals(assetToTrack)).findFirst()
                     .orElseThrow(() -> new IllegalStateException("Balance not found!!!"))
                     .getCrossWalletBalance();
 
