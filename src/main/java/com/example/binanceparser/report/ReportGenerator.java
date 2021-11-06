@@ -25,10 +25,6 @@ public class ReportGenerator {
         currencyRate.put("USDT", new BigDecimal("0.5"));
     }
 
-    public ReportGenerator(AssetChartBuilder chartBuilder) {
-        this.chartBuilder = chartBuilder;
-    }
-
     public BalanceReport getBalanceReport(Config config, List<BalanceState> balanceStates) throws IOException {
         //build a plot
 

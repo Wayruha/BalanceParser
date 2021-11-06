@@ -9,6 +9,7 @@ import com.example.binanceparser.datasource.SourceFilter;
 import com.example.binanceparser.domain.AbstractEvent;
 import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.plot.AssetChartBuilder;
+import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.ReportGenerator;
 
@@ -20,14 +21,12 @@ import java.util.stream.Collectors;
 public class Processor {
         final EventSource eventSource;
         final CalculationAlgorithm algorithm;
-        final AssetChartBuilder chartBuilder;
         final ReportGenerator reportGenerator;
 
         public Processor() {
             this.eventSource = new LogsEventSource();
             this.algorithm = new WalletBalanceCalcAlgorithm();
-            this.chartBuilder = new AssetChartBuilder();
-            this.reportGenerator = new ReportGenerator(chartBuilder);
+            this.reportGenerator = new ReportGenerator();
         }
 
         public BalanceReport run(Config config) throws IOException {
