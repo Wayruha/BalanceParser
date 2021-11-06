@@ -30,6 +30,7 @@ class ProcessorTest {
         config.setSourceToTrack("FUTURES_PRODUCER_Kozhukhar");
         config.setInputFilepath("src/main/resources/log");
         config.setOutputDir("C:/Users/yarik/Desktop");
+        config.setConvertToUSD(true);
         System.out.println(processor.run(config));
     }
 }

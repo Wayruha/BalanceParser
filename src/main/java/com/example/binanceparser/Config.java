@@ -13,4 +13,5 @@ public class Config {
     String inputFilepath;
     String outputDir;
     List<String> assetsToTrack;
+    boolean convertToUSD;
 }

@@ -2,7 +2,9 @@ package com.example.binanceparser.report;
 
 import com.example.binanceparser.Config;
 import com.example.binanceparser.domain.BalanceState;
+import com.example.binanceparser.plot.AssetChartBuilder;
 import com.example.binanceparser.plot.ChartBuilder;
+import com.example.binanceparser.plot.USDChartBuilder;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 
@@ -15,19 +17,23 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ReportGenerator {
-    final ChartBuilder chartBuilder;
+    ChartBuilder chartBuilder;
 
     Map<String, BigDecimal> currencyRate = new HashMap<>();
     {
         currencyRate.put("BUSD", new BigDecimal(1));
+        currencyRate.put("USDT", new BigDecimal("0.5"));
     }
 
-    public ReportGenerator(ChartBuilder chartBuilder) {
+    public ReportGenerator(AssetChartBuilder chartBuilder) {
         this.chartBuilder = chartBuilder;
     }
 
     public BalanceReport getBalanceReport(Config config, List<BalanceState> balanceStates) throws IOException {
         //build a plot
+
+        if(config.isConvertToUSD()) this.chartBuilder = new USDChartBuilder();
+        else this.chartBuilder = new AssetChartBuilder();
 
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates, config.getAssetsToTrack());
         final List<BalanceState.Asset> assetList = balanceStates.stream()
@@ -54,8 +60,7 @@ public class ReportGenerator {
     private BigDecimal calculateBalanceDelta(List<BalanceState.Asset> assetList) {
         final BigDecimal firstAssetBal = assetList.get(0).getAvailableBalance().negate();
         final BigDecimal lastAssetBalance = assetList.get(assetList.size() - 1).getAvailableBalance();
-        final BigDecimal balanceChange = lastAssetBalance.add(firstAssetBal);
-        return balanceChange;
+        return lastAssetBalance.add(firstAssetBal);
     }
 
     private static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {
