@@ -35,7 +35,7 @@ public class USDChartBuilder implements ChartBuilder{
         final TimeSeries series = new TimeSeries("USD");
         for(BalanceState balanceState: balanceStates) {
             final BalanceState.Asset asset = balanceState.getAssets().stream().findFirst().get();
-            series.addOrUpdate(dateTimeToDay(balanceState.getDateTime()), asset.getAvailableBalance());
+            series.addOrUpdate(dateTimeToDay(balanceState.getDateTime()), assetToUSD(asset));
         }
         return series;
     }
@@ -43,5 +43,10 @@ public class USDChartBuilder implements ChartBuilder{
     private Day dateTimeToDay(LocalDate dateTime) {
         return new Day(dateTime.getDayOfMonth(), dateTime.getMonthValue(),
                 dateTime.getYear());
+    }
+
+    public BigDecimal assetToUSD(BalanceState.Asset asset) {
+        if(!currencyRate.containsKey(asset.getAsset())) return null;
+        return asset.getAvailableBalance().multiply(currencyRate.get(asset.getAsset()));
     }
 }

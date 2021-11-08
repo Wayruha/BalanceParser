@@ -8,8 +8,6 @@ import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.datasource.SourceFilter;
 import com.example.binanceparser.domain.AbstractEvent;
 import com.example.binanceparser.domain.BalanceState;
-import com.example.binanceparser.plot.AssetChartBuilder;
-import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.ReportGenerator;
 
