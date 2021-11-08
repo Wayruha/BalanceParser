@@ -14,5 +14,5 @@ public class Config {
     String outputDir;
     List<String> assetsToTrack;
     boolean convertToUSD;
-    String eventType;
+    String eventType; //TODO чого це стрінга?
 }

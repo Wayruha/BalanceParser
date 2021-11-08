@@ -13,12 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class USDChartBuilder implements ChartBuilder{
+public class USDChartBuilder implements ChartBuilder {
 
-    Map<String, BigDecimal> currencyRate = new HashMap<>();
-    {
-        currencyRate.put("BUSD", new BigDecimal(1));
-        currencyRate.put("USDT", new BigDecimal("0.5"));
+    final Map<String, BigDecimal> currencyRate;
+
+    public USDChartBuilder(Map<String, BigDecimal> currencyRate) {
+        this.currencyRate = currencyRate;
     }
 
     public JFreeChart buildLineChart(List<BalanceState> balanceStates, List<String> assetToTrack){
@@ -35,7 +35,9 @@ public class USDChartBuilder implements ChartBuilder{
         final TimeSeries series = new TimeSeries("USD");
         for(BalanceState balanceState: balanceStates) {
             final BalanceState.Asset asset = balanceState.getAssets().stream().findFirst().get();
-            series.addOrUpdate(dateTimeToDay(balanceState.getDateTime()), assetToUSD(asset));
+            final BigDecimal usdValue = assetToUSD(asset);
+            if(usdValue == null) continue;
+            series.addOrUpdate(dateTimeToDay(balanceState.getDateTime()), usdValue);
         }
         return series;
     }

@@ -7,7 +7,7 @@ import com.example.binanceparser.datasource.filters.DateEventFilter;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.datasource.LogsEventSource;
-import com.example.binanceparser.datasource.filters.SourceEventFilter;
+import com.example.binanceparser.datasource.filters.SourceFilter;
 import com.example.binanceparser.domain.AbstractEvent;
 import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.domain.EventType;
@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class Processor {
         final EventSource eventSource;
@@ -48,12 +47,13 @@ public class Processor {
             return balanceReport;
         }
 
+        //TODO 1. Що буде якщо startDate == 10/01/2021 а endDate=null
         private Set<Filter> implementFilters(Config config){
             Set<Filter> filters = new HashSet<>();
             if(config.getStartTrackDate() != null || config.getFinishTrackDate() != null)
                 filters.add(new DateEventFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
 
-            if(config.getSourceToTrack() != null) filters.add(new SourceEventFilter(config.getSourceToTrack()));
+            if(config.getSourceToTrack() != null) filters.add(new SourceFilter(config.getSourceToTrack()));
 
             if(config.getEventType() != null) filters.add(new EventTypeFilter(EventType.valueOf(config.getEventType())));
 

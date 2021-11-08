@@ -13,10 +13,6 @@ public class EventTypeFilter implements Filter{
 
     @Override
     public boolean filter(AbstractEvent event) {
-        if(event.getEventType().equals(eventType)) {
-            return true;
-        };
-        //System.out.println(eventType + " is not valid for " + event.getEventType());
-        return false;
+        return event.getEventType().equals(eventType);
     }
 }

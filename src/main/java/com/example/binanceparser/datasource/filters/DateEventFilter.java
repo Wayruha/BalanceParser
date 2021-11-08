@@ -16,10 +16,6 @@ public class DateEventFilter implements Filter{
 
     @Override
     public boolean filter(AbstractEvent event) {
-        if(event.getDate().isAfter(this.startTrackDate) && event.getDate().isBefore(this.finishTrackDate)){
-            return true;
-        }
-        //System.out.println(event.getDate() + " is not valid for " + startTrackDate + " and " + finishTrackDate);
-        return false;
+        return event.getDate().isAfter(this.startTrackDate) && event.getDate().isBefore(this.finishTrackDate);
     }
 }

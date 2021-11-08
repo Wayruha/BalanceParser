@@ -11,7 +11,6 @@ import org.jfree.chart.JFreeChart;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,16 +18,12 @@ import java.util.stream.Collectors;
 public class ReportGenerator {
     ChartBuilder chartBuilder;
 
-    Map<String, BigDecimal> currencyRate = new HashMap<>();
-    {
-        currencyRate.put("BUSD", new BigDecimal(1));
-        currencyRate.put("USDT", new BigDecimal("0.5"));
-    }
+    final Map<String, BigDecimal> currencyRate;
 
     public BalanceReport getBalanceReport(Config config, List<BalanceState> balanceStates) throws IOException {
         //build a plot
 
-        if(config.isConvertToUSD()) this.chartBuilder = new USDChartBuilder();
+        if (config.isConvertToUSD()) this.chartBuilder = new USDChartBuilder();
         else this.chartBuilder = new AssetChartBuilder();
 
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates, config.getAssetsToTrack());
@@ -38,7 +33,7 @@ public class ReportGenerator {
 
         assetList.forEach(a -> a.setAvailableBalance(assetToUSD(a)));
 
-        final String chartPath =  config.getOutputDir() + "/" + config.getSourceToTrack() + ".jpg";
+        final String chartPath = config.getOutputDir() + "/" + config.getSourceToTrack() + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
         final BigDecimal delta = calculateBalanceDelta(assetList);
 
@@ -49,7 +44,7 @@ public class ReportGenerator {
 
     // у 2 випадках повертажться значення в $, а чому в інших - ні?
     public BigDecimal assetToUSD(BalanceState.Asset asset) {
-        if(!currencyRate.containsKey(asset.getAsset())) return null;
+        if (!currencyRate.containsKey(asset.getAsset())) return null;
         return asset.getAvailableBalance().multiply(currencyRate.get(asset.getAsset()));
     }
 
@@ -67,13 +62,13 @@ public class ReportGenerator {
 
     private static BigDecimal findMaxBalance(List<BalanceState.Asset> assetList) {
         BigDecimal max = new BigDecimal(0);
-        for(BalanceState.Asset asset : assetList) max = asset.getAvailableBalance().max(max);
+        for (BalanceState.Asset asset : assetList) max = asset.getAvailableBalance().max(max);
         return max;
     }
 
     private static BigDecimal findMinBalance(List<BalanceState.Asset> assetList) {
         BigDecimal min = new BigDecimal(0);
-        for(BalanceState.Asset asset : assetList) min = asset.getAvailableBalance().min(min);
+        for (BalanceState.Asset asset : assetList) min = asset.getAvailableBalance().min(min);
         return min;
     }
 }

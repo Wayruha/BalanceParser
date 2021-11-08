@@ -63,6 +63,7 @@ public class LogsEventSource implements EventSource {
                 EventType.MARGIN_CALL == eventType) return null;
         AbstractEvent event = objectMapper.readValue(fromPlainToJson(eventProperties), AbstractEvent.class);
         setCommons(date, eventType, source, event);
+        //TODO
         switch (eventType) {
             case FUTURES_ACCOUNT_UPDATE:
                 AbstractEvent accountUpdateEvent = objectMapper.readValue(fromPlainToJson(eventProperties), AbstractEvent.class);
