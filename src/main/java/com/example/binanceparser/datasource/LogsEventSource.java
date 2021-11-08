@@ -1,5 +1,6 @@
 package com.example.binanceparser.datasource;
 
+import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.domain.AbstractEvent;
 import com.example.binanceparser.domain.EventType;
 import com.example.binanceparser.domain.FuturesOrderTradeUpdateEvent;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static com.example.binanceparser.datasource.ParserUtil.fromPlainToJson;
 
@@ -25,7 +27,7 @@ public class LogsEventSource implements EventSource {
     final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     final ObjectMapper objectMapper = new ObjectMapper();
 
-    public List<AbstractEvent> readEvents(File logsDir, List<Filter> filters) throws IOException {
+    public List<AbstractEvent> readEvents(File logsDir, Set<Filter> filters) throws IOException {
         String[] dirFiles = logsDir.list();
         if (dirFiles == null) throw new RuntimeException("Can`t find any files in directory.");
 
@@ -43,11 +45,12 @@ public class LogsEventSource implements EventSource {
                     allEvents.add(event);
             }
         }
+        allEvents.forEach(System.out::println);
         return allEvents;
     }
 
-    private static boolean fitsToAllFilters(AbstractEvent event, List<Filter> filters) {
-        return true; //TODO implement
+    private static boolean fitsToAllFilters(AbstractEvent event, Set<Filter> filters) {
+        return filters.stream().allMatch(f -> f.filter(event));
     }
 
     public AbstractEvent parseLogLine(LocalDateTime date, String logLine) throws JsonProcessingException {
@@ -71,8 +74,6 @@ public class LogsEventSource implements EventSource {
                 setCommons(date, eventType, source, orderTradeUpdateEvent);
                 event = orderTradeUpdateEvent;
                 break;
-            default:
-                System.out.println("LogsEventSource: omitting eventType " + eventType);
         }
         return event;
     }

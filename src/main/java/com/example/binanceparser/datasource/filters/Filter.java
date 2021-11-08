@@ -1,4 +1,4 @@
-package com.example.binanceparser.datasource;
+package com.example.binanceparser.datasource.filters;
 
 import com.example.binanceparser.domain.AbstractEvent;
 

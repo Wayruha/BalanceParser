@@ -19,7 +19,7 @@ class ProcessorTest {
         Processor processor = new Processor();
         Config config = new Config();
 
-        LocalDateTime start = LocalDateTime.parse("2021-08-16 06:17:56", dateFormat);
+        LocalDateTime start = LocalDateTime.parse("2021-08-30 06:17:56", dateFormat);
         LocalDateTime finish = LocalDateTime.parse("2021-09-15 13:15:50", dateFormat);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
@@ -31,6 +31,7 @@ class ProcessorTest {
         config.setInputFilepath("src/main/resources/log");
         config.setOutputDir("C:/Users/yarik/Desktop");
         config.setConvertToUSD(true);
+        config.setEventType("FUTURES_ACCOUNT_UPDATE");
         System.out.println(processor.run(config));
     }
 }

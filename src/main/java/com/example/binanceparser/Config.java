@@ -14,4 +14,5 @@ public class Config {
     String outputDir;
     List<String> assetsToTrack;
     boolean convertToUSD;
+    String eventType;
 }
