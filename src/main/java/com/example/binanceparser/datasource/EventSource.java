@@ -1,7 +1,7 @@
 package com.example.binanceparser.datasource;
 
 import com.example.binanceparser.datasource.filters.Filter;
-import com.example.binanceparser.domain.AbstractEvent;
+import com.example.binanceparser.domain.events.AbstractEvent;
 
 import java.io.File;
 import java.io.IOException;

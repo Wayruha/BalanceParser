@@ -1,6 +1,6 @@
 package com.example.binanceparser.datasource.filters;
 
-import com.example.binanceparser.domain.AbstractEvent;
+import com.example.binanceparser.domain.events.AbstractEvent;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +16,7 @@ public class DateEventFilter implements Filter{
 
     @Override
     public boolean filter(AbstractEvent event) {
-        return event.getDate().isAfter(this.startTrackDate) && event.getDate().isBefore(this.finishTrackDate);
+        return (startTrackDate == null ||event.getDate().isAfter(startTrackDate)) &&
+                (finishTrackDate == null ||event.getDate().isBefore(finishTrackDate));
     }
 }

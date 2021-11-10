@@ -9,7 +9,6 @@ import org.jfree.data.time.TimeSeriesCollection;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +33,7 @@ public class USDChartBuilder implements ChartBuilder {
     private TimeSeries createTimeSeries(List<BalanceState> balanceStates) {
         final TimeSeries series = new TimeSeries("USD");
         for(BalanceState balanceState: balanceStates) {
+            System.out.println(balanceState.getAssets());
             final BalanceState.Asset asset = balanceState.getAssets().stream().findFirst().get();
             final BigDecimal usdValue = assetToUSD(asset);
             if(usdValue == null) continue;

@@ -11,6 +11,7 @@ import org.jfree.chart.JFreeChart;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,12 +19,15 @@ import java.util.stream.Collectors;
 public class ReportGenerator {
     ChartBuilder chartBuilder;
 
-    final Map<String, BigDecimal> currencyRate;
+    final Map<String, BigDecimal> currencyRate = new HashMap<>();
+
 
     public BalanceReport getBalanceReport(Config config, List<BalanceState> balanceStates) throws IOException {
         //build a plot
+        currencyRate.put("USDT", BigDecimal.valueOf(1));
+        currencyRate.put("BUSD", BigDecimal.valueOf(2));
 
-        if (config.isConvertToUSD()) this.chartBuilder = new USDChartBuilder();
+        if (config.isConvertToUSD()) this.chartBuilder = new USDChartBuilder(currencyRate);
         else this.chartBuilder = new AssetChartBuilder();
 
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates, config.getAssetsToTrack());
@@ -61,13 +65,15 @@ public class ReportGenerator {
     }
 
     private static BigDecimal findMaxBalance(List<BalanceState.Asset> assetList) {
-        BigDecimal max = new BigDecimal(0);
+        if(assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
+        BigDecimal max = assetList.stream().findFirst().get().getAvailableBalance();
         for (BalanceState.Asset asset : assetList) max = asset.getAvailableBalance().max(max);
         return max;
     }
 
     private static BigDecimal findMinBalance(List<BalanceState.Asset> assetList) {
-        BigDecimal min = new BigDecimal(0);
+        if(assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
+        BigDecimal min = assetList.stream().findFirst().get().getAvailableBalance();
         for (BalanceState.Asset asset : assetList) min = asset.getAvailableBalance().min(min);
         return min;
     }

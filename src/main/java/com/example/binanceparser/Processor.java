@@ -3,14 +3,13 @@ package com.example.binanceparser;
 import com.example.binanceparser.algorithm.CalculationAlgorithm;
 import com.example.binanceparser.algorithm.WalletBalanceCalcAlgorithm;
 import com.example.binanceparser.datasource.EventSource;
+import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.datasource.filters.DateEventFilter;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
-import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.datasource.filters.SourceFilter;
-import com.example.binanceparser.domain.AbstractEvent;
+import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.BalanceState;
-import com.example.binanceparser.domain.EventType;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.ReportGenerator;
 
@@ -41,13 +40,12 @@ public class Processor {
             // retrieve balance changes
             final List<BalanceState> balanceStates = algorithm.processEvents(events, config.getAssetsToTrack());
 
-            final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
+            //final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
 
             System.out.println("Processor done for config: " + config);
-            return balanceReport;
+            return null;
         }
 
-        //TODO 1. Що буде якщо startDate == 10/01/2021 а endDate=null
         private Set<Filter> implementFilters(Config config){
             Set<Filter> filters = new HashSet<>();
             if(config.getStartTrackDate() != null || config.getFinishTrackDate() != null)
@@ -55,7 +53,7 @@ public class Processor {
 
             if(config.getSourceToTrack() != null) filters.add(new SourceFilter(config.getSourceToTrack()));
 
-            if(config.getEventType() != null) filters.add(new EventTypeFilter(EventType.valueOf(config.getEventType())));
+            if(config.getEventType() != null) filters.add(new EventTypeFilter(config.getEventType()));
 
             return filters;
         }

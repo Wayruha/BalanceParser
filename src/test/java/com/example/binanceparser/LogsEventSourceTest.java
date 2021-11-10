@@ -1,14 +1,14 @@
 package com.example.binanceparser;
 
 import com.example.binanceparser.datasource.LogsEventSource;
-import com.example.binanceparser.domain.AbstractEvent;
-import com.example.binanceparser.domain.FuturesOrderTradeUpdateEvent;
+import com.example.binanceparser.domain.events.AbstractEvent;
+import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
-import static com.example.binanceparser.domain.EventType.FUTURES_ORDER_TRADE_UPDATE;
+import static com.example.binanceparser.domain.events.EventType.FUTURES_ORDER_TRADE_UPDATE;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LogsEventSourceTest {

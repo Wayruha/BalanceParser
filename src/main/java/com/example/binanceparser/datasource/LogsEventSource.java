@@ -1,9 +1,8 @@
 package com.example.binanceparser.datasource;
 
 import com.example.binanceparser.datasource.filters.Filter;
-import com.example.binanceparser.domain.AbstractEvent;
-import com.example.binanceparser.domain.EventType;
-import com.example.binanceparser.domain.FuturesOrderTradeUpdateEvent;
+import com.example.binanceparser.domain.events.AbstractEvent;
+import com.example.binanceparser.domain.events.EventType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
@@ -45,11 +44,10 @@ public class LogsEventSource implements EventSource {
                     allEvents.add(event);
             }
         }
-        allEvents.forEach(System.out::println);
         return allEvents;
     }
 
-    private static boolean fitsToAllFilters(AbstractEvent event, Set<Filter> filters) {
+    private boolean fitsToAllFilters(AbstractEvent event, Set<Filter> filters) {
         return filters.stream().allMatch(f -> f.filter(event));
     }
 
@@ -62,26 +60,14 @@ public class LogsEventSource implements EventSource {
         if (EventType.TRANSFER == eventType || EventType.ACCOUNT_CONFIG_UPDATE == eventType || EventType.CONVERT_FUNDS == eventType ||
                 EventType.MARGIN_CALL == eventType) return null;
         AbstractEvent event = objectMapper.readValue(fromPlainToJson(eventProperties), AbstractEvent.class);
-        setCommons(date, eventType, source, event);
-        //TODO
-        switch (eventType) {
-            case FUTURES_ACCOUNT_UPDATE:
-                AbstractEvent accountUpdateEvent = objectMapper.readValue(fromPlainToJson(eventProperties), AbstractEvent.class);
-                setCommons(date, eventType, source, accountUpdateEvent);
-                event = accountUpdateEvent;
-                break;
-            case FUTURES_ORDER_TRADE_UPDATE:
-                FuturesOrderTradeUpdateEvent orderTradeUpdateEvent = objectMapper.readValue(fromPlainToJson(eventProperties), FuturesOrderTradeUpdateEvent.class);
-                setCommons(date, eventType, source, orderTradeUpdateEvent);
-                event = orderTradeUpdateEvent;
-                break;
-        }
+        setCommons(date, source, event, eventType);// parser don`t parse correctly eventType for some events
+        System.out.println(event);
         return event;
     }
 
-    private void setCommons(LocalDateTime date, EventType eventType, String source, AbstractEvent event) {
-        event.setEventType(eventType);
+    private void setCommons(LocalDateTime date, String source, AbstractEvent event, EventType eventType) {
         event.setDate(date);
         event.setSource(source);
+        event.setEventType(eventType);
     }
 }

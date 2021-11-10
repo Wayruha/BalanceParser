@@ -1,16 +1,18 @@
 package com.example.binanceparser.algorithm;
 
-import com.example.binanceparser.domain.AbstractEvent;
+import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.BalanceState;
-import com.example.binanceparser.domain.FuturesAccountUpdateEvent;
-import com.example.binanceparser.domain.FuturesOrderTradeUpdateEvent;
+import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
+import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import static com.example.binanceparser.domain.EventType.FUTURES_ACCOUNT_UPDATE;
-import static com.example.binanceparser.domain.EventType.FUTURES_ORDER_TRADE_UPDATE;
+import static com.example.binanceparser.domain.events.EventType.FUTURES_ACCOUNT_UPDATE;
+import static com.example.binanceparser.domain.events.EventType.FUTURES_ORDER_TRADE_UPDATE;
 
 /**
  * CLASS is not used anymore is the algorithm is not correct.
@@ -49,7 +51,7 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
 
             BalanceState balanceState = new BalanceState();
             balanceState.setDateTime(accUpdate.getDate().toLocalDate());
-            List<BalanceState.Asset> assetList = new ArrayList<>();
+            Set<BalanceState.Asset> assetList = new HashSet<>();
             FuturesAccountUpdateEvent.Asset accUpdateAsset = accUpdate.getBalances().stream().filter(asset -> asset.getAsset().equals(assetToTrack))
                     .findFirst().orElseThrow(() -> new IllegalStateException("Balance not found"));
             assetList.add(new BalanceState.Asset(accUpdateAsset.getAsset(), BigDecimal.valueOf(currentBalance)));

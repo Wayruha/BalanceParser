@@ -1,16 +1,17 @@
-package com.example.binanceparser.domain;
+package com.example.binanceparser.domain.events;
 
+import com.example.binanceparser.domain.AccountUpdateReasonType;
+import com.example.binanceparser.domain.events.AbstractEvent;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
-public class FuturesAccountUpdateEvent extends AbstractEvent{
+public class FuturesAccountUpdateEvent extends AbstractEvent {
 
     // Event reason type
     private AccountUpdateReasonType reasonType;

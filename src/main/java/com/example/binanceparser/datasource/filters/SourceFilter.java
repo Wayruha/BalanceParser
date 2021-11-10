@@ -1,17 +1,19 @@
 package com.example.binanceparser.datasource.filters;
 
-import com.example.binanceparser.domain.AbstractEvent;
+import com.example.binanceparser.domain.events.AbstractEvent;
+
+import java.util.List;
 
 public class SourceFilter implements Filter {
 
-    private final String acceptableName;
+    private final List<String> acceptableNames;
 
-    public SourceFilter(String acceptableName) {
-        this.acceptableName = acceptableName;
+    public SourceFilter(List<String> acceptableNames) {
+        this.acceptableNames = acceptableNames;
     }
 
     @Override
     public boolean filter(AbstractEvent event) {
-        return event.getSource().equals(acceptableName);
+        return acceptableNames.stream().anyMatch(name -> event.getSource().contains(name));
     }
 }

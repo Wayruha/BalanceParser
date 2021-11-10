@@ -24,14 +24,14 @@ class ProcessorTest {
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
         List<String> assetsToTrack = new ArrayList<>();
-        assetsToTrack.add("USDT");
-        assetsToTrack.add("BUSD");
-        config.setAssetsToTrack(assetsToTrack);
-        config.setSourceToTrack("FUTURES_PRODUCER_Kozhukhar");
+        //assetsToTrack.add("USDT");
+        //assetsToTrack.add("BUSD");
+        //config.setAssetsToTrack(assetsToTrack);
+        config.setSourceToTrack(List.of("FUTURES_PRODUCER_Kozhukhar", "SPOT_PRODUCER_Kozhukhar"));
         config.setInputFilepath("src/main/resources/log");
         config.setOutputDir("C:/Users/yarik/Desktop");
         config.setConvertToUSD(true);
-        config.setEventType("FUTURES_ACCOUNT_UPDATE");
+        //config.setEventType(List.of(EventType.FUTURES_ACCOUNT_UPDATE));
         System.out.println(processor.run(config));
     }
 }

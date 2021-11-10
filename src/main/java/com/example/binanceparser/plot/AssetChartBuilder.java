@@ -27,6 +27,7 @@ public class AssetChartBuilder implements ChartBuilder{
     private TimeSeries createTimeSeries(List<BalanceState> balanceStates, String assetToTrack) {
         final TimeSeries series = new TimeSeries(assetToTrack);
         for (BalanceState balanceState : balanceStates) {
+            if(balanceState.getAssets().stream().filter(a -> a.getAsset().equals(assetToTrack)).findFirst().isEmpty()) continue;
             final BalanceState.Asset asset = balanceState.getAssets().stream().
                     filter(a -> a.getAsset().equals(assetToTrack)).findFirst().get();
             series.addOrUpdate(dateTimeToDay(balanceState.getDateTime()), asset.getAvailableBalance());
