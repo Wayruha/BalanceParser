@@ -61,7 +61,6 @@ public class LogsEventSource implements EventSource {
                 EventType.MARGIN_CALL == eventType) return null;
         AbstractEvent event = objectMapper.readValue(fromPlainToJson(eventProperties), AbstractEvent.class);
         setCommons(date, source, event, eventType);// parser don`t parse correctly eventType for some events
-        System.out.println(event);
         return event;
     }
 

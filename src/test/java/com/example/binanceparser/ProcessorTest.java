@@ -19,11 +19,11 @@ class ProcessorTest {
         Processor processor = new Processor();
         Config config = new Config();
 
-        LocalDateTime start = LocalDateTime.parse("2021-08-30 06:17:56", dateFormat);
-        LocalDateTime finish = LocalDateTime.parse("2021-09-15 13:15:50", dateFormat);
-        config.setStartTrackDate(start);
-        config.setFinishTrackDate(finish);
-        List<String> assetsToTrack = new ArrayList<>();
+        //LocalDateTime start = LocalDateTime.parse("2021-08-30 06:17:56", dateFormat);
+        //LocalDateTime finish = LocalDateTime.parse("2021-09-15 13:15:50", dateFormat);
+        //config.setStartTrackDate(start);
+        //config.setFinishTrackDate(finish);
+        //List<String> assetsToTrack = new ArrayList<>();
         //assetsToTrack.add("USDT");
         //assetsToTrack.add("BUSD");
         //config.setAssetsToTrack(assetsToTrack);
