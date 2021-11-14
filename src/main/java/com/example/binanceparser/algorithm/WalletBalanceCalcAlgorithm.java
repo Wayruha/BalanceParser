@@ -13,7 +13,7 @@ public class WalletBalanceCalcAlgorithm implements CalculationAlgorithm{
     @Override
     public List<BalanceState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {
         final List<BalanceState> balanceStates = new ArrayList<>();
-        Set<BalanceState.Asset> finalBalance = new HashSet<>();
+        Set<BalanceState.Asset> currentBalance = new HashSet<>();
         for(int i = 0; i < events.size() - 1; i++) {
             AbstractEvent abstractEvent = events.get(i);
             AbstractEvent nextAbstractEvent = events.get(i + 1);
@@ -22,33 +22,32 @@ public class WalletBalanceCalcAlgorithm implements CalculationAlgorithm{
 
             OrderTradeUpdateEvent event = (OrderTradeUpdateEvent) abstractEvent;
             AccountPositionUpdateEvent accountPositionUpdate = (AccountPositionUpdateEvent) nextAbstractEvent;
-
             if(!event.getOrderStatus().equals("FILLED")) continue;
 
             Set<BalanceState.Asset> newEventAssets = accountPositionUpdate.getBalances().stream().map(asset ->
                 new BalanceState.Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
 
-            if(balanceStates.size() == 0) finalBalance = newEventAssets;
-
-            balanceStates.add(new BalanceState(nextAbstractEvent.getDate().toLocalDate(), currentBalance(finalBalance, newEventAssets)));
+            if(balanceStates.size() == 0) currentBalance = newEventAssets;
+            balanceStates.add(new BalanceState(nextAbstractEvent.getDate().toLocalDate(),
+                    processBalance(currentBalance, newEventAssets)));
         }
         return balanceStates;
     }
 
-    public Set<BalanceState.Asset> currentBalance(Set<BalanceState.Asset> finalBalance, Set<BalanceState.Asset> newBalance) {
+    public Set<BalanceState.Asset> processBalance(Set<BalanceState.Asset> finalBalance, Set<BalanceState.Asset> newBalance) {
         Set<BalanceState.Asset> newAsset = new HashSet<>();
-        for(BalanceState.Asset balance: finalBalance) {
             for(BalanceState.Asset asset: newBalance) {
-                if(balance.getAsset().contentEquals(asset.getAsset()))
-                    if(balance.getAvailableBalance().compareTo(asset.getAvailableBalance()) == 0) continue;
-                    else balance.setAvailableBalance(asset.getAvailableBalance());
-                else if(finalBalance.stream().noneMatch(b -> b.getAsset().equals(asset.getAsset()))) newAsset.add(asset);
+                BalanceState.Asset searchedBalance;
+                if (finalBalance.stream().anyMatch(balance -> balance.getAsset().contains(asset.getAsset()))) {
+                    searchedBalance = finalBalance.stream().filter(balance ->
+                            balance.getAsset().contains(asset.getAsset())).findFirst().get();
+                    if (searchedBalance.getAvailableBalance().compareTo(asset.getAvailableBalance()) != 0)
+                        searchedBalance.setAvailableBalance(asset.getAvailableBalance());
+                } else newAsset.add(asset);
             }
-        }
         finalBalance.addAll(newAsset);
         finalBalance = finalBalance.stream().filter(balance ->
-                balance.getAvailableBalance().compareTo(BigDecimal.valueOf(0)) != 0).collect(Collectors.toSet());
-        System.out.println(finalBalance);
+                balance.getAvailableBalance().compareTo(BigDecimal.valueOf(0)) != 0).collect(Collectors.toSet());// delete assets with 0 balance
         return finalBalance;
     }
 }
