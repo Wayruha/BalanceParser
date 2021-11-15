@@ -1,7 +1,7 @@
 package com.example.binanceparser;
 
 import com.example.binanceparser.algorithm.CalculationAlgorithm;
-import com.example.binanceparser.algorithm.WalletBalanceCalcAlgorithm;
+import com.example.binanceparser.algorithm.SpotBalanceCalcAlgorithm;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.datasource.filters.DateEventFilter;
@@ -27,7 +27,7 @@ public class Processor {
 
         public Processor() {
             this.eventSource = new LogsEventSource();
-            this.algorithm = new WalletBalanceCalcAlgorithm();
+            this.algorithm = new SpotBalanceCalcAlgorithm();
             this.reportGenerator = new ReportGenerator();
         }
 
@@ -40,10 +40,11 @@ public class Processor {
             // retrieve balance changes
             final List<BalanceState> balanceStates = algorithm.processEvents(events, config.getAssetsToTrack());
 
-            //final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
+            final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
+
 
             System.out.println("Processor done for config: " + config);
-            return null;
+            return balanceReport;
         }
 
         private Set<Filter> implementFilters(Config config){

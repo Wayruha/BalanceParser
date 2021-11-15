@@ -4,9 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest
@@ -29,7 +27,7 @@ class ProcessorTest {
         //config.setAssetsToTrack(assetsToTrack);
         config.setSourceToTrack(List.of("FUTURES_PRODUCER_Kozhukhar", "SPOT_PRODUCER_Kozhukhar"));
         config.setInputFilepath("src/main/resources/log");
-        config.setOutputDir("C:/Users/yarik/Desktop");
+        config.setOutputDir("C:\\Users\\yarik\\Desktop");
         config.setConvertToUSD(true);
         //config.setEventType(List.of(EventType.FUTURES_ACCOUNT_UPDATE));
         System.out.println(processor.run(config));

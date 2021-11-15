@@ -1,5 +1,6 @@
 package com.example.binanceparser.plot;
 
+import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.BalanceState;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -28,7 +29,7 @@ public class AssetChartBuilder implements ChartBuilder{
         final TimeSeries series = new TimeSeries(assetToTrack);
         for (BalanceState balanceState : balanceStates) {
             if(balanceState.getAssets().stream().filter(a -> a.getAsset().equals(assetToTrack)).findFirst().isEmpty()) continue;
-            final BalanceState.Asset asset = balanceState.getAssets().stream().
+            final Asset asset = balanceState.getAssets().stream().
                     filter(a -> a.getAsset().equals(assetToTrack)).findFirst().get();
             series.addOrUpdate(dateTimeToDay(balanceState.getDateTime()), asset.getAvailableBalance());
         }

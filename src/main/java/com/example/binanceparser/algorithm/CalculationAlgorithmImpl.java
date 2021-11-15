@@ -1,5 +1,6 @@
 package com.example.binanceparser.algorithm;
 
+import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
@@ -51,10 +52,10 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
 
             BalanceState balanceState = new BalanceState();
             balanceState.setDateTime(accUpdate.getDate().toLocalDate());
-            Set<BalanceState.Asset> assetList = new HashSet<>();
+            Set<Asset> assetList = new HashSet<>();
             FuturesAccountUpdateEvent.Asset accUpdateAsset = accUpdate.getBalances().stream().filter(asset -> asset.getAsset().equals(assetToTrack))
                     .findFirst().orElseThrow(() -> new IllegalStateException("Balance not found"));
-            assetList.add(new BalanceState.Asset(accUpdateAsset.getAsset(), BigDecimal.valueOf(currentBalance)));
+            assetList.add(new Asset(accUpdateAsset.getAsset(), BigDecimal.valueOf(currentBalance)));
             balanceState.setAssets(assetList);
 
             balances.add(balanceState);

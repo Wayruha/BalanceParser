@@ -1,5 +1,6 @@
 package com.example.binanceparser.plot;
 
+import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.BalanceState;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -33,8 +34,7 @@ public class USDChartBuilder implements ChartBuilder {
     private TimeSeries createTimeSeries(List<BalanceState> balanceStates) {
         final TimeSeries series = new TimeSeries("USD");
         for(BalanceState balanceState: balanceStates) {
-            System.out.println(balanceState.getAssets());
-            final BalanceState.Asset asset = balanceState.getAssets().stream().findFirst().get();
+            final Asset asset = balanceState.getAssets().stream().findFirst().get();
             final BigDecimal usdValue = assetToUSD(asset);
             if(usdValue == null) continue;
             series.addOrUpdate(dateTimeToDay(balanceState.getDateTime()), usdValue);
@@ -47,7 +47,7 @@ public class USDChartBuilder implements ChartBuilder {
                 dateTime.getYear());
     }
 
-    public BigDecimal assetToUSD(BalanceState.Asset asset) {
+    public BigDecimal assetToUSD(Asset asset) {
         if(!currencyRate.containsKey(asset.getAsset())) return null;
         return asset.getAvailableBalance().multiply(currencyRate.get(asset.getAsset()));
     }
