@@ -35,7 +35,7 @@ public class LogsEventSource implements EventSource {
             File file = new File(logsDir.getAbsolutePath() + "/" + filePath);
             Document doc = Jsoup.parse(file, "UTF-8");
             List<Element> messageList = doc.getElementsByClass("info");
-            messageList.remove(0); // remove first element of logs table (bc it`s table header)
+            //messageList.remove(0); // remove first element of logs table (bc it`s table header)
             for (Element element : messageList) {
                 LocalDateTime date = LocalDateTime.parse(element.getElementsByClass("Date").text(), dateFormat);
                 final String logLine = element.getElementsByClass("Message").text();

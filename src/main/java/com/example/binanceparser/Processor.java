@@ -42,7 +42,6 @@ public class Processor {
 
             final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
 
-
             System.out.println("Processor done for config: " + config);
             return balanceReport;
         }

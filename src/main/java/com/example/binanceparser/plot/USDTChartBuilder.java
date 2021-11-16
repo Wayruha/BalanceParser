@@ -13,11 +13,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-public class USDChartBuilder implements ChartBuilder {
+public class USDTChartBuilder implements ChartBuilder {
 
     final Map<String, BigDecimal> currencyRate;
 
-    public USDChartBuilder(Map<String, BigDecimal> currencyRate) {
+    public USDTChartBuilder(Map<String, BigDecimal> currencyRate) {
         this.currencyRate = currencyRate;
     }
 
