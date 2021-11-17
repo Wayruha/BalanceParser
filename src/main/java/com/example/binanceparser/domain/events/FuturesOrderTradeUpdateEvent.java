@@ -29,6 +29,8 @@ public class FuturesOrderTradeUpdateEvent extends AbstractEvent {
 
     private Double price;
 
+    private Double accumulatedQuantity;
+
     public boolean isReduceOnly() {
         return isReduceOnly;
     }

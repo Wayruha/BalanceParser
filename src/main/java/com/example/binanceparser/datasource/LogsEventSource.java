@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.example.binanceparser.datasource.ParserUtil.fromPlainToJson;
+import static com.example.binanceparser.domain.events.EventType.*;
 
 /**
  * read directory with logs to provide the events
@@ -25,6 +26,8 @@ import static com.example.binanceparser.datasource.ParserUtil.fromPlainToJson;
 public class LogsEventSource implements EventSource {
     final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     final ObjectMapper objectMapper = new ObjectMapper();
+    public static final List<EventType> IGNORED_EVENTS = List.of(TRANSFER, ACCOUNT_CONFIG_UPDATE, CONVERT_FUNDS, MARGIN_CALL, COIN_SWAP_ORDER);
+
 
     public List<AbstractEvent> readEvents(File logsDir, Set<Filter> filters) throws IOException {
         String[] dirFiles = logsDir.list();
@@ -35,7 +38,7 @@ public class LogsEventSource implements EventSource {
             File file = new File(logsDir.getAbsolutePath() + "/" + filePath);
             Document doc = Jsoup.parse(file, "UTF-8");
             List<Element> messageList = doc.getElementsByClass("info");
-            messageList.remove(0); // remove first element of logs table (bc it`s table header)
+//            messageList.remove(0); // remove first element of logs table (bc it`s table header)
             for (Element element : messageList) {
                 LocalDateTime date = LocalDateTime.parse(element.getElementsByClass("Date").text(), dateFormat);
                 final String logLine = element.getElementsByClass("Message").text();
@@ -54,11 +57,10 @@ public class LogsEventSource implements EventSource {
     public AbstractEvent parseLogLine(LocalDateTime date, String logLine) throws JsonProcessingException {
         final String[] logParts = logLine.split(" ");
         final String source = logParts[0];
-        final EventType eventType = EventType.valueOf(logParts[1]);
+        final EventType eventType = valueOf(logParts[1]);
         final String eventStr = logParts[3];
         final String[] eventProperties = eventStr.split(",");
-        if (EventType.TRANSFER == eventType || EventType.ACCOUNT_CONFIG_UPDATE == eventType || EventType.CONVERT_FUNDS == eventType ||
-                EventType.MARGIN_CALL == eventType) return null;
+        if (IGNORED_EVENTS.contains(eventType)) return null;
         AbstractEvent event = objectMapper.readValue(fromPlainToJson(eventProperties), AbstractEvent.class);
         setCommons(date, source, event, eventType);// parser don`t parse correctly eventType for some events
         System.out.println(event);

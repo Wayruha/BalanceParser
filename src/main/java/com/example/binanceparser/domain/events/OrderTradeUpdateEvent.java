@@ -33,6 +33,8 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
     Long orderId;
 
+    Double accumulatedQuantity;
+
 
     //[eventTime=1629094686500,symbol=BTCUSDT,
     // side=SELL,type=LIMIT,orderStatus=FILLED,executionType=TRADE,price=47296.97000000,originalQuantity=0.00023500,
