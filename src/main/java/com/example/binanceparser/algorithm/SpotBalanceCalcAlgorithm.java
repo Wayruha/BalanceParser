@@ -5,6 +5,7 @@ import com.example.binanceparser.domain.events.*;
 import com.example.binanceparser.domain.BalanceState;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -13,47 +14,49 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm{
     @Override
     public List<BalanceState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {
         final List<BalanceState> balanceStates = new ArrayList<>();
-        Set<Asset> actualBalance = new HashSet<>(); // TODO use hashMap
+        Map<String, Asset> actualBalance = new HashMap<>();
         final HashMap<String, BigDecimal> assetRate = new HashMap<>();
         assetRate.put("USDT", BigDecimal.valueOf(1.0)); // because order event has no USDT rate
         for(int i = 0; i < events.size() - 1; i++) {
 
-            AbstractEvent firstEvent = events.get(i);
-            AbstractEvent nextEvent = events.get(i + 1);
+            final AbstractEvent firstEvent = events.get(i);
+            final AbstractEvent nextEvent = events.get(i + 1);
             if(firstEvent.getEventType() != EventType.ORDER_TRADE_UPDATE ||
                     nextEvent.getEventType() != EventType.ACCOUNT_POSITION_UPDATE) continue;
-            if(!firstEvent.getDate().isEqual(nextEvent.getDate())) continue; // TODO Вони можуть відрізнятися на мілісекунду
+            if(ChronoUnit.SECONDS.between(firstEvent.getDate(), nextEvent.getDate()) > 1) continue;
 
-            OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) firstEvent;
-            AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
+            final OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) firstEvent;
+            final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 
-            if(!assetRate.containsKey(orderEvent.getSymbol()))
-                assetRate.put(orderEvent.getSymbol().replace("USDT", ""),// all assets in order came with USDT suffix
-                        orderEvent.getPrice()); //TODO do we really have price?
+            if(orderEvent.getPrice() == null) System.out.println("Price is null " + orderEvent.getDate());
+
+            String orderSymbol = orderEvent.getSymbol().replace("USDT", "");
+
+            if(assetRate.containsKey(orderSymbol)) {
+                System.out.println(assetRate.get(orderSymbol) + " + " + orderEvent.getPriceOfLastFilledTrade());
+                assetRate.put(orderSymbol, assetRate.get(orderSymbol)
+                        .add(orderEvent.getPriceOfLastFilledTrade()).divide(BigDecimal.valueOf(2)));
+            }
+            else assetRate.put(orderSymbol,
+                        orderEvent.getPriceOfLastFilledTrade());
+
+            System.out.println(assetRate);
 
             if(!orderEvent.getOrderStatus().equals("FILLED")) continue;
             Set<Asset> newEventAssets = accEvent.getBalances().stream().map(asset ->
                 new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
             actualBalance = processBalance(actualBalance, newEventAssets);
-            BalanceState balanceState = new BalanceState();
-            balanceState.setAssets(actualBalance);
-            balanceState.setDateTime(nextEvent.getDate().toLocalDate());
-            balanceStates.add(balanceState);// every balance state reassign previous balance states
+            BalanceState balanceState = new BalanceState(accEvent.getDate().toLocalDate()
+                    , new HashSet<>(actualBalance.values()));
+            balanceStates.add(balanceState);
 
         }
         System.out.println(balanceStates);
         return balanceToUSDT(balanceStates, assetRate);
     }
 
-    public Set<Asset> processBalance(Set<Asset> actualBalance, Set<Asset> newBalance) {
-        Map<String, Asset> actualBal = new HashMap<>();
-
-        //TODO repalce with Java Stream
-        for (Asset newAsset : newBalance) {
-            actualBal.put(newAsset.getAsset(), newAsset);
-        }
-
-        //System.out.println(assets);
+    public Map<String, Asset> processBalance(Map<String, Asset> actualBalance, Set<Asset> newBalance) {
+        newBalance.forEach(asset -> actualBalance.put(asset.getAsset(), asset));
         return actualBalance;
     }
 
@@ -61,15 +64,14 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm{
         List<BalanceState> updatedBalanceState = new ArrayList<>();
         for(BalanceState balanceState : balanceStates) {
             Set<Asset> assets = new HashSet<>();
-/*            BigDecimal balance = balanceState.getAssets().stream().map(asset ->
-                    asset.getAvailableBalance().multiply(assetRate.get(asset.getAsset()))).reduce(BigDecimal::add).orElseThrow();*/
+            /*BigDecimal balance = new BigDecimal(0);
+            balance = balanceState.getAssets().stream().map(asset ->
+                    asset.getAvailableBalance().multiply(assetRate.get(asset.getAsset()))).reduce(BigDecimal.ZERO, BigDecimal::add);*/
             BigDecimal balance = new BigDecimal(0);
-            for(Asset asset: balanceState.getAssets()){
+            for(Asset asset: balanceState.getAssets()) {
                 if(assetRate.get(asset.getAsset()) == null) balance = balance.add(asset.getAvailableBalance());
                 else balance = balance.add(asset.getAvailableBalance().multiply(assetRate.get(asset.getAsset())));
-                System.out.println(asset.getAsset() + ": " + asset.getAvailableBalance() + " * " + assetRate.get(asset.getAsset()));
             }
-
             assets.add(new Asset("USDT", balance));
             updatedBalanceState.add(new BalanceState(balanceState.getDateTime(), assets));
         }

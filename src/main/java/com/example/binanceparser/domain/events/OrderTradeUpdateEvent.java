@@ -19,11 +19,13 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
     String orderStatus;
 
-    BigDecimal price;// цена за одну единицу symbol
+    BigDecimal price;
 
-    Double originalQuantity;// колличество покупки/продажи
+    BigDecimal priceOfLastFilledTrade;
 
-    String side;// покупка/продажа и т.д.
+    Double originalQuantity;
+
+    String side;
 
     BigDecimal commission;
 

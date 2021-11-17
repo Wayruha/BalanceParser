@@ -22,7 +22,6 @@ public class ReportGenerator {
 
 
     public BalanceReport getBalanceReport(Config config, List<BalanceState> balanceStates) throws IOException {
-        // TODO: write interface for all chartBuilders
 /*        if (config.isConvertToUSD()) this.chartBuilder = new SpotAssetChartBuilder();
         else this.chartBuilder = new AssetChartBuilder();*/
 
