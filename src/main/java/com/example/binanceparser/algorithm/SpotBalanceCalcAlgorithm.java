@@ -13,31 +13,31 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm{
     @Override
     public List<BalanceState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {
         final List<BalanceState> balanceStates = new ArrayList<>();
-        Set<Asset> currentBalance = new HashSet<>();
+        Set<Asset> actualBalance = new HashSet<>(); // TODO use hashMap
         final HashMap<String, BigDecimal> assetRate = new HashMap<>();
         assetRate.put("USDT", BigDecimal.valueOf(1.0)); // because order event has no USDT rate
         for(int i = 0; i < events.size() - 1; i++) {
 
-            AbstractEvent abstractEvent = events.get(i);
-            AbstractEvent nextAbstractEvent = events.get(i + 1);
-            if(abstractEvent.getEventType() != EventType.ORDER_TRADE_UPDATE ||
-                    nextAbstractEvent.getEventType() != EventType.ACCOUNT_POSITION_UPDATE) continue;
-            if(!abstractEvent.getDate().isEqual(nextAbstractEvent.getDate())) continue;
+            AbstractEvent firstEvent = events.get(i);
+            AbstractEvent nextEvent = events.get(i + 1);
+            if(firstEvent.getEventType() != EventType.ORDER_TRADE_UPDATE ||
+                    nextEvent.getEventType() != EventType.ACCOUNT_POSITION_UPDATE) continue;
+            if(!firstEvent.getDate().isEqual(nextEvent.getDate())) continue; // TODO Вони можуть відрізнятися на мілісекунду
 
-            OrderTradeUpdateEvent event = (OrderTradeUpdateEvent) abstractEvent;
-            AccountPositionUpdateEvent accountPositionUpdate = (AccountPositionUpdateEvent) nextAbstractEvent;
+            OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) firstEvent;
+            AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 
-            if(!assetRate.containsKey(event.getSymbol()))
-                assetRate.put(event.getSymbol().replace("USDT", ""),// all assets in order came with USDT suffix
-                        event.getPrice());
+            if(!assetRate.containsKey(orderEvent.getSymbol()))
+                assetRate.put(orderEvent.getSymbol().replace("USDT", ""),// all assets in order came with USDT suffix
+                        orderEvent.getPrice()); //TODO do we really have price?
 
-            if(!event.getOrderStatus().equals("FILLED")) continue;
-            Set<Asset> newEventAssets = accountPositionUpdate.getBalances().stream().map(asset ->
+            if(!orderEvent.getOrderStatus().equals("FILLED")) continue;
+            Set<Asset> newEventAssets = accEvent.getBalances().stream().map(asset ->
                 new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
-            currentBalance = processBalance(currentBalance, newEventAssets);
+            actualBalance = processBalance(actualBalance, newEventAssets);
             BalanceState balanceState = new BalanceState();
-            balanceState.setAssets(currentBalance);
-            balanceState.setDateTime(nextAbstractEvent.getDate().toLocalDate());
+            balanceState.setAssets(actualBalance);
+            balanceState.setDateTime(nextEvent.getDate().toLocalDate());
             balanceStates.add(balanceState);// every balance state reassign previous balance states
 
         }
@@ -45,20 +45,16 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm{
         return balanceToUSDT(balanceStates, assetRate);
     }
 
-    public Set<Asset> processBalance(Set<Asset> finalBalance, Set<Asset> newBalance) {
-        for(Asset asset: newBalance) {
-            Asset searchedBalance;
-            if (finalBalance.stream().anyMatch(b -> b.getAsset().contains(asset.getAsset()))) {
-                searchedBalance = finalBalance.stream().filter(balance ->
-                        balance.getAsset().contains(asset.getAsset())).findFirst().get();
+    public Set<Asset> processBalance(Set<Asset> actualBalance, Set<Asset> newBalance) {
+        Map<String, Asset> actualBal = new HashMap<>();
 
-                if (searchedBalance.getAvailableBalance().compareTo(asset.getAvailableBalance()) != 0)
-                    searchedBalance.setAvailableBalance(asset.getAvailableBalance());
-            }
-            else finalBalance.add(asset);
+        //TODO repalce with Java Stream
+        for (Asset newAsset : newBalance) {
+            actualBal.put(newAsset.getAsset(), newAsset);
         }
+
         //System.out.println(assets);
-        return finalBalance;
+        return actualBalance;
     }
 
     public List<BalanceState> balanceToUSDT(List<BalanceState> balanceStates, HashMap<String, BigDecimal> assetRate) {
