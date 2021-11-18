@@ -30,19 +30,28 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm{
 
             if(!orderEvent.getOrderStatus().equals("FILLED")) continue;
 
-            final String orderSymbol = orderEvent.getSymbol().replace("USDT", "");
-            if(assetRate.containsKey(orderSymbol))
-                assetRate.put(orderSymbol, orderEvent.getPriceOfLastFilledTrade().add(assetRate.get(orderSymbol))
-                        .divide(BigDecimal.valueOf(2)));
-            else assetRate.put(orderSymbol, orderEvent.getPriceOfLastFilledTrade());
-
             Set<Asset> newEventAssets = accEvent.getBalances().stream().map(asset ->
-                new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
+                    new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
+
+
+            final String orderSymbol = orderEvent.getSymbol().replace("USDT", "");
+            if(orderEvent.getSide().equals("BUY") && assetRate.containsKey(orderSymbol)) {
+                BigDecimal newQuantity = BigDecimal.valueOf(orderEvent.getOriginalQuantity());
+                BigDecimal currentQuantity = actualBalance.get(orderSymbol).getAvailableBalance();
+                BigDecimal newPrice = orderEvent.getPriceOfLastFilledTrade();
+                BigDecimal currentPrice = assetRate.get(orderSymbol);
+                BigDecimal sum = newQuantity.multiply(newPrice).add(currentQuantity
+                        .multiply(currentPrice));
+                assetRate.put(orderSymbol, sum.divide(newQuantity.add(currentQuantity), 2));
+            }
+
+            else assetRate.put(orderSymbol, orderEvent.getPriceOfLastFilledTrade());
+            System.out.println(assetRate);
+
             actualBalance = processBalance(actualBalance, newEventAssets);
             BalanceState balanceState = new BalanceState(accEvent.getDate().toLocalDate()
                     , new HashSet<>(actualBalance.values()));
             balanceStates.add(balanceState);
-
         }
         return balanceToUSDT(balanceStates, assetRate);
     }
@@ -64,6 +73,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm{
             assets.add(new Asset("USDT", balance));
             updatedBalanceState.add(new BalanceState(balanceState.getDateTime(), assets));
         }
+        System.out.println(updatedBalanceState);
         return updatedBalanceState;
     }
 }
