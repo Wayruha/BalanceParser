@@ -28,21 +28,14 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm{
             final OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) firstEvent;
             final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 
-            if(orderEvent.getPrice() == null) System.out.println("Price is null " + orderEvent.getDate());
-
-            String orderSymbol = orderEvent.getSymbol().replace("USDT", "");
-
-            if(assetRate.containsKey(orderSymbol)) {
-                System.out.println(assetRate.get(orderSymbol) + " + " + orderEvent.getPriceOfLastFilledTrade());
-                assetRate.put(orderSymbol, assetRate.get(orderSymbol)
-                        .add(orderEvent.getPriceOfLastFilledTrade()).divide(BigDecimal.valueOf(2)));
-            }
-            else assetRate.put(orderSymbol,
-                        orderEvent.getPriceOfLastFilledTrade());
-
-            System.out.println(assetRate);
-
             if(!orderEvent.getOrderStatus().equals("FILLED")) continue;
+
+            final String orderSymbol = orderEvent.getSymbol().replace("USDT", "");
+            if(assetRate.containsKey(orderSymbol))
+                assetRate.put(orderSymbol, orderEvent.getPriceOfLastFilledTrade().add(assetRate.get(orderSymbol))
+                        .divide(BigDecimal.valueOf(2)));
+            else assetRate.put(orderSymbol, orderEvent.getPriceOfLastFilledTrade());
+
             Set<Asset> newEventAssets = accEvent.getBalances().stream().map(asset ->
                 new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
             actualBalance = processBalance(actualBalance, newEventAssets);
@@ -51,7 +44,6 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm{
             balanceStates.add(balanceState);
 
         }
-        System.out.println(balanceStates);
         return balanceToUSDT(balanceStates, assetRate);
     }
 
@@ -64,9 +56,6 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm{
         List<BalanceState> updatedBalanceState = new ArrayList<>();
         for(BalanceState balanceState : balanceStates) {
             Set<Asset> assets = new HashSet<>();
-            /*BigDecimal balance = new BigDecimal(0);
-            balance = balanceState.getAssets().stream().map(asset ->
-                    asset.getAvailableBalance().multiply(assetRate.get(asset.getAsset()))).reduce(BigDecimal.ZERO, BigDecimal::add);*/
             BigDecimal balance = new BigDecimal(0);
             for(Asset asset: balanceState.getAssets()) {
                 if(assetRate.get(asset.getAsset()) == null) balance = balance.add(asset.getAvailableBalance());

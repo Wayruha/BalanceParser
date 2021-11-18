@@ -3,7 +3,6 @@ package com.example.binanceparser.report;
 import com.example.binanceparser.Config;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.BalanceState;
-import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.plot.SpotUSDTChartBuilder;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
