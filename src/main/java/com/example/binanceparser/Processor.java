@@ -1,5 +1,6 @@
 package com.example.binanceparser;
 
+import com.binance.api.client.ApiRestClient;
 import com.example.binanceparser.algorithm.CalculationAlgorithm;
 import com.example.binanceparser.algorithm.SpotBalanceCalcAlgorithm;
 import com.example.binanceparser.datasource.EventSource;
@@ -36,7 +37,6 @@ public class Processor {
             // read and filter events from data source
             List<AbstractEvent> events = new ArrayList<>(eventSource.readEvents(logsDir, implementFilters(config)));
             if (events.size() == 0) throw new RuntimeException("Can't find any relevant events");
-
             // retrieve balance changes
             final List<BalanceState> balanceStates = algorithm.processEvents(events, config.getAssetsToTrack());
 
