@@ -16,4 +16,5 @@ public class Config {
     List<String> assetsToTrack;
     boolean convertToUSD;
     List<EventType> eventType;
+    boolean logFormat;
 }

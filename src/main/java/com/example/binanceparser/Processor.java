@@ -3,13 +3,11 @@ package com.example.binanceparser;
 import com.example.binanceparser.algorithm.IncomeCalculationAlgorithm;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.datasource.JsonEventSource;
-import com.example.binanceparser.datasource.filters.DateEventFilter;
-import com.example.binanceparser.datasource.filters.EventTypeFilter;
-import com.example.binanceparser.datasource.filters.Filter;
-import com.example.binanceparser.datasource.filters.SourceFilter;
+import com.example.binanceparser.datasource.filters.*;
 import com.example.binanceparser.domain.Income;
 import com.example.binanceparser.domain.IncomeBalanceState;
 import com.example.binanceparser.report.BalanceReport;
+import com.example.binanceparser.report.IncomeReportGenerator;
 import com.example.binanceparser.report.ReportGenerator;
 
 import java.io.File;
@@ -20,24 +18,19 @@ import java.util.Set;
 
 public class Processor {
         final JsonEventSource eventSource;
-        //final CalculationAlgorithm algorithm;
-        final ReportGenerator reportGenerator;
+        final IncomeReportGenerator reportGenerator;
 
         public Processor() {
             this.eventSource = new JsonEventSource();
-            //this.algorithm = new SpotBalanceCalcAlgorithm();
-            this.reportGenerator = new ReportGenerator();
+            this.reportGenerator = new IncomeReportGenerator();
         }
 
         public BalanceReport run(Config config) throws IOException {
             final File logsDir = new File(config.getInputFilepath());
-            // read and filter events from data source
-            //List<AbstractEvent> events = new ArrayList<>(eventSource.readEvents(logsDir, implementFilters(config)));
 
-            List<Income> incomes = eventSource.readEvents(logsDir, implementFilters(config));
+            List<Income> incomes = eventSource.readEvents(logsDir, new DateIncomeFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
             if (incomes.size() == 0) throw new RuntimeException("Can't find any relevant events");
 
-            // retrieve balance changes
             IncomeCalculationAlgorithm jsonCalculationAlgorithm = new IncomeCalculationAlgorithm();
             final List<IncomeBalanceState> logBalanceStates = jsonCalculationAlgorithm.calculateBalance(incomes);
 
@@ -49,12 +42,14 @@ public class Processor {
 
         private Set<Filter> implementFilters(Config config){
             Set<Filter> filters = new HashSet<>();
+
             if(config.getStartTrackDate() != null || config.getFinishTrackDate() != null)
                 filters.add(new DateEventFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
 
             if(config.getSourceToTrack() != null) filters.add(new SourceFilter(config.getSourceToTrack()));
 
             if(config.getEventType() != null) filters.add(new EventTypeFilter(config.getEventType()));
+
 
             return filters;
         }
