@@ -1,6 +1,6 @@
 package com.example.binanceparser.plot;
 
-import com.example.binanceparser.domain.EventBalanceState;
+import com.example.binanceparser.domain.IncomeBalanceState;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
@@ -13,12 +13,12 @@ import org.jfree.data.time.TimeSeriesCollection;
 import java.time.LocalDate;
 import java.util.List;
 
-public class SpotUSDTChartBuilder {
+public class IncomeChartBuilder{
 
-    public JFreeChart buildLineChart(List<EventBalanceState> eventBalanceStates) {
+    public JFreeChart buildLineChart(List<IncomeBalanceState> logBalanceStates) {
 
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Account balance", "Date", "Balance", createTimeSeries(eventBalanceStates)
+                "Account balance", "Date", "Balance", createTimeSeries(logBalanceStates)
         );
 
         XYPlot plot = (XYPlot) chart.getPlot();
@@ -33,13 +33,13 @@ public class SpotUSDTChartBuilder {
 
     }
 
-    private TimeSeriesCollection createTimeSeries(List<EventBalanceState> eventBalanceStates) {
+    private TimeSeriesCollection createTimeSeries(List<IncomeBalanceState> incomeBalanceStates) {
         final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
         final TimeSeries series = new TimeSeries("USD");
         //final TimeSeries balanceUpdateSeries = new TimeSeries("Balance Update");
-        for(EventBalanceState eventBalanceState : eventBalanceStates) {
-                series.addOrUpdate(dateTimeToDay(eventBalanceState.getDateTime()),
-                    eventBalanceState.getAssets().stream().findFirst().get().getAvailableBalance());
+        for(IncomeBalanceState incomeBalanceState : incomeBalanceStates) {
+            series.addOrUpdate(dateTimeToDay(incomeBalanceState.getDateTime()),
+                    incomeBalanceState.getAvailableBalance());
         }
         dataSeries.addSeries(series);
 
@@ -51,5 +51,4 @@ public class SpotUSDTChartBuilder {
         return new Day(dateTime.getDayOfMonth(), dateTime.getMonthValue(),
                 dateTime.getYear());
     }
-
 }

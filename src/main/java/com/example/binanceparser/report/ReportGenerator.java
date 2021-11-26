@@ -2,10 +2,13 @@ package com.example.binanceparser.report;
 
 import com.example.binanceparser.Config;
 import com.example.binanceparser.domain.Asset;
-import com.example.binanceparser.domain.BalanceState;
+import com.example.binanceparser.domain.IncomeBalanceState;
+import com.example.binanceparser.plot.IncomeChartBuilder;
 import com.example.binanceparser.plot.SpotUSDTChartBuilder;
+import lombok.AllArgsConstructor;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,32 +20,30 @@ import java.util.stream.Collectors;
 
 public class ReportGenerator {
 
-    final Map<String, BigDecimal> currencyRate = new HashMap<>();
+    final IncomeChartBuilder incomeChartBuilder = new IncomeChartBuilder();
 
-
-    public BalanceReport getBalanceReport(Config config, List<BalanceState> balanceStates) throws IOException {
+    public BalanceReport getBalanceReport(Config config, List<IncomeBalanceState> balanceStates) throws IOException {
 /*        if (config.isConvertToUSD()) this.chartBuilder = new SpotAssetChartBuilder();
         else this.chartBuilder = new AssetChartBuilder();*/
 
-        SpotUSDTChartBuilder chartBuilder = new SpotUSDTChartBuilder();
-        final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
-        final List<Asset> assetList = balanceStates.stream()
+        final JFreeChart lineChart = incomeChartBuilder.buildLineChart(balanceStates);
+        /*final List<Asset> assetList = balanceStates.stream()
                 .flatMap(bal -> bal.getAssets().stream())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList());*/
 
         final String chartPath = config.getOutputDir() + "/" + config.getSourceToTrack() + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
-        final BigDecimal delta = calculateBalanceDelta(assetList);
+        //final BigDecimal delta = calculateBalanceDelta(assetList);
 
         final BalanceReport balanceReport = new BalanceReport(config.getStartTrackDate(), config.getFinishTrackDate(),
-                findMaxBalance(assetList), findMinBalance(assetList), generatedPlotPath, delta);
+                null, null, generatedPlotPath, null);
         return balanceReport;
     }
 
-    public BigDecimal assetToUSD(Asset asset) {
+/*    public BigDecimal assetToUSD(Asset asset) {
         if (!currencyRate.containsKey(asset.getAsset())) return null;
         return asset.getAvailableBalance().multiply(currencyRate.get(asset.getAsset()));
-    }
+    }*/
 
     private BigDecimal calculateBalanceDelta(List<Asset> assetList) {
         final BigDecimal firstAssetBal = assetList.get(0).getAvailableBalance().negate();
