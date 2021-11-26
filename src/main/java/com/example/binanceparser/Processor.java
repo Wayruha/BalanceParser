@@ -41,14 +41,15 @@ public class Processor {
         }
 
         private Set<Filter> implementFilters(Config config){
+            EventConfig eventConfig = (EventConfig) config;
             Set<Filter> filters = new HashSet<>();
 
-            if(config.getStartTrackDate() != null || config.getFinishTrackDate() != null)
-                filters.add(new DateEventFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
+            if(eventConfig.getStartTrackDate() != null || eventConfig.getFinishTrackDate() != null)
+                filters.add(new DateEventFilter(eventConfig.getStartTrackDate(), eventConfig.getFinishTrackDate()));
 
-            if(config.getSourceToTrack() != null) filters.add(new SourceFilter(config.getSourceToTrack()));
+            if(eventConfig.getSourceToTrack() != null) filters.add(new SourceFilter(eventConfig.getSourceToTrack()));
 
-            if(config.getEventType() != null) filters.add(new EventTypeFilter(config.getEventType()));
+            if(eventConfig.getEventType() != null) filters.add(new EventTypeFilter(eventConfig.getEventType()));
 
 
             return filters;
