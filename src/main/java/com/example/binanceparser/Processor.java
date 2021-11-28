@@ -1,6 +1,8 @@
 package com.example.binanceparser;
 
+import com.binance.api.client.ApiRestClient;
 import com.example.binanceparser.algorithm.CalculationAlgorithm;
+import com.example.binanceparser.algorithm.FuturesWalletBalanceCalcAlgorithm;
 import com.example.binanceparser.algorithm.WalletBalanceCalcAlgorithm;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.datasource.LogsEventSource;
@@ -27,7 +29,7 @@ public class Processor {
 
         public Processor() {
             this.eventSource = new LogsEventSource();
-            this.algorithm = new WalletBalanceCalcAlgorithm();
+            this.algorithm = new FuturesWalletBalanceCalcAlgorithm();
             this.reportGenerator = new ReportGenerator();
         }
 
@@ -36,11 +38,10 @@ public class Processor {
             // read and filter events from data source
             List<AbstractEvent> events = new ArrayList<>(eventSource.readEvents(logsDir, implementFilters(config)));
             if (events.size() == 0) throw new RuntimeException("Can't find any relevant events");
-
             // retrieve balance changes
             final List<BalanceState> balanceStates = algorithm.processEvents(events, config.getAssetsToTrack());
 
-            //final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
+            final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
 
             System.out.println("Processor done for config: " + config);
             return null;

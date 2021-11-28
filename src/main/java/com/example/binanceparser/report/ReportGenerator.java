@@ -36,6 +36,7 @@ public class ReportGenerator {
                 .collect(Collectors.toList());
 
         assetList.forEach(a -> a.setAvailableBalance(assetToUSD(a)));
+        assetList.removeIf(a -> a.getAvailableBalance() == null);
 
         final String chartPath = config.getOutputDir() + "/" + config.getSourceToTrack() + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
@@ -65,14 +66,16 @@ public class ReportGenerator {
     }
 
     private static BigDecimal findMaxBalance(List<BalanceState.Asset> assetList) {
-        if(assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
+        if (assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
         BigDecimal max = assetList.stream().findFirst().get().getAvailableBalance();
-        for (BalanceState.Asset asset : assetList) max = asset.getAvailableBalance().max(max);
+        for (BalanceState.Asset asset : assetList) {
+            max = asset.getAvailableBalance().max(max);
+        }
         return max;
     }
 
     private static BigDecimal findMinBalance(List<BalanceState.Asset> assetList) {
-        if(assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
+        if (assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
         BigDecimal min = assetList.stream().findFirst().get().getAvailableBalance();
         for (BalanceState.Asset asset : assetList) min = asset.getAvailableBalance().min(min);
         return min;
