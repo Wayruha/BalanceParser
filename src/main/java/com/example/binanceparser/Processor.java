@@ -5,6 +5,7 @@ import com.example.binanceparser.algorithm.IncomeCalculationAlgorithm;
 import com.example.binanceparser.binance.BinanceClient;
 import com.example.binanceparser.datasource.JsonEventSource;
 import com.example.binanceparser.datasource.filters.*;
+import com.example.binanceparser.domain.Income;
 import com.example.binanceparser.domain.IncomeBalanceState;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.IncomeReportGenerator;
@@ -18,8 +19,8 @@ import java.util.List;
 import java.util.Set;
 
 public class Processor {
-        final JsonEventSource eventSource;
-        final IncomeReportGenerator reportGenerator;
+    final JsonEventSource eventSource;
+    final IncomeReportGenerator reportGenerator;
 
         public Processor() {
             this.eventSource = new JsonEventSource();

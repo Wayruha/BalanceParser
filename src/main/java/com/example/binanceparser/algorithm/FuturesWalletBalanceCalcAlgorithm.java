@@ -3,7 +3,6 @@ package com.example.binanceparser.algorithm;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
 import com.example.binanceparser.domain.events.AbstractEvent;
-import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
 
 import java.math.BigDecimal;
@@ -17,10 +16,8 @@ import java.util.stream.Collectors;
  */
 public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm {
 
-
-    @Override
     public List<EventBalanceState> processEvents(List<AbstractEvent> allEvents, List<String> assetsToTrack) {
-
+        allEvents = allEvents.stream().filter(e -> e instanceof FuturesAccountUpdateEvent).collect(Collectors.toList());
         final List<FuturesAccountUpdateEvent> events = allEvents.stream()
                 .map(e -> (FuturesAccountUpdateEvent) e)
                 .filter(state -> state.getBalances().stream().anyMatch(bal -> assetsToTrack.contains(bal.getAsset()))).collect(Collectors.toList());

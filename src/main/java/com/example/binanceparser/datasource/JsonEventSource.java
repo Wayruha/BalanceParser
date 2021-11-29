@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class JsonEventSource{
+public class JsonEventSource {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 

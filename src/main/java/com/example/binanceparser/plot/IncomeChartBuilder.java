@@ -16,14 +16,12 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 
-public class IncomeChartBuilder {
+public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
 
-
+    @Override
     public JFreeChart buildLineChart(List<IncomeBalanceState> logBalanceStates) {
-
-
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Account balance", "Date", "Balance", null
+                "Account balance", "Date", "Balance", createTimeSeries(logBalanceStates)
         );
 
         XYPlot plot = (XYPlot) chart.getPlot();
@@ -84,5 +82,4 @@ public class IncomeChartBuilder {
         return new Day(dateTime.getDayOfMonth(), dateTime.getMonthValue(),
                 dateTime.getYear());
     }
-
 }

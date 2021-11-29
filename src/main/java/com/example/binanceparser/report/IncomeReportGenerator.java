@@ -1,7 +1,6 @@
 package com.example.binanceparser.report;
 
 import com.example.binanceparser.Config;
-import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.IncomeBalanceState;
 import com.example.binanceparser.plot.IncomeChartBuilder;
 import org.jfree.chart.ChartUtils;
@@ -18,12 +17,10 @@ public class IncomeReportGenerator {
     final IncomeChartBuilder incomeChartBuilder = new IncomeChartBuilder();
 
     public BalanceReport getBalanceReport(Config config, List<IncomeBalanceState> balanceStates) throws IOException {
-
         final JFreeChart lineChart = incomeChartBuilder.buildLineChart(balanceStates);
 
-
         final List<BigDecimal> balances = balanceStates.stream().map(IncomeBalanceState::getAvailableBalance).collect(Collectors.toList());
-        final String chartPath = config.getOutputDir() + "/" + "income.jpg";
+        final String chartPath = config.getOutputDir() + "/" + config.getLogProducer().get(0) + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
         return new BalanceReport(config.getStartTrackDate(), config.getFinishTrackDate(),
@@ -43,14 +40,14 @@ public class IncomeReportGenerator {
     }
 
     private static BigDecimal findMaxBalance(List<BigDecimal> balances) {
-        if(balances.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
+        if (balances.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
         BigDecimal max = balances.stream().findFirst().get();
         for (BigDecimal balance : balances) max = balance.max(max);
         return max;
     }
 
     private static BigDecimal findMinBalance(List<BigDecimal> balances) {
-        if(balances.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
+        if (balances.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
         BigDecimal min = balances.stream().findFirst().get();
         for (BigDecimal balance : balances) min = balance.min(min);
         return min;

@@ -12,6 +12,5 @@ class ProcessorTest {
         BinanceClient client = new BinanceClient(Constants.BINANCE_API_KEY, Constants.BINANCE_SECRET_KEY);
         client.fetchFuturesIncomeHistory(null, null, null, null, 1000);
         System.out.println();
-
     }
 }

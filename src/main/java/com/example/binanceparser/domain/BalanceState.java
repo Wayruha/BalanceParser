@@ -10,7 +10,5 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Data
 public abstract class BalanceState {
-
     LocalDate dateTime;
-
 }
