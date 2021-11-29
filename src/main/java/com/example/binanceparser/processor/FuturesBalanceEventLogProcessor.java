@@ -1,5 +1,7 @@
-package com.example.binanceparser;
+package com.example.binanceparser.processor;
 
+import com.example.binanceparser.Config;
+import com.example.binanceparser.EventConfig;
 import com.example.binanceparser.algorithm.FuturesWalletBalanceCalcAlgorithm;
 import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.datasource.filters.DateEventFilter;
@@ -18,12 +20,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class FuturesBalanceLogProcessor {
+public class FuturesBalanceEventLogProcessor {
     final LogsEventSource eventSource;
     final BalanceReportGenerator balanceReportGenerator;
     final FuturesWalletBalanceCalcAlgorithm algorithm;
 
-    public FuturesBalanceLogProcessor(EventConfig config) {
+    public FuturesBalanceEventLogProcessor(EventConfig config) {
         this.eventSource = new LogsEventSource();
         this.balanceReportGenerator = new BalanceReportGenerator(config);
         this.algorithm = new FuturesWalletBalanceCalcAlgorithm();
@@ -50,7 +52,7 @@ public class FuturesBalanceLogProcessor {
         if (eventConfig.getStartTrackDate() != null || eventConfig.getFinishTrackDate() != null)
             filters.add(new DateEventFilter(eventConfig.getStartTrackDate(), eventConfig.getFinishTrackDate()));
 
-        if (eventConfig.getLogProducer() != null) filters.add(new SourceFilter(eventConfig.getLogProducer()));
+        if (eventConfig.getSubject() != null) filters.add(new SourceFilter(eventConfig.getSubject()));
 
         if (eventConfig.getEventType() != null) filters.add(new EventTypeFilter(eventConfig.getEventType()));
         return filters;

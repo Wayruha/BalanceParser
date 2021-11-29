@@ -20,7 +20,7 @@ public class IncomeReportGenerator {
         final JFreeChart lineChart = incomeChartBuilder.buildLineChart(balanceStates);
 
         final List<BigDecimal> balances = balanceStates.stream().map(IncomeBalanceState::getAvailableBalance).collect(Collectors.toList());
-        final String chartPath = config.getOutputDir() + "/" + config.getLogProducer().get(0) + ".jpg";
+        final String chartPath = config.getOutputDir() + "/" + config.getSubject().get(0) + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
         return new BalanceReport(config.getStartTrackDate(), config.getFinishTrackDate(),

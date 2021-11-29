@@ -3,8 +3,6 @@ package com.example.binanceparser;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 public class BinanceParserApplication {
     final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -15,24 +13,14 @@ public class BinanceParserApplication {
     }
 
     public void visualizeIncome() throws IOException {
-        Processor processor = new Processor();
-        EventConfig config = new EventConfig();
-
-        LocalDateTime start = LocalDateTime.parse("2021-08-15 06:17:56", dateFormat);
-        LocalDateTime finish = LocalDateTime.parse("2021-11-30 13:15:50", dateFormat);
+        final Config config = new IncomeConfig();
+        LocalDateTime start = LocalDateTime.parse("2021-01-30 06:17:56", dateFormat);
+        LocalDateTime finish = LocalDateTime.parse("2021-11-15 13:15:50", dateFormat);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
-        final List<String> assetsToTrack = new ArrayList<>();
-        assetsToTrack.add("USDT");
-        assetsToTrack.add("BUSD");
-        config.setAssetsToTrack(assetsToTrack);
-        config.setLogProducer(List.of("FUTURES_PRODUCER_Kozhukhar"));
-        config.setInputFilepath("logs");
-
-//        config.setInputFilepath("/Users/roman/Desktop/passiveTrader_events");
+        //config.setInputFilepath("src/main/resources/testJsonLog");
         config.setOutputDir("/Users/roman/Desktop");
-        config.setConvertToUSD(true);
-        //config.setEventType(List.of(EventType.FUTURES_ACCOUNT_UPDATE));
-        System.out.println(processor.run(config));
+        IncomeProcessor incomeProcessor = new IncomeProcessor(null, config); //TODO not null should be here!
+        System.out.println(incomeProcessor.process());
     }
 }

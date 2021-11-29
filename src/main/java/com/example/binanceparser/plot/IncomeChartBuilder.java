@@ -21,8 +21,7 @@ public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
     @Override
     public JFreeChart buildLineChart(List<IncomeBalanceState> logBalanceStates) {
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Account balance", "Date", "Balance", createTimeSeries(logBalanceStates)
-        );
+                "Account balance", "Date", "Balance", null);
 
         XYPlot plot = (XYPlot) chart.getPlot();
         final TimeSeriesCollection dataSeries = new TimeSeriesCollection();

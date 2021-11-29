@@ -33,7 +33,7 @@ public class BalanceReportGenerator {
                 .flatMap(bal -> bal.getAssets().stream())
                 .collect(Collectors.toList());
 
-        final String chartPath = config.getOutputDir() + "/" + config.getLogProducer().get(0) + ".jpg";
+        final String chartPath = config.getOutputDir() + "/" + config.getSubject().get(0) + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
         final BigDecimal delta = calculateBalanceDelta(assetList);
 

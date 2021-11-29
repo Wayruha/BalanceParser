@@ -15,5 +15,5 @@ public abstract class Config {
     LocalDateTime finishTrackDate;
     String inputFilepath;
     String outputDir;
-    List<String> logProducer;
+    List<String> subject;
 }

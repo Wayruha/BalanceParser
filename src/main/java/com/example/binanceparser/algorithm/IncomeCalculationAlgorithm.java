@@ -12,8 +12,7 @@ import java.util.*;
 
 public class IncomeCalculationAlgorithm {
 
-    public static List<IncomeBalanceState> calculateBalance(List<IncomeHistoryItem> incomeList) {
-
+    public List<IncomeBalanceState> calculateBalance(List<IncomeHistoryItem> incomeList) {
         final List<IncomeBalanceState> incomeBalanceStates = new ArrayList<>();
         BigDecimal currentBalance = new BigDecimal(0);
         for (IncomeHistoryItem income : incomeList) {

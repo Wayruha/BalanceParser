@@ -9,6 +9,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -23,12 +24,13 @@ import static com.example.binanceparser.domain.events.EventType.*;
 /**
  * read directory with logs to provide the events
  */
-public class LogsEventSource implements EventSource {
+//TODO повинен імплементувати інтерфейс
+public class LogsEventSource {
     final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     final ObjectMapper objectMapper = new ObjectMapper();
     public static final List<EventType> IGNORED_EVENTS = List.of(TRANSFER, ACCOUNT_CONFIG_UPDATE, CONVERT_FUNDS, MARGIN_CALL, COIN_SWAP_ORDER);
 
-
+// TODO сигнатуру змінити на ту як в інтерфейсі, все інше  передавати в конструктор
     public List<AbstractEvent> readEvents(File logsDir, Set<Filter> filters) throws IOException {
         String[] dirFiles = logsDir.list();
         if (dirFiles == null) throw new RuntimeException("Can`t find any files in directory.");
