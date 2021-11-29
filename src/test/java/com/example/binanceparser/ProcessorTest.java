@@ -1,35 +1,16 @@
 package com.example.binanceparser;
 
+import com.example.binanceparser.binance.BinanceClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.io.IOException;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @SpringBootTest
 class ProcessorTest {
 
-    final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     @Test
-    public void testProcessor() throws IOException {
-        Processor processor = new Processor();
-        Config config = new IncomeConfig();
-
-        //LocalDateTime start = LocalDateTime.parse("2021-08-30 06:17:56", dateFormat);
-        //LocalDateTime finish = LocalDateTime.parse("2021-09-15 13:15:50", dateFormat);
-        //config.setStartTrackDate(start);
-        //config.setFinishTrackDate(finish);
-        //List<String> assetsToTrack = new ArrayList<>();
-        //assetsToTrack.add("USDT");
-        //assetsToTrack.add("BUSD");
-        //config.setAssetsToTrack(assetsToTrack);
-        //config.setSourceToTrack(List.of("FUTURES_PRODUCER_Kozhukhar", "SPOT_PRODUCER_Kozhukhar"));
-        config.setInputFilepath("src/main/resources/jsonLog");
-        config.setOutputDir("C:\\Users\\yarik\\Desktop");
-        //config.setConvertToUSD(true);
-        //config.setEventType(List.of(EventType.FUTURES_ACCOUNT_UPDATE));
-        System.out.println(processor.run(config));
+    public void getchHistory() {
+        BinanceClient client = new BinanceClient(Constants.BINANCE_API_KEY, Constants.BINANCE_SECRET_KEY);
+        client.fetchFuturesIncomeHistory(null, null, null, null, 1000);
+        System.out.println();
     }
 }
