@@ -1,60 +1,56 @@
 package com.example.binanceparser;
 
-import com.binance.api.client.ApiRestClient;
-import com.example.binanceparser.algorithm.CalculationAlgorithm;
-import com.example.binanceparser.algorithm.FuturesWalletBalanceCalcAlgorithm;
-import com.example.binanceparser.algorithm.WalletBalanceCalcAlgorithm;
+import com.example.binanceparser.algorithm.IncomeCalculationAlgorithm;
 import com.example.binanceparser.datasource.EventSource;
-import com.example.binanceparser.datasource.LogsEventSource;
-import com.example.binanceparser.datasource.filters.DateEventFilter;
-import com.example.binanceparser.datasource.filters.EventTypeFilter;
-import com.example.binanceparser.datasource.filters.Filter;
-import com.example.binanceparser.datasource.filters.SourceFilter;
-import com.example.binanceparser.domain.events.AbstractEvent;
-import com.example.binanceparser.domain.BalanceState;
+import com.example.binanceparser.datasource.JsonEventSource;
+import com.example.binanceparser.datasource.filters.*;
+import com.example.binanceparser.domain.Income;
+import com.example.binanceparser.domain.IncomeBalanceState;
 import com.example.binanceparser.report.BalanceReport;
+import com.example.binanceparser.report.IncomeReportGenerator;
 import com.example.binanceparser.report.ReportGenerator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class Processor {
-        final EventSource eventSource;
-        final CalculationAlgorithm algorithm;
-        final ReportGenerator reportGenerator;
+        final JsonEventSource eventSource;
+        final IncomeReportGenerator reportGenerator;
 
         public Processor() {
-            this.eventSource = new LogsEventSource();
-            this.algorithm = new FuturesWalletBalanceCalcAlgorithm();
-            this.reportGenerator = new ReportGenerator();
+            this.eventSource = new JsonEventSource();
+            this.reportGenerator = new IncomeReportGenerator();
         }
 
         public BalanceReport run(Config config) throws IOException {
             final File logsDir = new File(config.getInputFilepath());
-            // read and filter events from data source
-            List<AbstractEvent> events = new ArrayList<>(eventSource.readEvents(logsDir, implementFilters(config)));
-            if (events.size() == 0) throw new RuntimeException("Can't find any relevant events");
-            // retrieve balance changes
-            final List<BalanceState> balanceStates = algorithm.processEvents(events, config.getAssetsToTrack());
 
-            final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
+            List<Income> incomes = eventSource.readEvents(logsDir, new DateIncomeFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
+            if (incomes.size() == 0) throw new RuntimeException("Can't find any relevant events");
+
+            IncomeCalculationAlgorithm jsonCalculationAlgorithm = new IncomeCalculationAlgorithm();
+            final List<IncomeBalanceState> logBalanceStates = jsonCalculationAlgorithm.calculateBalance(incomes);
+
+            final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, logBalanceStates);
 
             System.out.println("Processor done for config: " + config);
-            return null;
+            return balanceReport;
         }
 
         private Set<Filter> implementFilters(Config config){
+            EventConfig eventConfig = (EventConfig) config;
             Set<Filter> filters = new HashSet<>();
-            if(config.getStartTrackDate() != null || config.getFinishTrackDate() != null)
-                filters.add(new DateEventFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
 
-            if(config.getSourceToTrack() != null) filters.add(new SourceFilter(config.getSourceToTrack()));
+            if(eventConfig.getStartTrackDate() != null || eventConfig.getFinishTrackDate() != null)
+                filters.add(new DateEventFilter(eventConfig.getStartTrackDate(), eventConfig.getFinishTrackDate()));
 
-            if(config.getEventType() != null) filters.add(new EventTypeFilter(config.getEventType()));
+            if(eventConfig.getSourceToTrack() != null) filters.add(new SourceFilter(eventConfig.getSourceToTrack()));
+
+            if(eventConfig.getEventType() != null) filters.add(new EventTypeFilter(eventConfig.getEventType()));
+
 
             return filters;
         }

@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ChartBuilder {
 
-    JFreeChart buildLineChart(List<BalanceState> balanceStates, List<String> assetToTrack);
+    JFreeChart buildLineChart(List<BalanceState> logBalanceStates, List<String> assetToTrack);
 }

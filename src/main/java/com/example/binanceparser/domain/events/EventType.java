@@ -2,7 +2,6 @@ package com.example.binanceparser.domain.events;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import java.util.stream.Stream;
 
 public enum EventType {
     ACCOUNT_UPDATE("ACCOUNT_UPDATE"),

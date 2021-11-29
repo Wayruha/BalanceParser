@@ -12,6 +12,6 @@ import java.util.Set;
  * Provides de-serialized events from whichever datasource (db, logs, csv file, etc.)
  */
 public interface EventSource {
-    List<AbstractEvent> readEvents(File logsDir, Set<Filter> filters) throws IOException;
+    List readEvents(File logsDir, Set<Filter> filters) throws IOException;
 
 }

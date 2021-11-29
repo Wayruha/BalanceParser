@@ -4,13 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public abstract class BalanceState {
-
-    LocalDate dateTime;
-
+public class Asset {
+    String asset;
+    BigDecimal availableBalance;
 }

@@ -1,7 +1,8 @@
 package com.example.binanceparser.algorithm;
 
+import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.events.AbstractEvent;
-import com.example.binanceparser.domain.BalanceState;
+import com.example.binanceparser.domain.EventBalanceState;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 
@@ -27,8 +28,8 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
         this.assetToTrack = assetToTrack;
     }
 
-    public List<BalanceState> processEvents(List<AbstractEvent> events, List<String> assetToTrack) {
-        final List<BalanceState> balances = new ArrayList<>();
+    public List<EventBalanceState> processEvents(List<AbstractEvent> events, List<String> assetToTrack) {
+        final List<EventBalanceState> balances = new ArrayList<>();
         for (int i = 0; i < events.size() - 1; i++) {
             if (events.get(i).getEventType() != FUTURES_ACCOUNT_UPDATE || events.get(i + 1).getEventType() != FUTURES_ORDER_TRADE_UPDATE)
                 continue;
@@ -49,15 +50,15 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
                 currentBalance += positionQty;
             }
 
-            BalanceState balanceState = new BalanceState();
-            balanceState.setDateTime(accUpdate.getDate().toLocalDate());
-            Set<BalanceState.Asset> assetList = new HashSet<>();
+            EventBalanceState eventBalanceState = new EventBalanceState();
+            eventBalanceState.setDateTime(accUpdate.getDate().toLocalDate());
+            Set<Asset> assetList = new HashSet<>();
             FuturesAccountUpdateEvent.Asset accUpdateAsset = accUpdate.getBalances().stream().filter(asset -> asset.getAsset().equals(assetToTrack))
                     .findFirst().orElseThrow(() -> new IllegalStateException("Balance not found"));
-            assetList.add(new BalanceState.Asset(accUpdateAsset.getAsset(), BigDecimal.valueOf(currentBalance)));
-            balanceState.setAssets(assetList);
+            assetList.add(new Asset(accUpdateAsset.getAsset(), BigDecimal.valueOf(currentBalance)));
+            eventBalanceState.setAssets(assetList);
 
-            balances.add(balanceState);
+            balances.add(eventBalanceState);
         }
         return balances;
     }
