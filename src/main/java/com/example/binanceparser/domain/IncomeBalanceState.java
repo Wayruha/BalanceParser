@@ -1,5 +1,6 @@
 package com.example.binanceparser.domain;
 
+import com.binance.api.client.FuturesIncomeType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,11 +16,11 @@ import java.util.Set;
 @AllArgsConstructor
 public class IncomeBalanceState extends BalanceState {
 
-    IncomeType incomeType;
+    FuturesIncomeType incomeType;
 
     BigDecimal availableBalance;
 
-    public IncomeBalanceState(LocalDate dateTime, BigDecimal availableBalance, IncomeType incomeType) {
+    public IncomeBalanceState(LocalDate dateTime, BigDecimal availableBalance, FuturesIncomeType incomeType) {
         super(dateTime);
         this.availableBalance = availableBalance;
         this.incomeType = incomeType;

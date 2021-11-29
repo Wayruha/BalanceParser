@@ -23,7 +23,7 @@ public class IncomeReportGenerator {
 
 
         final List<BigDecimal> balances = balanceStates.stream().map(IncomeBalanceState::getAvailableBalance).collect(Collectors.toList());
-        final String chartPath = config.getOutputDir() + "/" + config.getSourceToTrack() + ".jpg";
+        final String chartPath = config.getOutputDir() + "/" + "income.jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
         return new BalanceReport(config.getStartTrackDate(), config.getFinishTrackDate(),

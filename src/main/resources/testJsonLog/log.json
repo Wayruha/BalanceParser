@@ -1,0 +1,32 @@
+[
+  {
+    "symbol": "ETHUSDT",
+    "incomeType": "REALIZED_PNL",
+    "income": "-19.37376000",
+    "asset": "USDT",
+    "time": 1631726863000,
+    "info": "1058619319",
+    "tranId": 900611058619319,
+    "tradeId": "1058619319"
+  },
+  {
+    "symbol": "ETHUSDT",
+    "incomeType": "REALIZED_PNL",
+    "income": "40.50100000",
+    "asset": "USDT",
+    "time": 1631736303000,
+    "info": "1058858083",
+    "tranId": 900601058858083,
+    "tradeId": "1058858083"
+  },
+  {
+    "symbol": "ETHUSDT",
+    "incomeType": "TRANSFER",
+    "income": "10.50100000",
+    "asset": "USDT",
+    "time": 1631736303000,
+    "info": "1058858083",
+    "tranId": 900601058858083,
+    "tradeId": "1058858083"
+  }
+]

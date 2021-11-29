@@ -1,6 +1,7 @@
 package com.example.binanceparser.report;
 
 import com.example.binanceparser.Config;
+import com.example.binanceparser.EventConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.IncomeBalanceState;
 import com.example.binanceparser.plot.IncomeChartBuilder;
@@ -31,11 +32,12 @@ public class ReportGenerator {
                 .flatMap(bal -> bal.getAssets().stream())
                 .collect(Collectors.toList());*/
 
-        final String chartPath = config.getOutputDir() + "/" + config.getSourceToTrack() + ".jpg";
+        EventConfig eventConfig = (EventConfig) config;
+        final String chartPath = eventConfig.getOutputDir() + "/" + eventConfig.getSourceToTrack() + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
         //final BigDecimal delta = calculateBalanceDelta(assetList);
 
-        final BalanceReport balanceReport = new BalanceReport(config.getStartTrackDate(), config.getFinishTrackDate(),
+        final BalanceReport balanceReport = new BalanceReport(eventConfig.getStartTrackDate(), eventConfig.getFinishTrackDate(),
                 null, null, generatedPlotPath, null);
         return balanceReport;
     }

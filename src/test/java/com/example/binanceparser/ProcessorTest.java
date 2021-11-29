@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -17,19 +18,12 @@ class ProcessorTest {
         Processor processor = new Processor();
         Config config = new IncomeConfig();
 
-        //LocalDateTime start = LocalDateTime.parse("2021-08-30 06:17:56", dateFormat);
-        //LocalDateTime finish = LocalDateTime.parse("2021-09-15 13:15:50", dateFormat);
-        //config.setStartTrackDate(start);
-        //config.setFinishTrackDate(finish);
-        //List<String> assetsToTrack = new ArrayList<>();
-        //assetsToTrack.add("USDT");
-        //assetsToTrack.add("BUSD");
-        //config.setAssetsToTrack(assetsToTrack);
-        //config.setSourceToTrack(List.of("FUTURES_PRODUCER_Kozhukhar", "SPOT_PRODUCER_Kozhukhar"));
-        config.setInputFilepath("src/main/resources/jsonLog");
+        LocalDateTime start = LocalDateTime.parse("2021-01-30 06:17:56", dateFormat);
+        LocalDateTime finish = LocalDateTime.parse("2021-11-15 13:15:50", dateFormat);
+        config.setStartTrackDate(start);
+        config.setFinishTrackDate(finish);
+        //config.setInputFilepath("src/main/resources/testJsonLog");
         config.setOutputDir("C:\\Users\\yarik\\Desktop");
-        //config.setConvertToUSD(true);
-        //config.setEventType(List.of(EventType.FUTURES_ACCOUNT_UPDATE));
         System.out.println(processor.run(config));
     }
 }

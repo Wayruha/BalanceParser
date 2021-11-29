@@ -1,8 +1,7 @@
 package com.example.binanceparser.datasource;
 
+import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.example.binanceparser.datasource.filters.DateIncomeFilter;
-import com.example.binanceparser.datasource.filters.Filter;
-import com.example.binanceparser.domain.Income;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
@@ -11,20 +10,19 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 public class JsonEventSource{
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public List<Income> readEvents(File logsDir, DateIncomeFilter dateIncomeFilter) throws IOException {
+    public List<IncomeHistoryItem> readEvents(File logsDir, DateIncomeFilter dateIncomeFilter) throws IOException {
         String[] dirFiles = logsDir.list();
         if (dirFiles == null) throw new RuntimeException("Can`t find any files in directory.");
 
-        List<Income> incomes = new ArrayList<>();
+        List<IncomeHistoryItem> incomes = new ArrayList<>();
         for (String filePath : dirFiles) {
-            List<Income> newBalanceStates = Arrays.asList(objectMapper.readValue(
-                    Paths.get(logsDir.getAbsolutePath() + "/" + filePath).toFile(), Income[].class));
+            List<IncomeHistoryItem> newBalanceStates = Arrays.asList(objectMapper.readValue(
+                    Paths.get(logsDir.getAbsolutePath() + "/" + filePath).toFile(), IncomeHistoryItem[].class));
             incomes.addAll(newBalanceStates);
         }
         return incomes;

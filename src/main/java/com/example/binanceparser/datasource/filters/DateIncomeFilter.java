@@ -1,7 +1,6 @@
 package com.example.binanceparser.datasource.filters;
 
-import com.example.binanceparser.domain.Income;
-import com.example.binanceparser.domain.events.AbstractEvent;
+import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import lombok.AllArgsConstructor;
 
 import java.time.Instant;
@@ -16,7 +15,7 @@ public class DateIncomeFilter {
     private final LocalDateTime startTrackDate;
     private final LocalDateTime finishTrackDate;
 
-    public boolean filter(Income income) {
+    public boolean filter(IncomeHistoryItem income) {
         LocalDate incomeDate = Instant.ofEpochMilli(income.getTime())
                 .atZone(ZoneId.systemDefault()).toLocalDate();
         return (startTrackDate == null || incomeDate.isAfter(ChronoLocalDate.from(startTrackDate))) &&

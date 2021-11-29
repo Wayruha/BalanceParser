@@ -6,7 +6,6 @@ import com.binance.api.client.FuturesRestClient;
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 public class BinanceClient {

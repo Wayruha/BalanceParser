@@ -1,17 +1,18 @@
 package com.example.binanceparser;
 
+import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.example.binanceparser.algorithm.IncomeCalculationAlgorithm;
-import com.example.binanceparser.datasource.EventSource;
+import com.example.binanceparser.binance.BinanceClient;
 import com.example.binanceparser.datasource.JsonEventSource;
 import com.example.binanceparser.datasource.filters.*;
-import com.example.binanceparser.domain.Income;
 import com.example.binanceparser.domain.IncomeBalanceState;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.IncomeReportGenerator;
-import com.example.binanceparser.report.ReportGenerator;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,18 +27,30 @@ public class Processor {
         }
 
         public BalanceReport run(Config config) throws IOException {
-            final File logsDir = new File(config.getInputFilepath());
 
-            List<Income> incomes = eventSource.readEvents(logsDir, new DateIncomeFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
-            if (incomes.size() == 0) throw new RuntimeException("Can't find any relevant events");
+            if(config.getInputFilepath() == null){
+                final BinanceClient binanceClient = new BinanceClient(Constants.BINANCE_API_KEY, Constants.BINANCE_SECRET_KEY);
+                final Instant startTrackDate = config.getStartTrackDate().toInstant(ZoneOffset.of("+2"));
+                final Instant finishTrackDate = config.getFinishTrackDate().toInstant(ZoneOffset.of("+2"));
+                final List<IncomeHistoryItem> incomeList = binanceClient
+                        .fetchFuturesIncomeHistory(null, null, startTrackDate, finishTrackDate, 1000);
+                final List<IncomeBalanceState> balanceStates = IncomeCalculationAlgorithm.calculateBalance(incomeList);
+                final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, balanceStates);
+                return balanceReport;
+            }
+            else {
+                final File logsDir = new File(config.getInputFilepath());
 
-            IncomeCalculationAlgorithm jsonCalculationAlgorithm = new IncomeCalculationAlgorithm();
-            final List<IncomeBalanceState> logBalanceStates = jsonCalculationAlgorithm.calculateBalance(incomes);
+                List<IncomeHistoryItem> incomes = eventSource.readEvents(logsDir, new DateIncomeFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
+                if (incomes.size() == 0) throw new RuntimeException("Can't find any relevant events");
 
-            final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, logBalanceStates);
+                final List<IncomeBalanceState> logBalanceStates = IncomeCalculationAlgorithm.calculateBalance(incomes);
 
-            System.out.println("Processor done for config: " + config);
-            return balanceReport;
+                final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, logBalanceStates);
+
+                System.out.println("Processor done for config: " + config);
+                return balanceReport;
+            }
         }
 
         private Set<Filter> implementFilters(Config config){
