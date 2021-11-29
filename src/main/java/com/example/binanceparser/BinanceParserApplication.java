@@ -16,13 +16,13 @@ public class BinanceParserApplication {
 
     public void visualizeIncome() throws IOException {
         Processor processor = new Processor();
-        Config config = new Config();
+        EventConfig config = new EventConfig();
 
         LocalDateTime start = LocalDateTime.parse("2021-08-15 06:17:56", dateFormat);
         LocalDateTime finish = LocalDateTime.parse("2021-11-30 13:15:50", dateFormat);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
-        List<String> assetsToTrack = new ArrayList<>();
+        final List<String> assetsToTrack = new ArrayList<>();
         assetsToTrack.add("USDT");
         assetsToTrack.add("BUSD");
         config.setAssetsToTrack(assetsToTrack);
