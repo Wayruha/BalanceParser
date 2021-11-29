@@ -37,7 +37,7 @@ public class Processor {
         System.out.println("Processor done for config: " + config);
         return balanceReport;
     }
-
+/*
     private Set<Filter> implementFilters(Config config) {
         EventConfig eventConfig = (EventConfig) config;
         Set<Filter> filters = new HashSet<>();
@@ -48,5 +48,5 @@ public class Processor {
         if (eventConfig.getEventType() != null) filters.add(new EventTypeFilter(eventConfig.getEventType()));
 
         return filters;
-    }
+    }*/
 }

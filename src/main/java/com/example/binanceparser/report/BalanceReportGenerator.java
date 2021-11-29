@@ -1,42 +1,44 @@
 package com.example.binanceparser.report;
 
-import com.example.binanceparser.Config;
+import com.example.binanceparser.EventConfig;
 import com.example.binanceparser.domain.Asset;
-import com.example.binanceparser.domain.IncomeBalanceState;
-import com.example.binanceparser.plot.IncomeChartBuilder;
-import com.example.binanceparser.plot.SpotUSDTChartBuilder;
-import lombok.AllArgsConstructor;
+import com.example.binanceparser.domain.EventBalanceState;
+import com.example.binanceparser.plot.AssetChartBuilder;
+import com.example.binanceparser.plot.ChartBuilder;
+import com.example.binanceparser.plot.USDTChartBuilder;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ReportGenerator {
+public class BalanceReportGenerator {
+    ChartBuilder<EventBalanceState> chartBuilder;
+    final EventConfig config;
 
-    final IncomeChartBuilder incomeChartBuilder = new IncomeChartBuilder();
+    public BalanceReportGenerator(EventConfig config) {
+        this.config = config;
+    }
 
-    public BalanceReport getBalanceReport(Config config, List<IncomeBalanceState> balanceStates) throws IOException {
-/*        if (config.isConvertToUSD()) this.chartBuilder = new SpotAssetChartBuilder();
-        else this.chartBuilder = new AssetChartBuilder();*/
+    public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {
+        //TODO pass valid currencyRate
+        if (config.isConvertToUSD()) this.chartBuilder = new USDTChartBuilder(null, config.getAssetsToTrack());
+        else this.chartBuilder = new AssetChartBuilder(config.getAssetsToTrack());
 
-        final JFreeChart lineChart = incomeChartBuilder.buildLineChart(balanceStates);
-        /*final List<Asset> assetList = balanceStates.stream()
+        final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
+        final List<Asset> assetList = balanceStates.stream()
                 .flatMap(bal -> bal.getAssets().stream())
-                .collect(Collectors.toList());*/
+                .collect(Collectors.toList());
 
-        final String chartPath = config.getOutputDir() + "/" + config.getLogProducer() + ".jpg";
+        final String chartPath = config.getOutputDir() + "/" + config.getLogProducer().get(0) + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
-        //final BigDecimal delta = calculateBalanceDelta(assetList);
+        final BigDecimal delta = calculateBalanceDelta(assetList);
 
         final BalanceReport balanceReport = new BalanceReport(config.getStartTrackDate(), config.getFinishTrackDate(),
-                null, null, generatedPlotPath, null);
+                findMaxBalance(assetList), findMinBalance(assetList), generatedPlotPath, delta);
         return balanceReport;
     }
 
@@ -58,14 +60,14 @@ public class ReportGenerator {
     }
 
     private static BigDecimal findMaxBalance(List<Asset> assetList) {
-        if(assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
+        if (assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
         BigDecimal max = assetList.stream().findFirst().get().getAvailableBalance();
         for (Asset asset : assetList) max = asset.getAvailableBalance().max(max);
         return max;
     }
 
     private static BigDecimal findMinBalance(List<Asset> assetList) {
-        if(assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
+        if (assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
         BigDecimal min = assetList.stream().findFirst().get().getAvailableBalance();
         for (Asset asset : assetList) min = asset.getAvailableBalance().min(min);
         return min;

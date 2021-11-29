@@ -13,8 +13,9 @@ import org.jfree.data.time.TimeSeriesCollection;
 import java.time.LocalDate;
 import java.util.List;
 
-public class IncomeChartBuilder{
+public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
 
+    @Override
     public JFreeChart buildLineChart(List<IncomeBalanceState> logBalanceStates) {
 
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
@@ -24,7 +25,7 @@ public class IncomeChartBuilder{
         XYPlot plot = (XYPlot) chart.getPlot();
 
         XYItemRenderer r = plot.getRenderer();
-        if(r instanceof XYLineAndShapeRenderer) {
+        if (r instanceof XYLineAndShapeRenderer) {
             XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
             renderer.setDefaultShapesVisible(true);
             renderer.setDefaultShapesFilled(true);
@@ -37,7 +38,7 @@ public class IncomeChartBuilder{
         final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
         final TimeSeries series = new TimeSeries("USD");
         //final TimeSeries balanceUpdateSeries = new TimeSeries("Balance Update");
-        for(IncomeBalanceState incomeBalanceState : incomeBalanceStates) {
+        for (IncomeBalanceState incomeBalanceState : incomeBalanceStates) {
             series.addOrUpdate(dateTimeToDay(incomeBalanceState.getDateTime()),
                     incomeBalanceState.getAvailableBalance());
         }

@@ -11,7 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EventConfig extends Config {
-    List<String> sourceToTrack;
     List<String> assetsToTrack;
     boolean convertToUSD;
     List<EventType> eventType;

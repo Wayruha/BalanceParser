@@ -26,7 +26,7 @@ public class BinanceParserApplication {
         assetsToTrack.add("USDT");
         assetsToTrack.add("BUSD");
         config.setAssetsToTrack(assetsToTrack);
-        config.setSourceToTrack(List.of("FUTURES_PRODUCER_Kozhukhar"));
+        config.setLogProducer(List.of("FUTURES_PRODUCER_Kozhukhar"));
         config.setInputFilepath("logs");
 
 //        config.setInputFilepath("/Users/roman/Desktop/passiveTrader_events");

@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-public class JsonEventSource{
+public class JsonEventSource {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 

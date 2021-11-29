@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Income {
-
     String symbol;
     IncomeType incomeType;
     BigDecimal income;
@@ -19,5 +18,4 @@ public class Income {
     String info;
     String tranId;
     String tradeId;
-
 }
