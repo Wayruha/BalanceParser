@@ -9,7 +9,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -24,30 +23,39 @@ import static com.example.binanceparser.domain.events.EventType.*;
 /**
  * read directory with logs to provide the events
  */
-//TODO повинен імплементувати інтерфейс
-public class LogsEventSource {
-    final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    final ObjectMapper objectMapper = new ObjectMapper();
-    public static final List<EventType> IGNORED_EVENTS = List.of(TRANSFER, ACCOUNT_CONFIG_UPDATE, CONVERT_FUNDS, MARGIN_CALL, COIN_SWAP_ORDER);
+public class LogsEventSource implements EventSource<AbstractEvent> {
+    private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final List<EventType> IGNORED_EVENTS = List.of(TRANSACTION, TRANSFER, ACCOUNT_CONFIG_UPDATE, CONVERT_FUNDS, MARGIN_CALL, COIN_SWAP_ORDER);
+    private final File logsDir;
+    private Set<Filter> filters;
 
-// TODO сигнатуру змінити на ту як в інтерфейсі, все інше  передавати в конструктор
-    public List<AbstractEvent> readEvents(File logsDir, Set<Filter> filters) throws IOException {
-        String[] dirFiles = logsDir.list();
-        if (dirFiles == null) throw new RuntimeException("Can`t find any files in directory.");
+    public LogsEventSource(File logsDir, Set<Filter> filters) {
+        this.logsDir = logsDir;
+        this.filters = filters;
+    }
 
-        List<AbstractEvent> allEvents = new ArrayList<>();
-        for (String filePath : dirFiles) {
-            File file = new File(logsDir.getAbsolutePath() + "/" + filePath);
-            Document doc = Jsoup.parse(file, "UTF-8");
-            List<Element> messageList = doc.getElementsByClass("info");
-//            messageList.remove(0); // remove first element of logs table (bc it`s table header)
-            for (Element element : messageList) {
-                LocalDateTime date = LocalDateTime.parse(element.getElementsByClass("Date").text(), dateFormat);
-                final String logLine = element.getElementsByClass("Message").text();
-                final AbstractEvent event = parseLogLine(date, logLine);
-                if (event != null && fitsToAllFilters(event, filters))
-                    allEvents.add(event);
+    @Override
+    public List<AbstractEvent> getData() {
+        final List<AbstractEvent> allEvents = new ArrayList<>();
+        try {
+            final String[] dirFiles = logsDir.list();
+            if (dirFiles == null) throw new RuntimeException("Can`t find any files in directory.");
+
+            for (String filePath : dirFiles) {
+                final File file = new File(logsDir.getAbsolutePath() + "/" + filePath);
+                final Document doc = Jsoup.parse(file, "UTF-8");
+                final List<Element> messageList = doc.getElementsByClass("info");
+                for (Element element : messageList) {
+                    final LocalDateTime date = LocalDateTime.parse(element.getElementsByClass("Date").text(), dateFormat);
+                    final String logLine = element.getElementsByClass("Message").text();
+                    final AbstractEvent event = parseLogLine(date, logLine);
+                    if (event != null && fitsToAllFilters(event, filters))
+                        allEvents.add(event);
+                }
             }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
         return allEvents;
     }
@@ -56,7 +64,7 @@ public class LogsEventSource {
         return filters.stream().allMatch(f -> f.filter(event));
     }
 
-    public AbstractEvent parseLogLine(LocalDateTime date, String logLine) throws JsonProcessingException {
+    public static AbstractEvent parseLogLine(LocalDateTime date, String logLine) throws JsonProcessingException {
         final String[] logParts = logLine.split(" ");
         final String source = logParts[0];
         final EventType eventType = valueOf(logParts[1]);
@@ -68,7 +76,7 @@ public class LogsEventSource {
         return event;
     }
 
-    private void setCommons(LocalDateTime date, String source, AbstractEvent event, EventType eventType) {
+    private static void setCommons(LocalDateTime date, String source, AbstractEvent event, EventType eventType) {
         event.setDate(date);
         event.setSource(source);
         event.setEventType(eventType);

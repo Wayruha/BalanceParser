@@ -10,6 +10,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Data
 public class Asset {
-    String asset;
-    BigDecimal availableBalance;
+    private String asset;
+    private BigDecimal availableBalance;
 }

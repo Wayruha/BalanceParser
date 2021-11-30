@@ -17,9 +17,7 @@ public class SpotUSDTChartBuilder implements ChartBuilder<EventBalanceState> {
 
     @Override
     public JFreeChart buildLineChart(List<EventBalanceState> eventBalanceStates) {
-        JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Account balance", "Date", "Balance", createTimeSeries(eventBalanceStates)
-        );
+        JFreeChart chart = ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", createTimeSeries(eventBalanceStates));
 
         XYPlot plot = (XYPlot) chart.getPlot();
 

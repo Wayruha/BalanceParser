@@ -24,19 +24,15 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
         for (String asset : assetsToTrack) {
             dataSeries.addSeries(createTimeSeries(eventBalanceStates, asset));
         }
-        return ChartFactory.createTimeSeriesChart(
-                "Account balance", "Date", "Balance", dataSeries
-        );
+        return ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", dataSeries);
 
     }
 
     private TimeSeries createTimeSeries(List<EventBalanceState> eventBalanceStates, String assetToTrack) {
         final TimeSeries series = new TimeSeries(assetToTrack);
         for (EventBalanceState eventBalanceState : eventBalanceStates) {
-            if (eventBalanceState.getAssets().stream().filter(a -> a.getAsset().equals(assetToTrack)).findFirst().isEmpty())
-                continue;
-            final Asset asset = eventBalanceState.getAssets().stream().
-                    filter(a -> a.getAsset().equals(assetToTrack)).findFirst().get();
+            final Asset asset = eventBalanceState.findAsset(assetToTrack);
+            if(asset == null) continue;
             series.addOrUpdate(dateTimeToDay(eventBalanceState.getDateTime()), asset.getAvailableBalance());
         }
         return series;

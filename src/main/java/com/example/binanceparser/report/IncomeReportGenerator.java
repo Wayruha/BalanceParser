@@ -23,8 +23,16 @@ public class IncomeReportGenerator {
         final String chartPath = config.getOutputDir() + "/" + config.getSubject().get(0) + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
-        return new BalanceReport(config.getStartTrackDate(), config.getFinishTrackDate(),
-                findMaxBalance(balances), findMinBalance(balances), generatedPlotPath, calculateBalanceDelta(balances));
+        return BalanceReport.builder()
+                .startTrackDate(config.getStartTrackDate())
+                .finishTrackDate(config.getFinishTrackDate())
+                .balanceAtStart(null)
+                .balanceAtEnd(null)
+                .min(findMinBalance(balances))
+                .max(findMaxBalance(balances))
+                .outputPath(generatedPlotPath)
+                .balanceDifference(calculateBalanceDelta(balances))
+                .build();
     }
 
     private BigDecimal calculateBalanceDelta(List<BigDecimal> assetList) {

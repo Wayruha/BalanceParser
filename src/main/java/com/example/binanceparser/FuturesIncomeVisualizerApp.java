@@ -18,7 +18,9 @@ public class FuturesIncomeVisualizerApp {
 
     public static void main(String[] args) {
         final FuturesIncomeVisualizerApp app = new FuturesIncomeVisualizerApp();
-        app.loadDataFromBinance();
+        final BalanceReport balanceReport = app.loadDataFromBinance();
+        System.out.println("Report....");
+        System.out.println(balanceReport.toPrettyString());
     }
 
     private static IncomeConfig configure() {

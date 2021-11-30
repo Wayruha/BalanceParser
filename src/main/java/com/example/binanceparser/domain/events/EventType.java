@@ -20,6 +20,7 @@ public enum EventType {
 
     //custom types, Binance does not know about them
     TRANSFER("TRANSFER"),
+    TRANSACTION("TRANSACTION"),
     CONVERT_FUNDS("CONVERT_FUNDS");
 
     private final String eventTypeId;

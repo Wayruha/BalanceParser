@@ -1,4 +1,4 @@
-package com.example.binanceparser;
+package com.example.binanceparser.processor;
 
 import com.example.binanceparser.config.Config;
 import com.example.binanceparser.report.BalanceReport;

@@ -1,7 +1,6 @@
 package com.example.binanceparser.processor;
 
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
-import com.example.binanceparser.Processor;
 import com.example.binanceparser.algorithm.IncomeCalculationAlgorithm;
 import com.example.binanceparser.config.IncomeConfig;
 import com.example.binanceparser.datasource.EventSource;
