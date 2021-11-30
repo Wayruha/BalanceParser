@@ -1,6 +1,6 @@
 package com.example.binanceparser.report;
 
-import com.example.binanceparser.EventConfig;
+import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
 import com.example.binanceparser.plot.AssetChartBuilder;
@@ -17,18 +17,17 @@ import java.util.stream.Collectors;
 
 public class BalanceReportGenerator {
     ChartBuilder<EventBalanceState> chartBuilder;
-    final EventConfig config;
+    final BalanceVisualizerConfig config;
 
-    public BalanceReportGenerator(EventConfig config) {
+    public BalanceReportGenerator(BalanceVisualizerConfig config) {
         this.config = config;
     }
 
     public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {
         //TODO pass valid currencyRate
-        EventConfig eventConfig = (EventConfig) config;
-        if (eventConfig.isConvertToUSD())
-            this.chartBuilder = new USDTChartBuilder(null, eventConfig.getAssetsToTrack());
-        else this.chartBuilder = new AssetChartBuilder(eventConfig.getAssetsToTrack());
+        if (config.isConvertToUSD())
+            this.chartBuilder = new USDTChartBuilder(null, config.getAssetsToTrack());
+        else this.chartBuilder = new AssetChartBuilder(config.getAssetsToTrack());
 
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
         final List<Asset> assetList = balanceStates.stream()

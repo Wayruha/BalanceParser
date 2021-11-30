@@ -5,7 +5,12 @@ import com.example.binanceparser.report.BalanceReport;
 
 import java.io.IOException;
 
-public interface Processor {
+public abstract class Processor<T extends Config> {
+    protected final T config;
 
-    BalanceReport run(Config config) throws IOException;
+    public Processor(T config) {
+        this.config = config;
+    }
+
+    abstract public BalanceReport process() throws IOException;
 }

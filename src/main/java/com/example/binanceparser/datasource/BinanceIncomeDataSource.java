@@ -1,8 +1,8 @@
 package com.example.binanceparser.datasource;
 
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
-import com.example.binanceparser.IncomeConfig;
 import com.example.binanceparser.binance.BinanceClient;
+import com.example.binanceparser.config.IncomeConfig;
 
 import java.time.Instant;
 import java.time.ZoneOffset;

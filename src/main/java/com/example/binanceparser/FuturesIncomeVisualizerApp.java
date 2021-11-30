@@ -1,9 +1,11 @@
 package com.example.binanceparser;
 
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
+import com.example.binanceparser.config.IncomeConfig;
 import com.example.binanceparser.datasource.BinanceIncomeDataSource;
 import com.example.binanceparser.datasource.EventSource;
-import com.example.binanceparser.datasource.LogIncomeSource;
+import com.example.binanceparser.datasource.JsonIncomeSource;
+import com.example.binanceparser.processor.IncomeProcessor;
 import com.example.binanceparser.report.BalanceReport;
 
 import java.io.File;
@@ -43,7 +45,7 @@ public class FuturesIncomeVisualizerApp {
     public BalanceReport loadFromLogs() {
         final IncomeConfig config = configure();
         final File logsDir = new File(config.getInputFilepath());
-        final EventSource<IncomeHistoryItem> incomeSource = new LogIncomeSource(logsDir);
+        final EventSource<IncomeHistoryItem> incomeSource = new JsonIncomeSource(logsDir);
         final IncomeProcessor processor = new IncomeProcessor(incomeSource, config);
         return processor.process();
     }

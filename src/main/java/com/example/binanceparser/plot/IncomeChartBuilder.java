@@ -17,9 +17,7 @@ import java.util.List;
 public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
 
     @Override
-    public JFreeChart buildLineChart(List<IncomeBalanceState> logBalanceStates) {
     public JFreeChart buildLineChart(List<IncomeBalanceState> incomeBalanceStates) {
-
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 "Account balance", "Date", "Balance", null);
 

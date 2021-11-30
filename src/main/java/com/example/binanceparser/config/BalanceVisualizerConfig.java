@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventConfig extends Config {
+public class BalanceVisualizerConfig extends Config {
     List<String> assetsToTrack;
     boolean convertToUSD;
     List<EventType> eventType;

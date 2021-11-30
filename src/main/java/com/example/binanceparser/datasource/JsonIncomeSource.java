@@ -10,12 +10,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class LogIncomeSource implements EventSource<IncomeHistoryItem> {
+public class JsonIncomeSource implements EventSource<IncomeHistoryItem> {
 
     private final ObjectMapper objectMapper;
     private final File logsDir;
 
-    public LogIncomeSource(File logsDir) {
+    public JsonIncomeSource(File logsDir) {
         this.objectMapper = new ObjectMapper();
         this.logsDir = logsDir;
     }

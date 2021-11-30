@@ -1,6 +1,7 @@
 package com.example.binanceparser;
 
 import com.example.binanceparser.config.IncomeConfig;
+import com.example.binanceparser.processor.IncomeProcessor;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -15,7 +16,7 @@ public class BinanceParserApplication {
     }
 
     public void visualizeIncome() throws IOException {
-        final Config config = new IncomeConfig();
+        final IncomeConfig config = new IncomeConfig();
         LocalDateTime start = LocalDateTime.parse("2021-01-30 06:17:56", dateFormat);
         LocalDateTime finish = LocalDateTime.parse("2021-11-15 13:15:50", dateFormat);
         config.setStartTrackDate(start);
