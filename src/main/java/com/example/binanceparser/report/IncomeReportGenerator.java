@@ -1,6 +1,6 @@
 package com.example.binanceparser.report;
 
-import com.example.binanceparser.Config;
+import com.example.binanceparser.config.Config;
 import com.example.binanceparser.domain.IncomeBalanceState;
 import com.example.binanceparser.plot.IncomeChartBuilder;
 import org.jfree.chart.ChartUtils;

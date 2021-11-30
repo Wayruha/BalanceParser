@@ -10,9 +10,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.time.TimeSeriesDataItem;
 
-import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,18 +18,21 @@ public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
 
     @Override
     public JFreeChart buildLineChart(List<IncomeBalanceState> logBalanceStates) {
+    public JFreeChart buildLineChart(List<IncomeBalanceState> incomeBalanceStates) {
+
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 "Account balance", "Date", "Balance", null);
 
+        TimeSeriesCollection dataset = new TimeSeriesCollection();
         XYPlot plot = (XYPlot) chart.getPlot();
-        final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
-        TimeSeries dataset = createTimeSeries(logBalanceStates, plot);
-        dataSeries.addSeries(dataset);
-        plot.setDataset(dataSeries);
-/*        if(r instanceof XYLineAndShapeRenderer) {
+        dataset.addSeries(createTimeSeries(incomeBalanceStates, plot));
+        XYItemRenderer r = plot.getRenderer();
+        plot.setDataset(dataset);
+        if (r instanceof XYLineAndShapeRenderer) {
+            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
             renderer.setDefaultShapesVisible(true);
             renderer.setDefaultShapesFilled(true);
-        }*/
+        }
 
         return chart;
 
@@ -43,36 +44,11 @@ public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
 
         for (IncomeBalanceState incomeBalanceState : incomeBalanceStates) {
             if (incomeBalanceState.getIncomeType() == FuturesIncomeType.COMMISSION) continue;
-            renderer = new XYLineAndShapeRenderer() {
-                @Override
-                public Paint getItemPaint(int row, int col) {
-                    Paint cpaint = getItemColor(row, col);
-                    if (cpaint == null) {
-                        cpaint = super.getItemPaint(row, col);
-                    }
-                    return cpaint;
-                }
 
-                public Color getItemColor(int row, int col) {
-                    if (incomeBalanceState.getIncomeType() == FuturesIncomeType.TRANSFER) return Color.BLUE;
-                    else return Color.RED;
-                }
-
-                @Override
-                protected void drawFirstPassShape(Graphics2D g2, int pass, int series,
-                                                  int item, Shape shape) {
-                    g2.setStroke(getItemStroke(series, item));
-                    Color c1 = getItemColor(series, item);
-                    Color c2 = getItemColor(series, item - 1);
-                    GradientPaint linePaint = new GradientPaint(0, 0, c1, 0, 300, c2);
-                    g2.setPaint(linePaint);
-                    g2.draw(shape);
-                }
-
-            };
             series.addOrUpdate(dateTimeToDay(incomeBalanceState.getDateTime()),
                     incomeBalanceState.getAvailableBalance());
         }
+
         return series;
     }
 

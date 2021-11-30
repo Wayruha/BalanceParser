@@ -1,4 +1,4 @@
-package com.example.binanceparser;
+package com.example.binanceparser.config;
 
 import com.example.binanceparser.domain.events.EventType;
 import lombok.AllArgsConstructor;

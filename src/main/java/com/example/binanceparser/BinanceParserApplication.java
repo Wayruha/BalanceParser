@@ -1,5 +1,7 @@
 package com.example.binanceparser;
 
+import com.example.binanceparser.config.IncomeConfig;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

@@ -25,8 +25,10 @@ public class BalanceReportGenerator {
 
     public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {
         //TODO pass valid currencyRate
-        if (config.isConvertToUSD()) this.chartBuilder = new USDTChartBuilder(null, config.getAssetsToTrack());
-        else this.chartBuilder = new AssetChartBuilder(config.getAssetsToTrack());
+        EventConfig eventConfig = (EventConfig) config;
+        if (eventConfig.isConvertToUSD())
+            this.chartBuilder = new USDTChartBuilder(null, eventConfig.getAssetsToTrack());
+        else this.chartBuilder = new AssetChartBuilder(eventConfig.getAssetsToTrack());
 
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
         final List<Asset> assetList = balanceStates.stream()

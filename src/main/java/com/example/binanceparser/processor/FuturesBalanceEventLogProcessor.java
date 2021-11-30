@@ -3,6 +3,8 @@ package com.example.binanceparser.processor;
 import com.example.binanceparser.Config;
 import com.example.binanceparser.EventConfig;
 import com.example.binanceparser.algorithm.FuturesWalletBalanceCalcAlgorithm;
+import com.example.binanceparser.config.Config;
+import com.example.binanceparser.config.EventConfig;
 import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.datasource.filters.DateEventFilter;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
@@ -25,7 +27,7 @@ public class FuturesBalanceEventLogProcessor {
     final BalanceReportGenerator balanceReportGenerator;
     final FuturesWalletBalanceCalcAlgorithm algorithm;
 
-    public FuturesBalanceEventLogProcessor(EventConfig config) {
+    public FuturesBalanceLogProcessor(Config config) {
         this.eventSource = new LogsEventSource();
         this.balanceReportGenerator = new BalanceReportGenerator(config);
         this.algorithm = new FuturesWalletBalanceCalcAlgorithm();
