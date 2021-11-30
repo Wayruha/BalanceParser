@@ -1,7 +1,7 @@
 package com.example.binanceparser.util;
 
-import com.example.binanceparser.Config;
-import com.example.binanceparser.IncomeConfig;
+import com.example.binanceparser.config.Config;
+import com.example.binanceparser.config.IncomeConfig;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
@@ -11,10 +11,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,6 +1,8 @@
 package com.example.binanceparser;
 
 import com.example.binanceparser.algorithm.FuturesWalletBalanceCalcAlgorithm;
+import com.example.binanceparser.config.Config;
+import com.example.binanceparser.config.EventConfig;
 import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.datasource.filters.DateEventFilter;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
@@ -18,24 +20,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class FuturesBalanceLogProcessor {
+public class FuturesBalanceLogProcessor implements Processor {
     final LogsEventSource eventSource;
     final BalanceReportGenerator balanceReportGenerator;
     final FuturesWalletBalanceCalcAlgorithm algorithm;
 
-    public FuturesBalanceLogProcessor(EventConfig config) {
+    public FuturesBalanceLogProcessor(Config config) {
         this.eventSource = new LogsEventSource();
         this.balanceReportGenerator = new BalanceReportGenerator(config);
         this.algorithm = new FuturesWalletBalanceCalcAlgorithm();
     }
 
-    public BalanceReport run(EventConfig config) throws IOException {
+    public BalanceReport run(Config config) throws IOException {
+        EventConfig eventConfig = (EventConfig) config;
+
         final File logsDir = new File(config.getInputFilepath());
         // read and filter events from data source
         List<AbstractEvent> events = new ArrayList<>(eventSource.readEvents(logsDir, implementFilters(config)));
         if (events.size() == 0) throw new RuntimeException("Can't find any relevant events");
         // retrieve balance changes
-        final List<EventBalanceState> balanceStates = algorithm.processEvents(events, config.getAssetsToTrack());
+        final List<EventBalanceState> balanceStates = algorithm.processEvents(events, eventConfig.getAssetsToTrack());
         final BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
 
         System.out.println("Processor done for config: " + config);

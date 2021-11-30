@@ -1,6 +1,7 @@
 package com.example.binanceparser.report;
 
-import com.example.binanceparser.EventConfig;
+import com.example.binanceparser.config.Config;
+import com.example.binanceparser.config.EventConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
 import com.example.binanceparser.plot.AssetChartBuilder;
@@ -17,27 +18,29 @@ import java.util.stream.Collectors;
 
 public class BalanceReportGenerator {
     ChartBuilder<EventBalanceState> chartBuilder;
-    final EventConfig config;
+    final Config config;
 
-    public BalanceReportGenerator(EventConfig config) {
+    public BalanceReportGenerator(Config config) {
         this.config = config;
     }
 
     public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {
         //TODO pass valid currencyRate
-        if (config.isConvertToUSD()) this.chartBuilder = new USDTChartBuilder(null, config.getAssetsToTrack());
-        else this.chartBuilder = new AssetChartBuilder(config.getAssetsToTrack());
+        EventConfig eventConfig = (EventConfig) config;
+        if (eventConfig.isConvertToUSD())
+            this.chartBuilder = new USDTChartBuilder(null, eventConfig.getAssetsToTrack());
+        else this.chartBuilder = new AssetChartBuilder(eventConfig.getAssetsToTrack());
 
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
         final List<Asset> assetList = balanceStates.stream()
                 .flatMap(bal -> bal.getAssets().stream())
                 .collect(Collectors.toList());
 
-        final String chartPath = config.getOutputDir() + "/" + config.getLogProducer().get(0) + ".jpg";
+        final String chartPath = eventConfig.getOutputDir() + "/" + eventConfig.getLogProducer().get(0) + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
         final BigDecimal delta = calculateBalanceDelta(assetList);
 
-        final BalanceReport balanceReport = new BalanceReport(config.getStartTrackDate(), config.getFinishTrackDate(),
+        final BalanceReport balanceReport = new BalanceReport(eventConfig.getStartTrackDate(), eventConfig.getFinishTrackDate(),
                 findMaxBalance(assetList), findMinBalance(assetList), generatedPlotPath, delta);
         return balanceReport;
     }

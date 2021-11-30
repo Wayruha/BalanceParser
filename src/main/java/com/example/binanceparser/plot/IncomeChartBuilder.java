@@ -1,5 +1,6 @@
 package com.example.binanceparser.plot;
 
+import com.binance.api.client.FuturesIncomeType;
 import com.example.binanceparser.domain.IncomeBalanceState;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -16,35 +17,39 @@ import java.util.List;
 public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
 
     @Override
-    public JFreeChart buildLineChart(List<IncomeBalanceState> logBalanceStates) {
+    public JFreeChart buildLineChart(List<IncomeBalanceState> incomeBalanceStates) {
 
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Account balance", "Date", "Balance", createTimeSeries(logBalanceStates)
+                "Account balance", "Date", "Balance", null
         );
 
+        TimeSeriesCollection dataset = new TimeSeriesCollection();
         XYPlot plot = (XYPlot) chart.getPlot();
-
+        dataset.addSeries(createTimeSeries(incomeBalanceStates, plot));
         XYItemRenderer r = plot.getRenderer();
+        plot.setDataset(dataset);
         if (r instanceof XYLineAndShapeRenderer) {
             XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
             renderer.setDefaultShapesVisible(true);
             renderer.setDefaultShapesFilled(true);
         }
+
         return chart;
 
     }
 
-    private TimeSeriesCollection createTimeSeries(List<IncomeBalanceState> incomeBalanceStates) {
-        final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
+
+    private TimeSeries createTimeSeries(List<IncomeBalanceState> incomeBalanceStates, XYPlot plot) {
         final TimeSeries series = new TimeSeries("USD");
-        //final TimeSeries balanceUpdateSeries = new TimeSeries("Balance Update");
+
         for (IncomeBalanceState incomeBalanceState : incomeBalanceStates) {
+            if (incomeBalanceState.getIncomeType() == FuturesIncomeType.COMMISSION) continue;
+
             series.addOrUpdate(dateTimeToDay(incomeBalanceState.getDateTime()),
                     incomeBalanceState.getAvailableBalance());
         }
-        dataSeries.addSeries(series);
 
-        return dataSeries;
+        return series;
     }
 
 
