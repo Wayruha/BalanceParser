@@ -11,9 +11,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventBalanceState extends BalanceState {
-
     boolean balanceUpdate;
-
     Set<Asset> assets;
 
     public EventBalanceState(LocalDate dateTime, Set<Asset> assets, boolean balanceUpdate) {
@@ -21,5 +19,4 @@ public class EventBalanceState extends BalanceState {
         this.assets = assets;
         this.balanceUpdate = balanceUpdate;
     }
-
 }

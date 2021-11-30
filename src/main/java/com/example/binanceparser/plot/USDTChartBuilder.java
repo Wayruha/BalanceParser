@@ -1,7 +1,6 @@
 package com.example.binanceparser.plot;
 
 import com.example.binanceparser.domain.Asset;
-import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.domain.EventBalanceState;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -15,17 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class USDTChartBuilder implements ChartBuilder {
-
+public class USDTChartBuilder implements ChartBuilder<EventBalanceState> {
     final Map<String, BigDecimal> currencyRate;
+    final List<String> assetsToTrack;
 
-    public USDTChartBuilder(Map<String, BigDecimal> currencyRate) {
+    public USDTChartBuilder(Map<String, BigDecimal> currencyRate, List<String> assetsToTrack) {
         this.currencyRate = currencyRate;
+        this.assetsToTrack = assetsToTrack;
     }
 
-    public JFreeChart buildLineChart(List<BalanceState> logBalanceStates, List<String> assetToTrack){
+    public JFreeChart buildLineChart(List<EventBalanceState> logBalanceStates) {
         final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
-        List<EventBalanceState> balanceStates = logBalanceStates.stream().map(balanceState -> (EventBalanceState) balanceState).collect(Collectors.toList());
+        List<EventBalanceState> balanceStates = logBalanceStates.stream().map(balanceState -> balanceState).collect(Collectors.toList());
         dataSeries.addSeries(createTimeSeries(balanceStates));
 
         return ChartFactory.createTimeSeriesChart(
@@ -35,10 +35,10 @@ public class USDTChartBuilder implements ChartBuilder {
 
     private TimeSeries createTimeSeries(List<EventBalanceState> eventBalanceStates) {
         final TimeSeries series = new TimeSeries("USD");
-        for(EventBalanceState eventBalanceState : eventBalanceStates) {
+        for (EventBalanceState eventBalanceState : eventBalanceStates) {
             final Asset asset = eventBalanceState.getAssets().stream().findFirst().get();
             final BigDecimal usdValue = assetToUSD(asset);
-            if(usdValue == null) continue;
+            if (usdValue == null) continue;
             series.addOrUpdate(dateTimeToDay(eventBalanceState.getDateTime()), usdValue);
         }
         return series;
@@ -50,7 +50,7 @@ public class USDTChartBuilder implements ChartBuilder {
     }
 
     public BigDecimal assetToUSD(Asset asset) {
-        if(!currencyRate.containsKey(asset.getAsset())) return null;
+        if (!currencyRate.containsKey(asset.getAsset())) return null;
         return asset.getAvailableBalance().multiply(currencyRate.get(asset.getAsset()));
     }
 }

@@ -13,10 +13,10 @@ import org.jfree.data.time.TimeSeriesCollection;
 import java.time.LocalDate;
 import java.util.List;
 
-public class SpotUSDTChartBuilder {
+public class SpotUSDTChartBuilder implements ChartBuilder<EventBalanceState> {
 
+    @Override
     public JFreeChart buildLineChart(List<EventBalanceState> eventBalanceStates) {
-
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 "Account balance", "Date", "Balance", createTimeSeries(eventBalanceStates)
         );
@@ -24,7 +24,7 @@ public class SpotUSDTChartBuilder {
         XYPlot plot = (XYPlot) chart.getPlot();
 
         XYItemRenderer r = plot.getRenderer();
-        if(r instanceof XYLineAndShapeRenderer) {
+        if (r instanceof XYLineAndShapeRenderer) {
             XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
             renderer.setDefaultShapesVisible(true);
             renderer.setDefaultShapesFilled(true);
@@ -37,8 +37,8 @@ public class SpotUSDTChartBuilder {
         final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
         final TimeSeries series = new TimeSeries("USD");
         //final TimeSeries balanceUpdateSeries = new TimeSeries("Balance Update");
-        for(EventBalanceState eventBalanceState : eventBalanceStates) {
-                series.addOrUpdate(dateTimeToDay(eventBalanceState.getDateTime()),
+        for (EventBalanceState eventBalanceState : eventBalanceStates) {
+            series.addOrUpdate(dateTimeToDay(eventBalanceState.getDateTime()),
                     eventBalanceState.getAssets().stream().findFirst().get().getAvailableBalance());
         }
         dataSeries.addSeries(series);

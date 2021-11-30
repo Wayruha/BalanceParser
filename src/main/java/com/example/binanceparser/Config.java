@@ -1,6 +1,5 @@
 package com.example.binanceparser;
 
-import com.example.binanceparser.domain.events.EventType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,5 +15,5 @@ public abstract class Config {
     LocalDateTime finishTrackDate;
     String inputFilepath;
     String outputDir;
-
+    List<String> logProducer;
 }
