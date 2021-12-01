@@ -11,7 +11,9 @@ import org.jfree.chart.JFreeChart;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.USD;
@@ -19,26 +21,16 @@ import static com.example.binanceparser.Constants.USD;
 public class BalanceReportGenerator {
     private ChartBuilder<EventBalanceState> chartBuilder;
     private final BalanceVisualizerConfig config;
-    private final Map<String, BigDecimal> currencyRate;
 
-    public BalanceReportGenerator(BalanceVisualizerConfig config, Map<String, BigDecimal> currencyRate) {
+    public BalanceReportGenerator(BalanceVisualizerConfig config) {
         this.config = config;
-        this.currencyRate = currencyRate;
         final List<String> assetsToTrack = config.isConvertToUSD() ?
                 List.of(USD) : config.getAssetsToTrack();
         this.chartBuilder = new AssetChartBuilder(assetsToTrack);
     }
 
     public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {
-        // convert all assets to combined $-value
-        if (config.isConvertToUSD()) {
-            for (EventBalanceState state : balanceStates) {
-                final Optional<BigDecimal> optBalance = totalBalance(state.getAssets());
-                optBalance.ifPresent(bal -> state.getAssets().add(new Asset(USD, bal)));
-            }
-        }
         Collections.sort(balanceStates, Comparator.comparing(EventBalanceState::getDateTime));
-
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
         final List<Asset> assetList = balanceStates.stream()
                 .flatMap(bal -> bal.getAssets().stream())
@@ -58,19 +50,6 @@ public class BalanceReportGenerator {
                 .outputPath(generatedPlotPath)
                 .balanceDifference(delta)
                 .build();
-    }
-
-
-    public Optional<BigDecimal> totalBalance(Set<Asset> assets) {
-        return assets.stream()
-                .map(this::assetToUSD)
-                .filter(Objects::nonNull)
-                .reduce(BigDecimal::add);
-    }
-
-    public BigDecimal assetToUSD(Asset asset) {
-        if (!currencyRate.containsKey(asset.getAsset())) return null;
-        return asset.getAvailableBalance().multiply(currencyRate.get(asset.getAsset()));
     }
 
     private BigDecimal calculateBalanceDelta(List<Asset> assetList) {

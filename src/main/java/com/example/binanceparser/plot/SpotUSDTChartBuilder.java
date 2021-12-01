@@ -1,3 +1,4 @@
+/* NOT USED ANYMORE ( duplicates simple AssetChartBuilder ). Will be removed
 package com.example.binanceparser.plot;
 
 import com.example.binanceparser.domain.EventBalanceState;
@@ -51,3 +52,4 @@ public class SpotUSDTChartBuilder implements ChartBuilder<EventBalanceState> {
     }
 
 }
+*/

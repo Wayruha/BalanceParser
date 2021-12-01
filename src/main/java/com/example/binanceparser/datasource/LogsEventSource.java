@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +42,7 @@ public class LogsEventSource implements EventSource<AbstractEvent> {
         try {
             final String[] dirFiles = logsDir.list();
             if (dirFiles == null) throw new RuntimeException("Can`t find any files in directory.");
+            Arrays.sort(dirFiles);
 
             for (String filePath : dirFiles) {
                 final File file = new File(logsDir.getAbsolutePath() + "/" + filePath);
