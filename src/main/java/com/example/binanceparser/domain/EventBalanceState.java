@@ -12,13 +12,13 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventBalanceState extends BalanceState {
-    private boolean balanceUpdate;
+    private BigDecimal balanceUpdateDelta;
     private Set<Asset> assets;
 
-    public EventBalanceState(LocalDate dateTime, Set<Asset> assets, boolean balanceUpdate) {
+    public EventBalanceState(LocalDate dateTime, Set<Asset> assets, BigDecimal balanceUpdateDelta) {
         super(dateTime);
         this.assets = assets;
-        this.balanceUpdate = balanceUpdate;
+        this.balanceUpdateDelta = balanceUpdateDelta;
     }
 
     public Asset findAsset(String assetName) {

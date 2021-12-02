@@ -43,9 +43,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
                 continue;
 
             if (firstEvent.getEventType() == EventType.BALANCE_UPDATE) {
-                eventBalanceStates.add(processBalanceUpdate(nextEvent, actualBalance));
-                final BalanceUpdateEvent balUpdate = (BalanceUpdateEvent) firstEvent;
-                logBalUpdate(balUpdate);
+                final BalanceUpdateEvent balanceUpdateEvent = (BalanceUpdateEvent) firstEvent;
+                eventBalanceStates.add(processBalanceUpdate(nextEvent, actualBalance, balanceUpdateEvent.getBalanceDelta()));
                 continue;
             }
 
@@ -73,13 +72,12 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
 
             actualBalance = processBalance(actualBalance, newEventAssets);
             EventBalanceState eventBalanceState = new EventBalanceState(accEvent.getDate().toLocalDate(),
-                    new HashSet<>(actualBalance.values()), false);
+                    new HashSet<>(actualBalance.values()), null);
             eventBalanceStates.add(eventBalanceState);
         }
         return balanceToUSDT(eventBalanceStates);
     }
 
-    //TODO logging should not be part of Calculation Algorithm. Instead, move it to upper-level or to generator
     private void logBalUpdate(BalanceUpdateEvent balUpdate) {
         System.out.println(balUpdate.getDate().format(ISO_DATE_TIME) + " Balance updated:" + balUpdate.getBalances() + ". Delta=" + balUpdate.getBalanceDelta());
     }
@@ -91,14 +89,14 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
         System.out.println(str);
     }
 
-    public EventBalanceState processBalanceUpdate(AbstractEvent nextEvent, Map<String, Asset> actualBalance) {
+    public EventBalanceState processBalanceUpdate(AbstractEvent nextEvent, Map<String, Asset> actualBalance, BigDecimal balanceUpdateDelta) {
         final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
         Set<Asset> newEventAssets = accEvent.getBalances().stream().map(asset ->
                 new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
 
         actualBalance = processBalance(actualBalance, newEventAssets);
         return new EventBalanceState(accEvent.getDate().toLocalDate(),
-                new HashSet<>(actualBalance.values()), true);
+                new HashSet<>(actualBalance.values()), balanceUpdateDelta);
     }
 
     public Map<String, Asset> processBalance(Map<String, Asset> actualBalance, Set<Asset> newBalance) {
@@ -116,7 +114,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
                 else balance = balance.add(asset.getAvailableBalance().multiply(assetRate.get(asset.getAsset())));
             }
             assets.add(new Asset(USD, balance));
-            updatedEventBalanceState.add(new EventBalanceState(state.getDateTime(), assets, state.isBalanceUpdate()));
+            updatedEventBalanceState.add(new EventBalanceState(state.getDateTime(), assets, state.getBalanceUpdateDelta()));
         }
         //System.out.println(updatedBalanceState);
         return updatedEventBalanceState;

@@ -53,7 +53,6 @@ public class FuturesBalanceStateProcessor extends Processor<BalanceVisualizerCon
         return balanceReport;
     }
 
-    //TODO should be part of report
     private BigDecimal calculateDepositDelta(List<AbstractEvent> events){
         final List<FuturesAccountUpdateEvent> relevantEvents = events.stream()
                 .filter(e -> e instanceof FuturesAccountUpdateEvent)

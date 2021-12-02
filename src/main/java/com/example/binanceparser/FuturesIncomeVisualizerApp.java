@@ -29,7 +29,7 @@ public class FuturesIncomeVisualizerApp {
         LocalDateTime finish = LocalDateTime.parse("2021-11-30 13:15:50", dateFormat);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
-        config.setOutputDir("/Users/roman/Desktop");
+        config.setOutputDir("С:/users/yarik/Desktop");
         //if we want to read data from filesystem
         //config.setInputFilepath("");
         return config;

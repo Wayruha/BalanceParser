@@ -44,19 +44,4 @@ public class IncomeProcessor extends Processor<IncomeConfig> {
         return null;
     }
 
-    //TODO нам потрібен цей код? На роботі, таке ніколи не повинно потрапляти в кодову базу. В КРАЙНЬОМУ разів - має бути поясненнся
-      /*  private Set<Filter> implementFilters(Config config){
-            EventConfig eventConfig = (EventConfig) config;
-            Set<Filter> filters = new HashSet<>();
-
-            if(eventConfig.getStartTrackDate() != null || eventConfig.getFinishTrackDate() != null)
-                filters.add(new DateEventFilter(eventConfig.getStartTrackDate(), eventConfig.getFinishTrackDate()));
-
-            if(eventConfig.getSourceToTrack() != null) filters.add(new SourceFilter(eventConfig.getSourceToTrack()));
-
-            if(eventConfig.getEventType() != null) filters.add(new EventTypeFilter(eventConfig.getEventType()));
-
-
-            return filters;
-        }*/
 }

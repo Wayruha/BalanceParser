@@ -36,7 +36,7 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm {
             final Set<Asset> assets = e.getBalances().stream()
                     .map(asset -> new Asset(asset.getAsset(), BigDecimal.valueOf(asset.getWalletBalance())))
                     .collect(Collectors.toSet());
-            return new EventBalanceState(e.getDate().toLocalDate(), assets, false);
+            return new EventBalanceState(e.getDate().toLocalDate(), assets, null);
         }).collect(Collectors.toList());
 
         if (config.isConvertToUSD()) {

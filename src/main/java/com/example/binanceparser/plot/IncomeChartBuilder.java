@@ -21,11 +21,10 @@ public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 "Account balance", "Date", "Balance", null);
 
-        TimeSeriesCollection dataset = new TimeSeriesCollection();
+
         XYPlot plot = (XYPlot) chart.getPlot();
-        dataset.addSeries(createTimeSeries(incomeBalanceStates, plot));
         XYItemRenderer r = plot.getRenderer();
-        plot.setDataset(dataset);
+        plot.setDataset(createTimeSeries(incomeBalanceStates, plot));
         if (r instanceof XYLineAndShapeRenderer) {
             XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
             renderer.setDefaultShapesVisible(true);
@@ -36,18 +35,18 @@ public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
 
     }
 
-    private TimeSeries createTimeSeries(List<IncomeBalanceState> incomeBalanceStates, XYPlot plot) {
+    private TimeSeriesCollection createTimeSeries(List<IncomeBalanceState> incomeBalanceStates, XYPlot plot) {
+        TimeSeriesCollection dataset = new TimeSeriesCollection();
         final TimeSeries series = new TimeSeries("USD");
         XYLineAndShapeRenderer renderer;
 
         for (IncomeBalanceState incomeBalanceState : incomeBalanceStates) {
             if (incomeBalanceState.getIncomeType() == FuturesIncomeType.COMMISSION) continue;
-
             series.addOrUpdate(dateTimeToDay(incomeBalanceState.getDateTime()),
                     incomeBalanceState.getAvailableBalance());
         }
-
-        return series;
+        dataset.addSeries(series);
+        return dataset;
     }
 
 

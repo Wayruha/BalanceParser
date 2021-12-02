@@ -16,4 +16,5 @@ public class BalanceUpdateEvent extends AbstractEvent{
     String balances;
 
     BigDecimal balanceDelta;
+
 }

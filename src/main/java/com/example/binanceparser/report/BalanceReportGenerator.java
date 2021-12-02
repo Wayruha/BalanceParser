@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.USD;
@@ -32,6 +33,7 @@ public class BalanceReportGenerator {
     public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {
         Collections.sort(balanceStates, Comparator.comparing(EventBalanceState::getDateTime));
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
+
         final List<Asset> assetList = balanceStates.stream()
                 .flatMap(bal -> bal.getAssets().stream())
                 .collect(Collectors.toList());
@@ -39,7 +41,8 @@ public class BalanceReportGenerator {
         final String chartPath = config.getOutputDir() + "/" + config.getSubject().get(0) + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
         final BigDecimal delta = calculateBalanceDelta(assetList);
-
+        final BigDecimal balanceUpdateDelta = findBalanceUpdateDelta(balanceStates);
+        System.out.println(balanceUpdateDelta);
         return BalanceReport.builder()
                 .startTrackDate(config.getStartTrackDate())
                 .finishTrackDate(config.getFinishTrackDate())
@@ -50,6 +53,12 @@ public class BalanceReportGenerator {
                 .outputPath(generatedPlotPath)
                 .balanceDifference(delta)
                 .build();
+    }
+
+    private BigDecimal findBalanceUpdateDelta(List<EventBalanceState> balanceStates) {
+        BigDecimal delta = balanceStates.stream().map(EventBalanceState::getBalanceUpdateDelta)
+                .filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return delta;
     }
 
     private BigDecimal calculateBalanceDelta(List<Asset> assetList) {
