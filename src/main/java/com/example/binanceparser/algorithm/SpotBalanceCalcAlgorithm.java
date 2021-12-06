@@ -78,10 +78,6 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
         return balanceToUSDT(eventBalanceStates);
     }
 
-    private void logBalUpdate(BalanceUpdateEvent balUpdate) {
-        System.out.println(balUpdate.getDate().format(ISO_DATE_TIME) + " Balance updated:" + balUpdate.getBalances() + ". Delta=" + balUpdate.getBalanceDelta());
-    }
-
     private void logTrade(OrderTradeUpdateEvent orderEvent) {
         final BigDecimal quoteAssetQty = valueOf(orderEvent.getOriginalQuantity()).multiply(orderEvent.getPriceOfLastFilledTrade());
         final String str = String.format("%s %s %s %s for total of %s quoteAsset", orderEvent.getDate().format(ISO_DATE_TIME), orderEvent.getSide(), valueOf(orderEvent.getOriginalQuantity()).toPlainString(), orderEvent.getSymbol(),

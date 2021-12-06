@@ -23,9 +23,9 @@ public class BalanceStateVisualizer {
 
     public static void main(String[] args) throws IOException {
         BalanceStateVisualizer app = new BalanceStateVisualizer();
-        final String person = "lenadc";
+        final String person = "kozhukhar";
         app.futuresStateChangeFromLogs(person);
-//        app.spotStateChangeFromLogs(person);
+        app.spotStateChangeFromLogs(person);
     }
 
     public void futuresStateChangeFromLogs(String person) throws IOException {

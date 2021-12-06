@@ -14,6 +14,9 @@ import java.util.Set;
 public class EventBalanceState extends BalanceState {
     private BigDecimal balanceUpdateDelta;
     private Set<Asset> assets;
+    //TODO
+    //private List<Transaction> transactions;
+    // class Transaction: can be Transfer (deposit/withdraw) or Trade
 
     public EventBalanceState(LocalDate dateTime, Set<Asset> assets, BigDecimal balanceUpdateDelta) {
         super(dateTime);

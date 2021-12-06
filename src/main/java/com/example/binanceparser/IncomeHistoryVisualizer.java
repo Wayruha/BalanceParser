@@ -1,4 +1,4 @@
-package com.example.binanceparser.util;
+package com.example.binanceparser;
 
 import com.example.binanceparser.config.Config;
 import com.example.binanceparser.config.IncomeConfig;
