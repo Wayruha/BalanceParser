@@ -12,14 +12,14 @@ public class IncomeCalculationAlgorithm {
 
     public List<IncomeBalanceState> calculateBalance(List<IncomeHistoryItem> incomeList) {
         final List<IncomeBalanceState> incomeBalanceStates = new ArrayList<>();
-        BigDecimal currentBalance = new BigDecimal(0);
+        BigDecimal cumulativeBalance = new BigDecimal(0);
         for (IncomeHistoryItem income : incomeList) {
 
             LocalDate dateTime = Instant.ofEpochMilli(income.getTime())
                     .atZone(ZoneId.systemDefault()).toLocalDate();
 
-            currentBalance = currentBalance.add(income.getIncome());
-            IncomeBalanceState balanceState = new IncomeBalanceState(dateTime, currentBalance, income.getIncomeType());
+            cumulativeBalance = cumulativeBalance.add(income.getIncome());
+            IncomeBalanceState balanceState = new IncomeBalanceState(dateTime, cumulativeBalance, income.getIncomeType());
             incomeBalanceStates.add(balanceState);
         }
         return incomeBalanceStates;

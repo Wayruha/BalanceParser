@@ -11,7 +11,10 @@ import com.example.binanceparser.report.BalanceReport;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+
+import static com.binance.api.client.FuturesIncomeType.REALIZED_PNL;
+import static java.time.LocalDateTime.parse;
+import static java.util.List.of;
 
 public class FuturesIncomeVisualizerApp {
     static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -25,8 +28,8 @@ public class FuturesIncomeVisualizerApp {
 
     private static IncomeConfig configure() {
         IncomeConfig config = new IncomeConfig();
-        LocalDateTime start = LocalDateTime.parse("2021-08-30 06:17:56", dateFormat);
-        LocalDateTime finish = LocalDateTime.parse("2021-11-30 13:15:50", dateFormat);
+        LocalDateTime start = parse("2021-08-30 06:17:56", dateFormat);
+        LocalDateTime finish = parse("2021-11-30 13:15:50", dateFormat);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
         config.setOutputDir("С:/users/yarik/Desktop");
@@ -38,7 +41,8 @@ public class FuturesIncomeVisualizerApp {
     public BalanceReport loadDataFromBinance() {
         final IncomeConfig config = configure();
         config.setLimit(1000);
-        config.setSubject(List.of("RDiachuk"));
+        config.setSubject(of("RDiachuk"));
+        config.setIncomeType(of(REALIZED_PNL));
         EventSource<IncomeHistoryItem> apiClientSource = new BinanceIncomeDataSource(Constants.BINANCE_API_KEY, Constants.BINANCE_SECRET_KEY, config);
         IncomeProcessor processor = new IncomeProcessor(apiClientSource, config);
         return processor.process();

@@ -5,10 +5,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public abstract class BalanceState {
-    LocalDate dateTime;
+    private LocalDateTime dateTime;
+
+    public BalanceState(LocalDate date) {
+        this.dateTime = date.atStartOfDay();
+    }
+
+    public LocalDate getDate(){
+        return dateTime != null ? dateTime.toLocalDate() : null;
+    }
 }

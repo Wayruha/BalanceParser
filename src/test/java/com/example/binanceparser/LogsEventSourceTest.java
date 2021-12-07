@@ -6,6 +6,7 @@ import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 import static com.example.binanceparser.domain.events.EventType.FUTURES_ORDER_TRADE_UPDATE;
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class LogsEventSourceTest {
 
     @Test
-    public void testParseLogLine() throws JsonProcessingException {
+    public void testParseLogLine() throws IOException {
         final String testLogLine = "FUTURES_PRODUCER_Kozhukhar FUTURES_ORDER_TRADE_UPDATE : UserDataUpdateEvent[content=FuturesTradeEvent[symbol=BTCUSDT,side=BUY,type=TAKE_PROFIT_MARKET,isReduceOnly=true,executionType=EXPIRED,originalQuantity=0.12,price=1.3,orderStatus=EXPIRED,quantityLastFilledTrade=0,accumulatedQuantity=0,priceOfLastFilledTrade=0,orderId=31456096465,newClientOrderId=ios_mzudq8unKoGaOs5msaXg,eventTime=1631668318189,timeInForce=GTE_GTC,commission=,commissionAsset=,orderTradeTime=1631668318172,tradeId=0,bidsNotional=0,askNotional=0,isMaker=false,stopPriceWorkingType=MARK_PRICE,originalOrderType=TAKE_PROFIT_MARKET,positionSide=SHORT,isCloseAll=true,activationPrice=,callbackRate=,realizedTradeProfit=0,eventType=FUTURES_ORDER_TRADE_UPDATE],eventType=FUTURES_ORDER_TRADE_UPDATE,type=ORDER_TRADE_UPDATE]";
         final AbstractEvent _event = LogsEventSource.parseLogLine(LocalDateTime.now(), testLogLine);
 

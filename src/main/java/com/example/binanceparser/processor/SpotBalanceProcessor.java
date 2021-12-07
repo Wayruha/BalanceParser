@@ -35,7 +35,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         		.stream()
         		.filter((event)->
         			event.getDateTime().atStartOfDay().compareTo(config.getStartTrackDate()) >= 0
-                    && 
+                    &&
                     event.getDateTime().atStartOfDay().compareTo(config.getFinishTrackDate()) <= 0
         		)
         		.collect(Collectors.toList());

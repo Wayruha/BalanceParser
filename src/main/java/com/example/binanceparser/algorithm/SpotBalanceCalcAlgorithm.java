@@ -125,7 +125,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
                 }
             }
             assets.add(new Asset(USD, balance));
-            updatedEventBalanceState.add(new EventBalanceState(state.getDateTime(), assets, state.getBalanceUpdateDelta()));
+            updatedEventBalanceState.add(new EventBalanceState(state.getDate(), assets, state.getBalanceUpdateDelta()));
         }
         //System.out.println(updatedEventBalanceState);
         return updatedEventBalanceState;

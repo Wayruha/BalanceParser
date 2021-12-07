@@ -29,7 +29,7 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
         return ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", dataSeries);
 
     }
-    
+
     //refactored to build chart more accurately(seconds instead of days)
     private TimeSeries createTimeSeries(List<EventBalanceState> eventBalanceStates, String assetToTrack) {
         final TimeSeries series = new TimeSeries(assetToTrack);

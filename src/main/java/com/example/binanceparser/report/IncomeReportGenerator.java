@@ -23,11 +23,14 @@ public class IncomeReportGenerator {
         final String chartPath = config.getOutputDir() + "/" + config.getSubject().get(0) + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
+
+        final IncomeBalanceState first = balanceStates.get(0);
+        final IncomeBalanceState last = balanceStates.get(balanceStates.size() - 1);
         return BalanceReport.builder()
-                .startTrackDate(config.getStartTrackDate())
-                .finishTrackDate(config.getFinishTrackDate())
-                .balanceAtStart(null)
-                .balanceAtEnd(null)
+                .startTrackDate(first.getDateTime())
+                .finishTrackDate(last.getDateTime())
+                .balanceAtStart(first.getAvailableBalance())
+                .balanceAtEnd(last.getAvailableBalance())
                 .min(findMinBalance(balances))
                 .max(findMaxBalance(balances))
                 .outputPath(generatedPlotPath)
@@ -43,7 +46,7 @@ public class IncomeReportGenerator {
 
     private static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {
         File file = new File(outputFileName);
-        ChartUtils.saveChartAsJPEG(file, chart, 2000, 370);
+        ChartUtils.saveChartAsJPEG(file, chart, 1200, 400);
         return file.getPath();
     }
 
