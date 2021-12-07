@@ -44,8 +44,8 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
     private List<EventBalanceState> filter(List<EventBalanceState> events, LocalDateTime startDate, LocalDateTime endDate) {
         return events.stream()
                 .filter(
-                        event -> event.getDateTime().atStartOfDay().compareTo(startDate) >= 0
-                                && event.getDateTime().atStartOfDay().compareTo(endDate) <= 0)
+                        event -> event.getDateTime().compareTo(startDate) >= 0
+                                && event.getDateTime().compareTo(endDate) <= 0)
                 .collect(Collectors.toList());
     }
 }

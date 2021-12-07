@@ -110,7 +110,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
                 else balance = balance.add(asset.getAvailableBalance().multiply(assetRate.get(asset.getAsset())));
             }
             assets.add(new Asset(USD, balance));
-            updatedEventBalanceState.add(new EventBalanceState(state.getDateTime(), assets, state.getBalanceUpdateDelta()));
+            updatedEventBalanceState.add(new EventBalanceState(state.getDate(), assets, state.getBalanceUpdateDelta()));
         }
         //System.out.println(updatedBalanceState);
         return updatedEventBalanceState;

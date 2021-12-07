@@ -51,7 +51,7 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
             }
 
             EventBalanceState eventBalanceState = new EventBalanceState();
-            eventBalanceState.setDateTime(accUpdate.getDate().toLocalDate());
+            eventBalanceState.setDateTime(accUpdate.getDate());
             Set<Asset> assetList = new HashSet<>();
             FuturesAccountUpdateEvent.Asset accUpdateAsset = accUpdate.getBalances().stream().filter(asset -> asset.getAsset().equals(assetToTrack))
                     .findFirst().orElseThrow(() -> new IllegalStateException("Balance not found"));

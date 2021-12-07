@@ -66,7 +66,7 @@ public class LogsEventSource implements EventSource<AbstractEvent> {
         return filters.stream().allMatch(f -> f.filter(event));
     }
 
-    public static AbstractEvent parseLogLine(LocalDateTime date, String logLine) throws JsonProcessingException {
+    public static AbstractEvent parseLogLine(LocalDateTime date, String logLine) throws IOException {
         final String[] logParts = logLine.split(" ");
         final String source = logParts[0];
         final EventType eventType = valueOf(logParts[1]);
