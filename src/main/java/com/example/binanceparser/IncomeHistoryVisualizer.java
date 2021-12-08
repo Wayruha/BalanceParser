@@ -33,15 +33,16 @@ public class IncomeHistoryVisualizer {
     }
 
     public List<Double> readBalanceChanges(File file) throws IOException {
-        final BufferedReader reader = new BufferedReader(new FileReader(file));
-        final String content = reader.lines().collect(Collectors.joining("", "", ""));
-        final ObjectMapper mapper = new ObjectMapper();
-        final List<IncomeLine> list = mapper.readValue(content, new TypeReference<>() {});
-        list.sort(Comparator.comparing(IncomeLine::getTime));
-        System.out.println("First date: " + list.get(0).time);
-        System.out.println("last date: " + list.get(list.size() - 1).time);
-        System.out.println("Absolute profit: " + list.stream().mapToDouble(IncomeLine::getIncome).sum());
-        return list.stream().map(IncomeLine::getIncome).collect(Collectors.toList());
+    	try(final BufferedReader reader = new BufferedReader(new FileReader(file))){
+    		final String content = reader.lines().collect(Collectors.joining("", "", ""));
+            final ObjectMapper mapper = new ObjectMapper();
+            final List<IncomeLine> list = mapper.readValue(content, new TypeReference<>() {});
+            list.sort(Comparator.comparing(IncomeLine::getTime));
+            System.out.println("First date: " + list.get(0).time);
+            System.out.println("last date: " + list.get(list.size() - 1).time);
+            System.out.println("Absolute profit: " + list.stream().mapToDouble(IncomeLine::getIncome).sum());
+            return list.stream().map(IncomeLine::getIncome).collect(Collectors.toList());
+    	}
     }
 
     @Data

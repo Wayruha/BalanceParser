@@ -1,8 +1,5 @@
 package com.example.binanceparser.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-
 public enum AccountUpdateReasonType {
     DEPOSIT,
     WITHDRAW,

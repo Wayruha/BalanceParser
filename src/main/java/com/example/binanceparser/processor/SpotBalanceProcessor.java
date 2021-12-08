@@ -7,9 +7,7 @@ import com.example.binanceparser.domain.EventBalanceState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.BalanceReportGenerator;
-
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,20 +30,20 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         final List<AbstractEvent> events = eventSource.getData();
         if (events.size() == 0) throw new RuntimeException("Can't find any relevant events");
         // retrieve balance changes
-        List<EventBalanceState> balanceStates = algorithm.processEvents(events, config.getAssetsToTrack());
+        List<EventBalanceState> balanceStates = algorithm
+        		.processEvents(events, config.getAssetsToTrack())
+        		.stream()
+        		.filter((event)->
+        			event.getDateTime().atStartOfDay().compareTo(config.getStartTrackDate()) >= 0
+                    && 
+                    event.getDateTime().atStartOfDay().compareTo(config.getFinishTrackDate()) <= 0
+        		)
+        		.collect(Collectors.toList());
 
-        balanceStates = filter(balanceStates, config.getStartTrackDate(), config.getFinishTrackDate());
         final BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
 
         System.out.println("Processor done for config: " + config);
         return balanceReport;
     }
 
-    private List<EventBalanceState> filter(List<EventBalanceState> events, LocalDateTime startDate, LocalDateTime endDate) {
-        return events.stream()
-                .filter(
-                        event -> event.getDateTime().atStartOfDay().compareTo(startDate) >= 0
-                                && event.getDateTime().atStartOfDay().compareTo(endDate) <= 0)
-                .collect(Collectors.toList());
-    }
 }

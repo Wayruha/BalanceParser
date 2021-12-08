@@ -23,7 +23,7 @@ public class BalanceStateVisualizer {
 
     public static void main(String[] args) throws IOException {
         BalanceStateVisualizer app = new BalanceStateVisualizer();
-        final String person = "kozhukhar";
+        final String person = "Kozhukhar";
         app.futuresStateChangeFromLogs(person);
         app.spotStateChangeFromLogs(person);
     }
@@ -31,7 +31,7 @@ public class BalanceStateVisualizer {
     public void futuresStateChangeFromLogs(String person) throws IOException {
         final BalanceVisualizerConfig config = configure();
         config.setAssetsToTrack(Collections.emptyList());
-        addSubject(config, person, "FUTURES");
+        addSubject(config, person, "FUTURES_PRODUCER");
 
         final File logsDir = new File(config.getInputFilepath());
         final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
@@ -44,7 +44,7 @@ public class BalanceStateVisualizer {
     public void spotStateChangeFromLogs(String person) throws IOException {
         final BalanceVisualizerConfig config = configure();
         config.setAssetsToTrack(Collections.emptyList());
-        addSubject(config, person, "SPOT");
+        addSubject(config, person, "SPOT_PRODUCER");
 
         final File logsDir = new File(config.getInputFilepath());
         final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
@@ -56,19 +56,19 @@ public class BalanceStateVisualizer {
 
     private static BalanceVisualizerConfig configure() {
         final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
-        LocalDateTime start = LocalDateTime.parse("2021-11-01 00:00:00", dateFormat);
-        LocalDateTime finish = LocalDateTime.parse("2021-12-01 00:00:00", dateFormat);
+        LocalDateTime start = LocalDateTime.parse("2021-08-16 00:00:00", dateFormat);
+        LocalDateTime finish = LocalDateTime.parse("2021-09-15 00:00:00", dateFormat);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
-        config.setInputFilepath("/Users/roman/Desktop/PassiveTrader/logs_01.12/events");
-        config.setOutputDir("/Users/roman/Desktop");
+        config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
+        config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
         config.setAssetsToTrack(List.of(USDT, BUSD));
         config.setConvertToUSD(true);
         return config;
     }
 
     private static void addSubject(BalanceVisualizerConfig config, String subject, String prefix) {
-        final String resolvedSubjectName = prefix + "_" + subject;
+        final String resolvedSubjectName = new StringBuilder().append(prefix).append("_").append(subject).toString();
         final List<String> list = config.getSubject();
         if(list == null){
             config.setSubject(new ArrayList<>());

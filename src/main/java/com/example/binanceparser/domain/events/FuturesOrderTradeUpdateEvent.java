@@ -1,6 +1,5 @@
 package com.example.binanceparser.domain.events;
 
-import com.example.binanceparser.domain.events.AbstractEvent;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

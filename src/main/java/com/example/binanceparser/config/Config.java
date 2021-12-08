@@ -11,9 +11,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public abstract class Config {
-    LocalDateTime startTrackDate;
-    LocalDateTime finishTrackDate;
-    String inputFilepath;
-    String outputDir;
-    List<String> subject;
+    private LocalDateTime startTrackDate;
+    private LocalDateTime finishTrackDate;
+    private String inputFilepath;
+    private String outputDir;
+    private List<String> subject;
 }

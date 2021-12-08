@@ -37,8 +37,13 @@ public class BalanceReportGenerator {
         final List<Asset> assetList = balanceStates.stream()
                 .flatMap(bal -> bal.getAssets().stream())
                 .collect(Collectors.toList());
-
-        final String chartPath = config.getOutputDir() + "/" + config.getSubject().get(0) + ".jpg";
+        
+        final String chartPath = new StringBuilder()
+        		.append(config.getOutputDir())
+        		.append("/")
+        		.append(config.getSubject().get(0))
+        		.append(".jpg")
+        		.toString();
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
         final BigDecimal delta = calculateBalanceDelta(assetList);
         final BigDecimal balanceUpdateDelta = findBalanceUpdateDelta(balanceStates);
@@ -74,15 +79,19 @@ public class BalanceReportGenerator {
     }
 
     private static BigDecimal findMaxBalance(List<Asset> assetList) {
-        if (assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
-        BigDecimal max = assetList.stream().findFirst().get().getAvailableBalance();
-        for (Asset asset : assetList) max = asset.getAvailableBalance().max(max);
+    	BigDecimal max = BigDecimal.valueOf(0);
+    	for (Asset asset : assetList) max = asset.getAvailableBalance().max(max);
+//        if (assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
+//        BigDecimal max = assetList.stream().findFirst().get().getAvailableBalance();
+//        for (Asset asset : assetList) max = asset.getAvailableBalance().max(max);
         return max;
     }
 
     private static BigDecimal findMinBalance(List<Asset> assetList) {
-        if (assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
-        BigDecimal min = assetList.stream().findFirst().get().getAvailableBalance();
+        BigDecimal min = assetList.stream().findFirst().isEmpty()?
+        		BigDecimal.valueOf(0)
+        		:
+        		assetList.stream().findFirst().get().getAvailableBalance();
         for (Asset asset : assetList) min = asset.getAvailableBalance().min(min);
         return min;
     }

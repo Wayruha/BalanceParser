@@ -6,6 +6,7 @@ import com.example.binanceparser.domain.EventBalanceState;
 import com.example.binanceparser.domain.events.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,22 +36,28 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
         final List<EventBalanceState> eventBalanceStates = new ArrayList<>();
         Map<String, Asset> actualBalance = new HashMap<>();
         for (int i = 0; i < events.size() - 1; i++) {
-            final AbstractEvent firstEvent = events.get(i);
+            final AbstractEvent currentEvent = events.get(i);
             final AbstractEvent nextEvent = events.get(i + 1);
-            if ((firstEvent.getEventType() != EventType.ORDER_TRADE_UPDATE && firstEvent.getEventType() != EventType.BALANCE_UPDATE) ||
-                    nextEvent.getEventType() != EventType.ACCOUNT_POSITION_UPDATE) continue;
-            if (ChronoUnit.SECONDS.between(firstEvent.getDate(), nextEvent.getDate()) > MAX_SECONDS_DELAY_FOR_VALID_EVENTS)
-                continue;
-
-            if (firstEvent.getEventType() == EventType.BALANCE_UPDATE) {
-                final BalanceUpdateEvent balanceUpdateEvent = (BalanceUpdateEvent) firstEvent;
+            if ((currentEvent.getEventType() != EventType.ORDER_TRADE_UPDATE&& currentEvent.getEventType() != EventType.BALANCE_UPDATE)
+            	||nextEvent.getEventType() != EventType.ACCOUNT_POSITION_UPDATE) {
+            	continue;
+            } 
+            
+            if (ChronoUnit.SECONDS.between(currentEvent.getDate(), nextEvent.getDate()) > MAX_SECONDS_DELAY_FOR_VALID_EVENTS) {
+            	continue;
+            }
+                
+            if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
+                final BalanceUpdateEvent balanceUpdateEvent = (BalanceUpdateEvent) currentEvent;
                 eventBalanceStates.add(processBalanceUpdate(nextEvent, actualBalance, balanceUpdateEvent.getBalanceDelta()));
                 continue;
             }
 
-            final OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) firstEvent;
+            final OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) currentEvent;
             final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
-            if (!orderEvent.getOrderStatus().equals("FILLED")) continue;
+            if (!orderEvent.getOrderStatus().equals("FILLED")) {
+            	continue;
+            }
             logTrade(orderEvent);
 
             Set<Asset> newEventAssets = accEvent.getBalances().stream().map(asset ->
@@ -63,17 +70,21 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
                 BigDecimal currentQuantity = actualBalance.get(orderSymbol).getAvailableBalance();
                 BigDecimal newPrice = orderEvent.getPriceOfLastFilledTrade();
                 BigDecimal currentPrice = assetRate.get(orderSymbol);
+                
                 final BigDecimal quoteAssetQty = newQuantity.multiply(newPrice);
-                final BigDecimal existingQuoteQty = currentQuantity
-                        .multiply(currentPrice);
+                final BigDecimal existingQuoteQty = currentQuantity.multiply(currentPrice);
+                
                 BigDecimal newTotalAssetQty = quoteAssetQty.add(existingQuoteQty);
-                assetRate.put(orderSymbol, newTotalAssetQty.divide(newQuantity.add(currentQuantity), 2));
-            } else assetRate.put(orderSymbol, orderEvent.getPriceOfLastFilledTrade());
+                assetRate.put(orderSymbol, newTotalAssetQty.divide(newQuantity.add(currentQuantity), 2, RoundingMode.FLOOR));
+            } else {
+            	assetRate.put(orderSymbol, orderEvent.getPriceOfLastFilledTrade());
+            }
 
             actualBalance = processBalance(actualBalance, newEventAssets);
-            EventBalanceState eventBalanceState = new EventBalanceState(accEvent.getDate().toLocalDate(),
-                    new HashSet<>(actualBalance.values()), null);
-            eventBalanceStates.add(eventBalanceState);
+            eventBalanceStates.add(
+            		new EventBalanceState(accEvent.getDate().toLocalDate(),
+            				new HashSet<>(actualBalance.values()),
+            				null));
         }
         return balanceToUSDT(eventBalanceStates);
     }
@@ -106,13 +117,17 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
             Set<Asset> assets = new HashSet<>();
             BigDecimal balance = new BigDecimal(0);
             for (Asset asset : state.getAssets()) {
-                if (assetRate.get(asset.getAsset()) == null) balance = balance.add(asset.getAvailableBalance());
-                else balance = balance.add(asset.getAvailableBalance().multiply(assetRate.get(asset.getAsset())));
+                if (assetRate.get(asset.getAsset()) == null) {//should check if this condition is necessary
+                	balance = balance.add(asset.getAvailableBalance());
+                }
+                else {
+                	balance = balance.add(asset.getAvailableBalance().multiply(assetRate.get(asset.getAsset())));
+                }
             }
             assets.add(new Asset(USD, balance));
             updatedEventBalanceState.add(new EventBalanceState(state.getDateTime(), assets, state.getBalanceUpdateDelta()));
         }
-        //System.out.println(updatedBalanceState);
+        //System.out.println(updatedEventBalanceState);
         return updatedEventBalanceState;
     }
 }

@@ -1,11 +1,9 @@
 package com.example.binanceparser.domain.events;
 
-import com.example.binanceparser.domain.events.AbstractEvent;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 
 @Data
@@ -15,24 +13,24 @@ import java.math.BigDecimal;
 public class OrderTradeUpdateEvent extends AbstractEvent {
 
 
-    String symbol;
+    private String symbol;
 
-    String orderStatus;
+    private String orderStatus;
 
-    BigDecimal price;
+    private BigDecimal price;
 
-    BigDecimal priceOfLastFilledTrade;
+    private BigDecimal priceOfLastFilledTrade;
 
-    Double originalQuantity;
+    private Double originalQuantity;
 
-    String side;
+    private String side;
 
-    BigDecimal commission;
+    private BigDecimal commission;
 
-    String commissionAsset;
+    private String commissionAsset;
 
-    Long eventTime;
+    private Long eventTime;
 
-    Long orderId;
+    private Long orderId;
 
 }
