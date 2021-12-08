@@ -4,7 +4,6 @@ import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.data.time.Day;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -30,7 +29,6 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 
     }
 
-    //refactored to build chart more accurately(seconds instead of days)
     private TimeSeries createTimeSeries(List<EventBalanceState> eventBalanceStates, String assetToTrack) {
         final TimeSeries series = new TimeSeries(assetToTrack);
         for (EventBalanceState eventBalanceState : eventBalanceStates) {
@@ -43,7 +41,5 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 
     private Second dateTimeToSecond(LocalDate dateTime) {
     	return new Second(Date.from(dateTime.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()));
-//        return new Day(dateTime.getDayOfMonth(), dateTime.getMonthValue(),
-//                dateTime.getYear());
     }
 }

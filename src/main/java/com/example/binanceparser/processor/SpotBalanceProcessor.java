@@ -33,7 +33,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         List<EventBalanceState> balanceStates = algorithm
         		.processEvents(events, config.getAssetsToTrack())
         		.stream()
-        		.filter((event)->
+        		.filter( event ->
         			event.getDateTime().atStartOfDay().compareTo(config.getStartTrackDate()) >= 0
                     &&
                     event.getDateTime().atStartOfDay().compareTo(config.getFinishTrackDate()) <= 0
