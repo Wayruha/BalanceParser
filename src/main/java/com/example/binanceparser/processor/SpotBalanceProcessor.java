@@ -8,6 +8,7 @@ import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.BalanceReportGenerator;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,11 +34,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         List<EventBalanceState> balanceStates = algorithm
         		.processEvents(events, config.getAssetsToTrack())
         		.stream()
-        		.filter( event ->
-        			event.getDateTime().atStartOfDay().compareTo(config.getStartTrackDate()) >= 0
-                    &&
-                    event.getDateTime().atStartOfDay().compareTo(config.getFinishTrackDate()) <= 0
-        		)
+        		.filter(event -> inRange(event, config.getStartTrackDate(), config.getFinishTrackDate()))
         		.collect(Collectors.toList());
 
         final BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
@@ -46,4 +43,8 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         return balanceReport;
     }
 
+    private boolean inRange(EventBalanceState state, LocalDateTime rangeStart, LocalDateTime rangeEnd){
+        return state.getDateTime().compareTo(rangeStart) >= 0
+                && state.getDateTime().compareTo(rangeEnd) <= 0;
+    }
 }

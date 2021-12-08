@@ -68,7 +68,8 @@ public class BalanceStateVisualizer {
     }
 
     private static void addSubject(BalanceVisualizerConfig config, String subject, String prefix) {
-        final String resolvedSubjectName = new StringBuilder().append(prefix).append("_").append(subject).toString();
+        //remove_me: іноді читаємість важливіша. СтрінгБілдер це класно, але тут він нічого нам не економить, а от вигляд робить гіршим
+        final String resolvedSubjectName = prefix + "_" + subject;
         final List<String> list = config.getSubject();
         if(list == null){
             config.setSubject(new ArrayList<>());

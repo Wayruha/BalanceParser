@@ -79,20 +79,16 @@ public class BalanceReportGenerator {
     }
 
     private static BigDecimal findMaxBalance(List<Asset> assetList) {
-    	BigDecimal max = BigDecimal.valueOf(0);
-    	for (Asset asset : assetList) max = asset.getAvailableBalance().max(max);
-//        if (assetList.stream().findFirst().isEmpty()) return BigDecimal.valueOf(0);
-//        BigDecimal max = assetList.stream().findFirst().get().getAvailableBalance();
-//        for (Asset asset : assetList) max = asset.getAvailableBalance().max(max);
-        return max;
+        return assetList.stream()
+                .map(Asset::getAvailableBalance)
+                .reduce(BigDecimal::max)
+                .orElse(BigDecimal.ZERO);
     }
 
     private static BigDecimal findMinBalance(List<Asset> assetList) {
-        BigDecimal min = assetList.stream().findFirst().isEmpty()?
-        		BigDecimal.valueOf(0)
-        		:
-        		assetList.stream().findFirst().get().getAvailableBalance();
-        for (Asset asset : assetList) min = asset.getAvailableBalance().min(min);
-        return min;
+        return assetList.stream()
+                .map(Asset::getAvailableBalance)
+                .reduce(BigDecimal::min)
+                .orElse(BigDecimal.ZERO);
     }
 }
