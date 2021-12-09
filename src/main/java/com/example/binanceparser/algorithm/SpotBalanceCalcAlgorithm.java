@@ -27,10 +27,13 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
         assetRate.put(USDT, valueOf(1.0)); // because order event has no USDT rate
         assetRate.put(BUSD, valueOf(1.0)); // because order event has no BUSD rate
     }
+    
+    @Override
+	public List<EventBalanceState> processEvents(List<AbstractEvent> events) {
+		return processEvents(events, config.getAssetsToTrack());
+	}
 
-    /**
-     * assetsToTrack is not used here
-     */
+    //TODO add track of assetsToTrack
     @Override
     public List<EventBalanceState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {
         final List<EventBalanceState> eventBalanceStates = new ArrayList<>();
@@ -38,6 +41,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
         for (int i = 0; i < events.size() - 1; i++) {
             final AbstractEvent currentEvent = events.get(i);
             final AbstractEvent nextEvent = events.get(i + 1);
+            
             if ((currentEvent.getEventType() != EventType.ORDER_TRADE_UPDATE&& currentEvent.getEventType() != EventType.BALANCE_UPDATE)
             	||nextEvent.getEventType() != EventType.ACCOUNT_POSITION_UPDATE) {
             	continue;
@@ -49,22 +53,25 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
                 
             if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
                 final BalanceUpdateEvent balanceUpdateEvent = (BalanceUpdateEvent) currentEvent;
-                eventBalanceStates.add(processBalanceUpdate(nextEvent, actualBalance, balanceUpdateEvent.getBalanceDelta()));
+                eventBalanceStates.add(processBalanceUpdate(nextEvent, actualBalance, balanceUpdateEvent.getBalanceDelta(), assetsToTrack));
                 continue;
             }
 
             final OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) currentEvent;
             final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
-            if (!orderEvent.getOrderStatus().equals("FILLED")) {
+            final String orderSymbol = orderEvent.getSymbol().replace(USDT, "");
+            
+            if (!orderEvent.getOrderStatus().equals("FILLED")||!assetsToTrack.contains(orderSymbol)) {
             	continue;
             }
+            
+            Set<Asset> newEventAssets = accEvent.getBalances().stream()
+            		.filter(asset->assetsToTrack.contains(asset.getAsset()))
+            		.map(asset ->
+                    	new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
+            
             logTrade(orderEvent);
-
-            Set<Asset> newEventAssets = accEvent.getBalances().stream().map(asset ->
-                    new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
-            final String orderSymbol = orderEvent.getSymbol().replace(USDT, "");
-
-
+            
             if (orderEvent.getSide().equals("BUY") && assetRate.containsKey(orderSymbol)) {
                 BigDecimal newQuantity = valueOf(orderEvent.getOriginalQuantity());
                 BigDecimal currentQuantity = actualBalance.get(orderSymbol).getAvailableBalance();
@@ -96,9 +103,11 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
         System.out.println(str);
     }
 
-    public EventBalanceState processBalanceUpdate(AbstractEvent nextEvent, Map<String, Asset> actualBalance, BigDecimal balanceUpdateDelta) {
+    public EventBalanceState processBalanceUpdate(AbstractEvent nextEvent, Map<String, Asset> actualBalance, BigDecimal balanceUpdateDelta, List<String> assetsToTrack) {
         final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
-        Set<Asset> newEventAssets = accEvent.getBalances().stream().map(asset ->
+        Set<Asset> newEventAssets = accEvent.getBalances().stream()
+        		.filter(asset->assetsToTrack.contains(asset.getAsset()))
+        		.map(asset ->
                 new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
 
         actualBalance = processBalance(actualBalance, newEventAssets);
@@ -130,4 +139,6 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
         //System.out.println(updatedEventBalanceState);
         return updatedEventBalanceState;
     }
+
+	
 }

@@ -30,7 +30,7 @@ public class BalanceStateVisualizer {
 
     public void futuresStateChangeFromLogs(String person) throws IOException {
         final BalanceVisualizerConfig config = configure();
-        config.setAssetsToTrack(Collections.emptyList());
+        //config.setAssetsToTrack(Collections.emptyList());
         addSubject(config, person, "FUTURES_PRODUCER");
 
         final File logsDir = new File(config.getInputFilepath());
@@ -43,7 +43,7 @@ public class BalanceStateVisualizer {
 
     public void spotStateChangeFromLogs(String person) throws IOException {
         final BalanceVisualizerConfig config = configure();
-        config.setAssetsToTrack(Collections.emptyList());
+        //config.setAssetsToTrack(Collections.emptyList());
         addSubject(config, person, "SPOT_PRODUCER");
 
         final File logsDir = new File(config.getInputFilepath());
@@ -68,7 +68,6 @@ public class BalanceStateVisualizer {
     }
 
     private static void addSubject(BalanceVisualizerConfig config, String subject, String prefix) {
-        //remove_me: іноді читаємість важливіша. СтрінгБілдер це класно, але тут він нічого нам не економить, а от вигляд робить гіршим
         final String resolvedSubjectName = prefix + "_" + subject;
         final List<String> list = config.getSubject();
         if(list == null){
