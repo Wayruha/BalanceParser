@@ -10,4 +10,8 @@ import java.util.List;
  */
 public interface CalculationAlgorithm {
     List<EventBalanceState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack);
+    //returns processEvents(List<AbstractEvent> events, config.getAsssetsToTrack)
+    //in case of call from somewhere except BalanceStateVisualizer(assetsToTrack already = config.getAsssetsToTrack)
+    //added 
+    List<EventBalanceState> processEvents(List<AbstractEvent> events);
 }

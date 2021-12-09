@@ -67,4 +67,9 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm {
         if (!currencyRate.containsKey(asset.getAsset())) return null;
         return asset.getAvailableBalance().multiply(currencyRate.get(asset.getAsset()));
     }
+
+	@Override
+	public List<EventBalanceState> processEvents(List<AbstractEvent> events) {
+		return processEvents(events, config.getAssetsToTrack());
+	}
 }

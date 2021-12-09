@@ -62,4 +62,10 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
         }
         return balances;
     }
+
+	@Override
+	public List<EventBalanceState> processEvents(List<AbstractEvent> events) {
+		// TODO Auto-generated method stub
+		return new ArrayList<EventBalanceState>();
+	}
 }

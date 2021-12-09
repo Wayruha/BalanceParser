@@ -32,7 +32,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         if (events.size() == 0) throw new RuntimeException("Can't find any relevant events");
         // retrieve balance changes
         List<EventBalanceState> balanceStates = algorithm
-        		.processEvents(events, config.getAssetsToTrack())
+        		.processEvents(events)
         		.stream()
         		.filter(event -> inRange(event, config.getStartTrackDate(), config.getFinishTrackDate()))
         		.collect(Collectors.toList());
