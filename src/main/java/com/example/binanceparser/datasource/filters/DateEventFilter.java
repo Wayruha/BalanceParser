@@ -16,7 +16,7 @@ public class DateEventFilter implements Filter{
 
     @Override
     public boolean filter(AbstractEvent event) {
-        return (startTrackDate == null ||event.getDate().isAfter(startTrackDate)) &&
-                (finishTrackDate == null ||event.getDate().isBefore(finishTrackDate));
+        return (startTrackDate == null ||event.getDateTime().isAfter(startTrackDate)) &&
+                (finishTrackDate == null ||event.getDateTime().isBefore(finishTrackDate));
     }
 }

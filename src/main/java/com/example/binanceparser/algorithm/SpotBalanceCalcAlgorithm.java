@@ -46,7 +46,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
             	continue;
             } 
             
-            if (ChronoUnit.SECONDS.between(currentEvent.getDate(), nextEvent.getDate()) > MAX_SECONDS_DELAY_FOR_VALID_EVENTS) {
+            if (ChronoUnit.SECONDS.between(currentEvent.getDateTime(), nextEvent.getDateTime()) > MAX_SECONDS_DELAY_FOR_VALID_EVENTS) {
             	continue;
             }
                 
@@ -88,7 +88,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
 
             actualBalance = processBalance(actualBalance, newEventAssets);
             eventBalanceStates.add(
-            		new EventBalanceState(accEvent.getDate(),//NOW we do not lose here hh:mm:ss part
+            		new EventBalanceState(accEvent.getDateTime(),//NOW we do not lose here hh:mm:ss part
             				new HashSet<>(actualBalance.values()),
             				null));
         }
@@ -97,7 +97,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
 
     private void logTrade(OrderTradeUpdateEvent orderEvent) {
         final BigDecimal quoteAssetQty = valueOf(orderEvent.getOriginalQuantity()).multiply(orderEvent.getPriceOfLastFilledTrade());
-        final String str = String.format("%s %s %s %s for total of %s quoteAsset", orderEvent.getDate().format(ISO_DATE_TIME), orderEvent.getSide(), valueOf(orderEvent.getOriginalQuantity()).toPlainString(), orderEvent.getSymbol(),
+        final String str = String.format("%s %s %s %s for total of %s quoteAsset", orderEvent.getDateTime().format(ISO_DATE_TIME), orderEvent.getSide(), valueOf(orderEvent.getOriginalQuantity()).toPlainString(), orderEvent.getSymbol(),
                 quoteAssetQty.toPlainString());
         System.out.println(str);
     }
@@ -110,7 +110,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
                 new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
 
         actualBalance = processBalance(actualBalance, newEventAssets);
-        return new EventBalanceState(accEvent.getDate(),
+        return new EventBalanceState(accEvent.getDateTime(),
                 new HashSet<>(actualBalance.values()), balanceUpdateDelta);
     }
 

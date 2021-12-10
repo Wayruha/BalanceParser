@@ -46,12 +46,12 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
 
             if (!nextOrderEvent.isReduceOnly()) {
                 final double positionQty = nextOrderEvent.getOriginalQuantity() * nextOrderEvent.getPrice();
-                System.out.println(accUpdate.getDate() + " open position: " + positionQty);
+                System.out.println(accUpdate.getDateTime() + " open position: " + positionQty);
                 currentBalance += positionQty;
             }
 
             EventBalanceState eventBalanceState = new EventBalanceState();
-            eventBalanceState.setDateTime(accUpdate.getDate());
+            eventBalanceState.setDateTime(accUpdate.getDateTime());
             Set<Asset> assetList = new HashSet<>();
             FuturesAccountUpdateEvent.Asset accUpdateAsset = accUpdate.getBalances().stream().filter(asset -> asset.getAsset().equals(assetToTrack))
                     .findFirst().orElseThrow(() -> new IllegalStateException("Balance not found"));

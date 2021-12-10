@@ -79,7 +79,7 @@ public class LogsEventSource implements EventSource<AbstractEvent> {
     }
 
     private static void setCommons(LocalDateTime date, String source, AbstractEvent event, EventType eventType) {
-        event.setDate(date);
+        event.setDateTime(date);
         event.setSource(source);
         event.setEventType(eventType);
     }

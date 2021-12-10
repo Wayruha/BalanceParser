@@ -38,7 +38,7 @@ public abstract class AbstractEvent {
 
     protected Long eventTime;
 
-    protected LocalDateTime date;
+    protected LocalDateTime dateTime;
 
     protected String source;
 }
