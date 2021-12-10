@@ -3,9 +3,8 @@ package com.example.binanceparser.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -18,7 +17,7 @@ public class EventBalanceState extends BalanceState {
     //private List<Transaction> transactions;
     // class Transaction: can be Transfer (deposit/withdraw) or Trade
 
-    public EventBalanceState(LocalDate dateTime, Set<Asset> assets, BigDecimal balanceUpdateDelta) {
+    public EventBalanceState(LocalDateTime dateTime, Set<Asset> assets, BigDecimal balanceUpdateDelta) {
         super(dateTime);
         this.assets = assets;
         this.balanceUpdateDelta = balanceUpdateDelta;

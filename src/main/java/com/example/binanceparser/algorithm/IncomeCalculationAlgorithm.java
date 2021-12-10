@@ -4,7 +4,7 @@ import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.example.binanceparser.domain.*;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -15,8 +15,8 @@ public class IncomeCalculationAlgorithm {
         BigDecimal cumulativeBalance = new BigDecimal(0);
         for (IncomeHistoryItem income : incomeList) {
 
-            LocalDate dateTime = Instant.ofEpochMilli(income.getTime())
-                    .atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDateTime dateTime = Instant.ofEpochMilli(income.getTime())
+                    .atZone(ZoneId.systemDefault()).toLocalDateTime();
 
             cumulativeBalance = cumulativeBalance.add(income.getIncome());
             IncomeBalanceState balanceState = new IncomeBalanceState(dateTime, cumulativeBalance, income.getIncomeType());

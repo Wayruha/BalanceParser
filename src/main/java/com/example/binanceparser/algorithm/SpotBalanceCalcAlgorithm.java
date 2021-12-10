@@ -33,7 +33,6 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
 		return processEvents(events, config.getAssetsToTrack());
 	}
 
-    //TODO add track of assetsToTrack
     @Override
     public List<EventBalanceState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {
         final List<EventBalanceState> eventBalanceStates = new ArrayList<>();
@@ -89,11 +88,11 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
 
             actualBalance = processBalance(actualBalance, newEventAssets);
             eventBalanceStates.add(
-            		new EventBalanceState(accEvent.getDate().toLocalDate(),
+            		new EventBalanceState(accEvent.getDate(),//NOW we do not lose here hh:mm:ss part
             				new HashSet<>(actualBalance.values()),
             				null));
         }
-        return balanceToUSDT(eventBalanceStates);
+        return config.isConvertToUSD()?balanceToUSDT(eventBalanceStates):eventBalanceStates;
     }
 
     private void logTrade(OrderTradeUpdateEvent orderEvent) {
@@ -111,7 +110,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
                 new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()))).collect(Collectors.toSet());
 
         actualBalance = processBalance(actualBalance, newEventAssets);
-        return new EventBalanceState(accEvent.getDate().toLocalDate(),
+        return new EventBalanceState(accEvent.getDate(),
                 new HashSet<>(actualBalance.values()), balanceUpdateDelta);
     }
 
@@ -134,7 +133,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
                 }
             }
             assets.add(new Asset(USD, balance));
-            updatedEventBalanceState.add(new EventBalanceState(state.getDate(), assets, state.getBalanceUpdateDelta()));
+            updatedEventBalanceState.add(new EventBalanceState(state.getDateTime(), assets, state.getBalanceUpdateDelta()));
         }
         //System.out.println(updatedEventBalanceState);
         return updatedEventBalanceState;

@@ -62,8 +62,8 @@ public class BalanceStateVisualizer {
         config.setFinishTrackDate(finish);
         config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
         config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
-        config.setAssetsToTrack(List.of(USDT, BUSD));
-        config.setConvertToUSD(true);
+		config.setAssetsToTrack(List.of(USDT, BUSD, "BTC", "ETH", "AXS"));
+        config.setConvertToUSD(false);
         return config;
     }
 

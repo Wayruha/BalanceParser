@@ -4,9 +4,8 @@ import com.binance.api.client.FuturesIncomeType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Data
@@ -16,7 +15,7 @@ public class IncomeBalanceState extends BalanceState {
     private FuturesIncomeType incomeType;
     private BigDecimal availableBalance;
 
-    public IncomeBalanceState(LocalDate dateTime, BigDecimal availableBalance, FuturesIncomeType incomeType) {
+    public IncomeBalanceState(LocalDateTime dateTime, BigDecimal availableBalance, FuturesIncomeType incomeType) {
         super(dateTime);
         this.availableBalance = availableBalance;
         this.incomeType = incomeType;

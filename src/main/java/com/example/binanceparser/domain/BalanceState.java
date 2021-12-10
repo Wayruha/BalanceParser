@@ -11,11 +11,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Data
 public abstract class BalanceState {
+	
     private LocalDateTime dateTime;
-
-    public BalanceState(LocalDate date) {
-        this.dateTime = date.atStartOfDay();
-    }
 
     public LocalDate getDate(){
         return dateTime != null ? dateTime.toLocalDate() : null;
