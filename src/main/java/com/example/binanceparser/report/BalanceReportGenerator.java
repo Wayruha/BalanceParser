@@ -30,7 +30,7 @@ public class BalanceReportGenerator {
         this.chartBuilder = new AssetChartBuilder(assetsToTrack);
     }
 
-    public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {
+    public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {//here somehow only USDT Assets are shown
         Collections.sort(balanceStates, Comparator.comparing(EventBalanceState::getDateTime));
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
 
