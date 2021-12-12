@@ -36,7 +36,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         		.stream()
         		.filter(event -> inRange(event, config.getStartTrackDate(), config.getFinishTrackDate()))
         		.collect(Collectors.toList());
-
+        
         final BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
 
         System.out.println("Processor done for config: " + config);

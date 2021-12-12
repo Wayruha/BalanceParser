@@ -15,72 +15,75 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.example.binanceparser.Constants.BUSD;
-import static com.example.binanceparser.Constants.USDT;
+import static com.example.binanceparser.Constants.*;
 
 public class BalanceStateVisualizer {
-    public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public static void main(String[] args) throws IOException {
-        BalanceStateVisualizer app = new BalanceStateVisualizer();
-        final String person = "Kozhukhar";
-        app.futuresStateChangeFromLogs(person);
-        app.spotStateChangeFromLogs(person);
-    }
+	public static void main(String[] args) throws IOException {
+		BalanceStateVisualizer app = new BalanceStateVisualizer();
+		final String person = "Kozhukhar";
+		app.futuresStateChangeFromLogs(person);
+		app.spotStateChangeFromLogs(person);
+	}
 
-    public void futuresStateChangeFromLogs(String person) throws IOException {
-        final BalanceVisualizerConfig config = configure();
-        //config.setAssetsToTrack(Collections.emptyList());
-        addSubject(config, person, "FUTURES_PRODUCER");
+	public void futuresStateChangeFromLogs(String person) throws IOException {
+		final BalanceVisualizerConfig config = configure();
+		// config.setAssetsToTrack(Collections.emptyList());
+		addSubject(config, person, "FUTURES_PRODUCER");
 
-        final File logsDir = new File(config.getInputFilepath());
-        final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
-        FuturesBalanceStateProcessor processor = new FuturesBalanceStateProcessor(logsEventSource, config);
-        final BalanceReport report = processor.process();
-        System.out.println("Report....");
-        System.out.println(report.toPrettyString());
-    }
+		final File logsDir = new File(config.getInputFilepath());
+		final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
+		FuturesBalanceStateProcessor processor = new FuturesBalanceStateProcessor(logsEventSource, config);
+		final BalanceReport report = processor.process();
+		System.out.println("Report....");
+		System.out.println(report.toPrettyString());
+	}
 
-    public void spotStateChangeFromLogs(String person) throws IOException {
-        final BalanceVisualizerConfig config = configure();
-        //config.setAssetsToTrack(Collections.emptyList());
-        addSubject(config, person, "SPOT_PRODUCER");
+	public void spotStateChangeFromLogs(String person) throws IOException {
+		final BalanceVisualizerConfig config = configure();
+		// config.setAssetsToTrack(Collections.emptyList());
+		addSubject(config, person, "SPOT_PRODUCER");
 
-        final File logsDir = new File(config.getInputFilepath());
-        final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
-        SpotBalanceProcessor processor = new SpotBalanceProcessor(logsEventSource, config);
-        final BalanceReport report = processor.process();
-        System.out.println("Report....");
-        System.out.println(report.toPrettyString());
-    }
+		final File logsDir = new File(config.getInputFilepath());
+		final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
+		SpotBalanceProcessor processor = new SpotBalanceProcessor(logsEventSource, config);
+		final BalanceReport report = processor.process();
+		System.out.println("Report....");
+		System.out.println(report.toPrettyString());
+	}
 
-    private static BalanceVisualizerConfig configure() {
-        final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
-        LocalDateTime start = LocalDateTime.parse("2021-08-16 00:00:00", dateFormat);
-        LocalDateTime finish = LocalDateTime.parse("2021-09-15 00:00:00", dateFormat);
-        config.setStartTrackDate(start);
-        config.setFinishTrackDate(finish);
-        config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
-        config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
-		config.setAssetsToTrack(List.of(USDT, BUSD, "BTC", "ETH", "AXS"));
-        config.setConvertToUSD(false);
-        return config;
-    }
+	private static BalanceVisualizerConfig configure() {
+		final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
+		LocalDateTime start = LocalDateTime.parse("2021-08-16 00:00:00", dateFormat);
+		LocalDateTime finish = LocalDateTime.parse("2021-09-15 00:00:00", dateFormat);
+		config.setStartTrackDate(start);
+		config.setFinishTrackDate(finish);
+		config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
+		config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
+		config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
+		config.setConvertToUSD(true);
+		return config;
+	}
 
-    private static void addSubject(BalanceVisualizerConfig config, String subject, String prefix) {
-        final String resolvedSubjectName = prefix + "_" + subject;
-        final List<String> list = config.getSubject();
-        if(list == null){
-            config.setSubject(new ArrayList<>());
-        }
-        config.getSubject().add(resolvedSubjectName);
-    }
+	private static void addSubject(BalanceVisualizerConfig config, String subject, String prefix) {
+		final String resolvedSubjectName = prefix + "_" + subject;
+		final List<String> list = config.getSubject();
+		if (list == null) {
+			config.setSubject(new ArrayList<>());
+		}
+		config.getSubject().add(resolvedSubjectName);
+	}
 
-    private static Set<Filter> filters(BalanceVisualizerConfig config) {
-        final Set<Filter> filters = new HashSet<>();
-        if (config.getSubject() != null) filters.add(new SourceFilter(config.getSubject()));
+	private static Set<Filter> filters(BalanceVisualizerConfig config) {
+		final Set<Filter> filters = new HashSet<>();
+		if (config.getSubject() != null) {
+			filters.add(new SourceFilter(config.getSubject()));
+		}
 
-        if (config.getEventType() != null) filters.add(new EventTypeFilter(config.getEventType()));
-        return filters;
-    }
+		if (config.getEventType() != null) {
+			filters.add(new EventTypeFilter(config.getEventType()));
+		}
+		return filters;
+	}
 }

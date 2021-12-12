@@ -12,7 +12,11 @@ public class Constants {
     public static final String USD = "USD";
     public static final String USDT = "USDT";
     public static final String BUSD = "BUSD";
-
+    public static final String ETH = "ETH";
+    public static final String BTC = "BTC";
+    public static final String AXS = "AXS";
+    //...
+    
     public static final Map<String, BigDecimal> STABLECOIN_RATE = new HashMap<>();
     static {
         STABLECOIN_RATE.put(USDT, BigDecimal.ONE);

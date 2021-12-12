@@ -1,14 +1,10 @@
-package com.example.binanceparser;
+package com.example.binanceparser.datasource;
 
-import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
-
 import static com.example.binanceparser.domain.events.EventType.FUTURES_ORDER_TRADE_UPDATE;
 import static org.junit.jupiter.api.Assertions.*;
 

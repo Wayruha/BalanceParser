@@ -1,11 +1,12 @@
-package com.example.binanceparser;
+package com.example.binanceparser.processor;
 
+import com.example.binanceparser.Constants;
 import com.example.binanceparser.binance.BinanceClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class FuturesBalanceIncomeProcessorTest {
+class IncomeProcessorTest {
 
     @Test
     public void getchHistory() {

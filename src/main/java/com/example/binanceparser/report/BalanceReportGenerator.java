@@ -20,75 +20,60 @@ import java.util.stream.Collectors;
 import static com.example.binanceparser.Constants.USD;
 
 public class BalanceReportGenerator {
-    private ChartBuilder<EventBalanceState> chartBuilder;
-    private final BalanceVisualizerConfig config;
+	private ChartBuilder<EventBalanceState> chartBuilder;
+	private final BalanceVisualizerConfig config;
 
-    public BalanceReportGenerator(BalanceVisualizerConfig config) {
-        this.config = config;
-        final List<String> assetsToTrack = config.isConvertToUSD() ?
-                List.of(USD) : config.getAssetsToTrack();
-        this.chartBuilder = new AssetChartBuilder(assetsToTrack);
-    }
+	public BalanceReportGenerator(BalanceVisualizerConfig config) {
+		this.config = config;
+		final List<String> assetsToTrack = config.isConvertToUSD() ? List.of(USD) : config.getAssetsToTrack();
+		this.chartBuilder = new AssetChartBuilder(assetsToTrack);
+	}
 
-    public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {//here somehow only USDT Assets are shown
-        Collections.sort(balanceStates, Comparator.comparing(EventBalanceState::getDateTime));
-        final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
+	public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {
+		Collections.sort(balanceStates, Comparator.comparing(EventBalanceState::getDateTime));
+		final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
 
-        final List<Asset> assetList = balanceStates.stream()
-                .flatMap(bal -> bal.getAssets().stream())
-                .collect(Collectors.toList());
-        
-        final String chartPath = new StringBuilder()
-        		.append(config.getOutputDir())
-        		.append("/")
-        		.append(config.getSubject().get(0))
-        		.append(".jpg")
-        		.toString();
-        final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
-        final BigDecimal delta = calculateBalanceDelta(assetList);
-        final BigDecimal balanceUpdateDelta = findBalanceUpdateDelta(balanceStates);
-        System.out.println(balanceUpdateDelta);
-        return BalanceReport.builder()
-                .startTrackDate(config.getStartTrackDate())
-                .finishTrackDate(config.getFinishTrackDate())
-                .balanceAtStart(balanceStates.get(0).getAssetBalance(USD))
-                .balanceAtEnd(balanceStates.get(balanceStates.size() - 1).getAssetBalance(USD))
-                .min(findMinBalance(assetList))
-                .max(findMaxBalance(assetList))
-                .outputPath(generatedPlotPath)
-                .balanceDifference(delta)
-                .build();
-    }
+		final List<Asset> assetList = balanceStates.stream().flatMap(bal -> bal.getAssets().stream())
+				.collect(Collectors.toList());
 
-    private BigDecimal findBalanceUpdateDelta(List<EventBalanceState> balanceStates) {
-        BigDecimal delta = balanceStates.stream().map(EventBalanceState::getBalanceUpdateDelta)
-                .filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
-        return delta;
-    }
+		final String chartPath = new StringBuilder().append(config.getOutputDir()).append("/")
+				.append(config.getSubject().get(0)).append(".jpg").toString();
+		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
+		final BigDecimal delta = calculateBalanceDelta(assetList);
+		final BigDecimal balanceUpdateDelta = findBalanceUpdateDelta(balanceStates);
+		System.out.println(balanceUpdateDelta);
+		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
+				.finishTrackDate(config.getFinishTrackDate())
+				.balanceAtStart(balanceStates.size() != 0 ? balanceStates.get(0).getAssetBalance(USD) : BigDecimal.ZERO)
+				.balanceAtEnd(
+						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getAssetBalance(USD)
+								: BigDecimal.ZERO)
+				.min(findMinBalance(assetList)).max(findMaxBalance(assetList)).outputPath(generatedPlotPath)
+				.balanceDifference(delta).build();
+	}
 
-    private BigDecimal calculateBalanceDelta(List<Asset> assetList) {
-        final BigDecimal firstAssetBal = assetList.get(0).getAvailableBalance().negate();
-        final BigDecimal lastAssetBalance = assetList.get(assetList.size() - 1).getAvailableBalance();
-        return lastAssetBalance.add(firstAssetBal);
-    }
+	private BigDecimal findBalanceUpdateDelta(List<EventBalanceState> balanceStates) {
+		BigDecimal delta = balanceStates.stream().map(EventBalanceState::getBalanceUpdateDelta).filter(Objects::nonNull)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		return delta;
+	}
 
-    private static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {
-        File file = new File(outputFileName);
-        ChartUtils.saveChartAsJPEG(file, chart, 2000, 370);
-        return file.getPath();
-    }
+	private BigDecimal calculateBalanceDelta(List<Asset> assetList) {
+		return assetList.size() != 0 ? assetList.get(assetList.size() - 1).getAvailableBalance()
+				.add(assetList.get(0).getAvailableBalance().negate()) : BigDecimal.ZERO;
+	}
 
-    private static BigDecimal findMaxBalance(List<Asset> assetList) {
-        return assetList.stream()
-                .map(Asset::getAvailableBalance)
-                .reduce(BigDecimal::max)
-                .orElse(BigDecimal.ZERO);
-    }
+	private static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {
+		File file = new File(outputFileName);
+		ChartUtils.saveChartAsJPEG(file, chart, 2000, 1000);
+		return file.getPath();
+	}
 
-    private static BigDecimal findMinBalance(List<Asset> assetList) {
-        return assetList.stream()
-                .map(Asset::getAvailableBalance)
-                .reduce(BigDecimal::min)
-                .orElse(BigDecimal.ZERO);
-    }
+	private static BigDecimal findMaxBalance(List<Asset> assetList) {
+		return assetList.stream().map(Asset::getAvailableBalance).reduce(BigDecimal::max).orElse(BigDecimal.ZERO);
+	}
+
+	private static BigDecimal findMinBalance(List<Asset> assetList) {
+		return assetList.stream().map(Asset::getAvailableBalance).reduce(BigDecimal::min).orElse(BigDecimal.ZERO);
+	}
 }
