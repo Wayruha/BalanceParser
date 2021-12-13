@@ -3,12 +3,10 @@ package com.example.binanceparser.datasource;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.EventType;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;

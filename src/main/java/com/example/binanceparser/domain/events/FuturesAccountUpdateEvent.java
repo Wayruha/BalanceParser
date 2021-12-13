@@ -2,15 +2,21 @@ package com.example.binanceparser.domain.events;
 
 import com.example.binanceparser.domain.AccountUpdateReasonType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
 @Data
+@SuperBuilder
+@EqualsAndHashCode(callSuper=false)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
+@AllArgsConstructor
 @ToString(callSuper = true)
 public class FuturesAccountUpdateEvent extends AbstractEvent {
 
