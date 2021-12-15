@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class OrderTradeUpdateEvent extends AbstractEvent {
 
-
     private String symbol;
 
     private String orderStatus;
@@ -33,8 +32,6 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
     private BigDecimal commission;
 
     private String commissionAsset;
-
-    private Long eventTime;
 
     private Long orderId;
 

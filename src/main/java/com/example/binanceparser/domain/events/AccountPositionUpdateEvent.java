@@ -22,6 +22,7 @@ public class AccountPositionUpdateEvent extends AbstractEvent {
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class Asset{
         private String asset;
         private BigDecimal free;

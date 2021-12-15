@@ -17,8 +17,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class BalanceUpdateEvent extends AbstractEvent{
 
-    String balances;
+    private String balances;
 
-    BigDecimal balanceDelta;
+    private BigDecimal balanceDelta;
 
 }

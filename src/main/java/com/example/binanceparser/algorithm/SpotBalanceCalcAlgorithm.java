@@ -111,7 +111,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
 			BigDecimal balanceUpdateDelta, List<String> assetsToTrack) {
 		final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 		Set<Asset> newEventAssets = accEvent.getBalances().stream()
-				.filter(asset -> assetsToTrack.contains(asset.getAsset())||assetsToTrack.size()==0)
+				.filter(asset -> assetsToTrack.contains(asset.getAsset()) || assetsToTrack.size() == 0)
 				.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked())))
 				.collect(Collectors.toSet());
 

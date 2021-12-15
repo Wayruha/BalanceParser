@@ -34,7 +34,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         List<EventBalanceState> balanceStates = algorithm
         		.processEvents(events)
         		.stream()
-        		.filter(event -> inRange(event, config.getStartTrackDate(), config.getFinishTrackDate()))
+        		.filter(state -> inRange(state, config.getStartTrackDate(), config.getFinishTrackDate()))
         		.collect(Collectors.toList());
         
         final BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
