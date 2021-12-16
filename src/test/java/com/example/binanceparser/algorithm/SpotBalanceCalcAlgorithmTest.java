@@ -15,7 +15,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
-import com.example.binanceparser.domain.EventBalanceState;
+import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.AccountPositionUpdateEvent;
 import com.example.binanceparser.domain.events.AccountPositionUpdateEvent.Asset;
@@ -28,8 +28,8 @@ import com.example.binanceparser.domain.events.OrderTradeUpdateEvent;
 public class SpotBalanceCalcAlgorithmTest {
 
 	private List<AbstractEvent> aelist = null;
-	private List<EventBalanceState> noAssetsBSlist = null;
-	private List<EventBalanceState> bslist = null;
+	private List<SpotIncomeState> noAssetsBSlist = null;
+	private List<SpotIncomeState> bslist = null;
 	private BalanceVisualizerConfig noAssetsConfig = null;
 	private BalanceVisualizerConfig config = null;
 	
@@ -42,7 +42,7 @@ public class SpotBalanceCalcAlgorithmTest {
 		config.setFinishTrackDate(LocalDateTime.parse("2021-09-15 00:00:00", dateFormat));
 		config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
 		config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
-		config.setAssetsToTrack(List.of(USDT, BUSD, BTC));
+		config.setAssetsToTrack(List.of(BUSD, BTC));
 		config.setConvertToUSD(true);
 		
 		config.setStartTrackDate(LocalDateTime.parse("2021-08-16 00:00:00", dateFormat));
@@ -143,29 +143,31 @@ public class SpotBalanceCalcAlgorithmTest {
 						)).build());
 		
 		
-		//definind balance states for config with no assets to track(track all assets available)
-		noAssetsBSlist.add(new EventBalanceState());
-		noAssetsBSlist.add(new EventBalanceState());
-		noAssetsBSlist.add(new EventBalanceState());
+		//definind income states for config with no assets to track(track all assets available)
+		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
+		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.valueOf(-10), null));
+		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.valueOf(-10), null));
+		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.valueOf(-10), null));
+		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.valueOf(-6), null));
 		
-		//defining balance states for config with specified assets to track
-		bslist.add(new EventBalanceState());
-		bslist.add(new EventBalanceState());
-		bslist.add(new EventBalanceState());
+		//defining income states for config with specified assets to track
+		bslist.add(new SpotIncomeState(BigDecimal.ZERO, null));
+		bslist.add(new SpotIncomeState(BigDecimal.ZERO, null));
+		bslist.add(new SpotIncomeState(BigDecimal.valueOf(4), null));
 		
 	}
 	
 	@Test
 	public void shouldReturnCorrectBalanceStatesForAllAssets() throws SecurityException, IllegalArgumentException{		
-		SpotBalanceCalcAlgorithm alg = new SpotBalanceCalcAlgorithm(noAssetsConfig);
-		List<EventBalanceState> acceptedBSlist = alg.processEvents(aelist);
+		TestSpotBalancecalcAlgorithm alg = new TestSpotBalancecalcAlgorithm(noAssetsConfig);
+		List<SpotIncomeState> acceptedBSlist = alg.processEvents(aelist);
 		assertEquals(noAssetsBSlist, acceptedBSlist);
 	}
 	
 	@Test
 	public void shouldReturnCorrectBalanceStatesForSpecifiedAssets() throws SecurityException, IllegalArgumentException {
-		SpotBalanceCalcAlgorithm alg = new SpotBalanceCalcAlgorithm(config);
-		List<EventBalanceState> acceptedBSlist = alg.processEvents(aelist);
+		TestSpotBalancecalcAlgorithm alg = new TestSpotBalancecalcAlgorithm(config);
+		List<SpotIncomeState> acceptedBSlist = alg.processEvents(aelist);
 		assertEquals(bslist, acceptedBSlist);
 	}
 	
