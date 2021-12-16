@@ -16,7 +16,7 @@ import static com.example.binanceparser.Constants.USD;
 /**
  * this algorithm just uses AccUpdate.walletBalance, without any calculations
  */
-public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm {
+public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalanceState> {
     private final BalanceVisualizerConfig config;
     private final Map<String, BigDecimal> currencyRate;
 

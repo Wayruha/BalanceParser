@@ -20,7 +20,7 @@ import static com.example.binanceparser.domain.events.EventType.FUTURES_ORDER_TR
  * One of the problems is that position qty, used to calculate balance, is created using leverage
  * Therefore, it does not represent the real amount of money spent
  */
-public class CalculationAlgorithmImpl implements CalculationAlgorithm {
+public class CalculationAlgorithmImpl implements CalculationAlgorithm<EventBalanceState> {
 
     final String assetToTrack;
 

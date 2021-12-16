@@ -43,7 +43,7 @@ public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
         for (IncomeBalanceState incomeBalanceState : incomeBalanceStates) {
             if (incomeBalanceState.getIncomeType() == FuturesIncomeType.COMMISSION) continue;
             series.addOrUpdate(dateTimeToDay(incomeBalanceState.getDate()),
-                    incomeBalanceState.getAvailableBalance());
+                    incomeBalanceState.getBalanceState());
         }
         dataset.addSeries(series);
         return dataset;

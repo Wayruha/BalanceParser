@@ -53,7 +53,7 @@ public class BalanceReportGenerator {
 	}
 
 	private BigDecimal findBalanceUpdateDelta(List<EventBalanceState> balanceStates) {
-		BigDecimal delta = balanceStates.stream().map(EventBalanceState::getBalanceUpdateDelta).filter(Objects::nonNull)
+		BigDecimal delta = balanceStates.stream().map(EventBalanceState::getBalanceState).filter(Objects::nonNull)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 		return delta;
 	}

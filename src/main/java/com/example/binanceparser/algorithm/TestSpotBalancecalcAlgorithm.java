@@ -1,20 +1,26 @@
 package com.example.binanceparser.algorithm;
 
 import java.util.List;
-
 import com.example.binanceparser.config.BalanceVisualizerConfig;
-import com.example.binanceparser.domain.EventBalanceState;
+import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 
-public class TestSpotBalancecalcAlgorithm extends SpotBalanceCalcAlgorithm{
+public class TestSpotBalancecalcAlgorithm implements CalculationAlgorithm<SpotIncomeState> {
 
-	public TestSpotBalancecalcAlgorithm(BalanceVisualizerConfig config) {
-		super(config);
-	}
+	private final BalanceVisualizerConfig config;
 	
+	public TestSpotBalancecalcAlgorithm(BalanceVisualizerConfig config) {
+		this.config = config;
+	}
+
 	@Override
-	public List<EventBalanceState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {//will contain new implementation
+	public List<SpotIncomeState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {// will contain new implementation
 		return null;
+	}
+
+	@Override
+	public List<SpotIncomeState> processEvents(List<AbstractEvent> events) {
+		return processEvents(events, config.getAssetsToTrack());
 	}
 
 }

@@ -19,7 +19,7 @@ public class IncomeReportGenerator {
     public BalanceReport getBalanceReport(Config config, List<IncomeBalanceState> balanceStates) throws IOException {
         final JFreeChart lineChart = incomeChartBuilder.buildLineChart(balanceStates);
 
-        final List<BigDecimal> balances = balanceStates.stream().map(IncomeBalanceState::getAvailableBalance).collect(Collectors.toList());
+        final List<BigDecimal> balances = balanceStates.stream().map(IncomeBalanceState::getBalanceState).collect(Collectors.toList());
         final String chartPath = config.getOutputDir() + "/" + config.getSubject().get(0) + ".jpg";
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
@@ -29,8 +29,8 @@ public class IncomeReportGenerator {
         return BalanceReport.builder()
                 .startTrackDate(first.getDateTime())
                 .finishTrackDate(last.getDateTime())
-                .balanceAtStart(first.getAvailableBalance())
-                .balanceAtEnd(last.getAvailableBalance())
+                .balanceAtStart(first.getBalanceState())
+                .balanceAtEnd(last.getBalanceState())
                 .min(findMinBalance(balances))
                 .max(findMaxBalance(balances))
                 .outputPath(generatedPlotPath)

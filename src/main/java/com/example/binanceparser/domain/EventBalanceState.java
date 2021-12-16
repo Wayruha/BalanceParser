@@ -13,27 +13,22 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventBalanceState extends BalanceState {
-    private BigDecimal balanceUpdateDelta;
-    private Set<Asset> assets;
-    //TODO
-    //private List<Transaction> transactions;
-    // class Transaction: can be Transfer (deposit/withdraw) or Trade
+	private Set<Asset> assets;
+	// TODO
+	// private List<Transaction> transactions;
+	// class Transaction: can be Transfer (deposit/withdraw) or Trade
 
-    public EventBalanceState(LocalDateTime dateTime, Set<Asset> assets, BigDecimal balanceUpdateDelta) {
-        super(dateTime);
-        this.assets = assets;
-        this.balanceUpdateDelta = balanceUpdateDelta;
-    }
+	public EventBalanceState(LocalDateTime dateTime, Set<Asset> assets, BigDecimal balanceUpdateDelta) {
+		super(balanceUpdateDelta, dateTime);
+		this.assets = assets;
+	}
 
-    public Asset findAsset(String assetName) {
-        return assets.stream()
-                .filter(a -> a.getAsset().equals(assetName))
-                .findFirst()
-                .orElse(null);
-    }
+	public Asset findAsset(String assetName) {
+		return assets.stream().filter(a -> a.getAsset().equals(assetName)).findFirst().orElse(null);
+	}
 
-    public BigDecimal getAssetBalance(String assetName) {
-        final Asset asset = findAsset(assetName);
-        return asset == null ? BigDecimal.ZERO : asset.getAvailableBalance();
-    }
+	public BigDecimal getAssetBalance(String assetName) {
+		final Asset asset = findAsset(assetName);
+		return asset == null ? BigDecimal.ZERO : asset.getAvailableBalance();
+	}
 }

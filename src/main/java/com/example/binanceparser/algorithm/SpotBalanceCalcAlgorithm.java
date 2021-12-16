@@ -15,7 +15,7 @@ import static com.example.binanceparser.Constants.*;
 import static java.math.BigDecimal.valueOf;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
-public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
+public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalanceState> {
 	private final BalanceVisualizerConfig config;
 	final int MAX_SECONDS_DELAY_FOR_VALID_EVENTS = 1;
 	private final HashMap<String, BigDecimal> assetRate;
@@ -138,7 +138,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm {
 			}
 			assets.add(new Asset(USD, balance));
 			updatedEventBalanceState
-					.add(new EventBalanceState(state.getDateTime(), assets, state.getBalanceUpdateDelta()));
+					.add(new EventBalanceState(state.getDateTime(), assets, state.getBalanceState()));
 		}
 		// System.out.println(updatedEventBalanceState);
 		return updatedEventBalanceState;
