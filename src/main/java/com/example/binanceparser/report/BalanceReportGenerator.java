@@ -3,6 +3,7 @@ package com.example.binanceparser.report;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
+import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.plot.AssetChartBuilder;
 import com.example.binanceparser.plot.ChartBuilder;
 import org.jfree.chart.ChartUtils;
@@ -50,6 +51,12 @@ public class BalanceReportGenerator {
 								: BigDecimal.ZERO)
 				.min(findMinBalance(assetList)).max(findMaxBalance(assetList)).outputPath(generatedPlotPath)
 				.balanceDifference(delta).build();
+	}
+	
+	//for now will be implemented as such (maybe later it will be the main method)
+	public BalanceReport getStateReport(List<SpotIncomeState> incomeStates) {
+		
+		return null;
 	}
 
 	private BigDecimal findBalanceUpdateDelta(List<EventBalanceState> balanceStates) {

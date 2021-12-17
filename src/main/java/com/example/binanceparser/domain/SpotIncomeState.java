@@ -41,14 +41,20 @@ public class SpotIncomeState extends BalanceState {
 		}
 
 		public void updateAssetState(BigDecimal assetDelta, BigDecimal price) {
+
 			if (assetDelta.compareTo(BigDecimal.ZERO) < 0) {
 				setBalanceState(getBalanceState()
 						.add(assetDelta.multiply(price))// what we got when sold asset
 						.subtract(assetDelta.multiply(averagePrice)));// what we spent when bought asset
-			} else {
-				averagePrice = averagePrice.multiply(getAvailableBalance()).add(assetDelta.multiply(price))
+			}
+			
+			else {
+				averagePrice = averagePrice
+						.multiply(getAvailableBalance())
+						.add(assetDelta.multiply(price))
 						.divide(getAvailableBalance().add(assetDelta));
-				getAvailableBalance().add(assetDelta.multiply(price));
+				setAvailableBalance(getAvailableBalance()
+						.add(assetDelta));
 			}
 
 		}

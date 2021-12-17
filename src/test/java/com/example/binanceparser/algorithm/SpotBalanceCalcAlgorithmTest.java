@@ -63,7 +63,7 @@ public class SpotBalanceCalcAlgorithmTest {
 				.side("BUY")
 				.price(BigDecimal.valueOf(45000.0))
 				.priceOfLastFilledTrade(BigDecimal.valueOf(45000.0))
-				.originalQuantity(0.001)
+				.originalQuantity(BigDecimal.valueOf(0.001))
 				.commission(BigDecimal.valueOf(0.5))
 				.commissionAsset(USDT).build());
 		aelist.add(AccountPositionUpdateEvent.builder()
@@ -94,7 +94,7 @@ public class SpotBalanceCalcAlgorithmTest {
 				.side("SELL")
 				.price(BigDecimal.valueOf(4500.0))
 				.priceOfLastFilledTrade(BigDecimal.valueOf(4500.0))
-				.originalQuantity(0.05)
+				.originalQuantity(BigDecimal.valueOf(0.05))
 				.commission(BigDecimal.valueOf(0.5))
 				.commissionAsset(USDT).build());
 		aelist.add(AccountPositionUpdateEvent.builder()
@@ -112,7 +112,7 @@ public class SpotBalanceCalcAlgorithmTest {
 				.side("BUY")
 				.price(BigDecimal.valueOf(50000.0))
 				.priceOfLastFilledTrade(BigDecimal.valueOf(50000.0))
-				.originalQuantity(0.001)
+				.originalQuantity(BigDecimal.valueOf(0.001))
 				.commission(BigDecimal.valueOf(1.0))
 				.commissionAsset(USDT).build());
 		aelist.add(AccountPositionUpdateEvent.builder()
@@ -130,7 +130,7 @@ public class SpotBalanceCalcAlgorithmTest {
 				.side("SELL")
 				.price(BigDecimal.valueOf(51000.0))
 				.priceOfLastFilledTrade(BigDecimal.valueOf(51000.0))
-				.originalQuantity(0.002)
+				.originalQuantity(BigDecimal.valueOf(0.002))
 				.commission(BigDecimal.valueOf(1.5))
 				.commissionAsset(USDT).build());
 		aelist.add(AccountPositionUpdateEvent.builder()

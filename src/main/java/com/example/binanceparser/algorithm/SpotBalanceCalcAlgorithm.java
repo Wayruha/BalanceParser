@@ -4,13 +4,11 @@ import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
 import com.example.binanceparser.domain.events.*;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import static com.example.binanceparser.Constants.*;
 import static java.math.BigDecimal.valueOf;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
@@ -75,7 +73,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalan
 			logTrade(orderEvent);
 
 			if (orderEvent.getSide().equals("BUY") && assetRate.containsKey(orderSymbol)) {
-				BigDecimal newQuantity = valueOf(orderEvent.getOriginalQuantity());
+				BigDecimal newQuantity = orderEvent.getOriginalQuantity();
 				BigDecimal currentQuantity = actualBalance.get(orderSymbol).getAvailableBalance();
 				BigDecimal newPrice = orderEvent.getPriceOfLastFilledTrade();
 				BigDecimal currentPrice = assetRate.get(orderSymbol);
@@ -98,11 +96,11 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalan
 	}
 
 	private void logTrade(OrderTradeUpdateEvent orderEvent) {
-		final BigDecimal quoteAssetQty = valueOf(orderEvent.getOriginalQuantity())
+		final BigDecimal quoteAssetQty = orderEvent.getOriginalQuantity()
 				.multiply(orderEvent.getPriceOfLastFilledTrade());
 		final String str = String.format("%s %s %s %s for total of %s quoteAsset",
 				orderEvent.getDateTime().format(ISO_DATE_TIME), orderEvent.getSide(),
-				valueOf(orderEvent.getOriginalQuantity()).toPlainString(), orderEvent.getSymbol(),
+				orderEvent.getOriginalQuantity().toPlainString(), orderEvent.getSymbol(),
 				quoteAssetQty.toPlainString());
 		System.out.println(str);
 	}

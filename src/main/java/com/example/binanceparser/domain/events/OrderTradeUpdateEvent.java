@@ -25,7 +25,8 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
     private BigDecimal priceOfLastFilledTrade;
 
-    private Double originalQuantity;
+    //Double->BigDecimal may cause some buds when parsing event, should check if this change is safe
+    private BigDecimal originalQuantity;
 
     private String side;
 
