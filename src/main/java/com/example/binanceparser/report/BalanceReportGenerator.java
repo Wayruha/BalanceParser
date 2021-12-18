@@ -3,12 +3,10 @@ package com.example.binanceparser.report;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
-import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.plot.AssetChartBuilder;
 import com.example.binanceparser.plot.ChartBuilder;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
-
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -17,19 +15,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import static com.example.binanceparser.Constants.USD;
 
-public class BalanceReportGenerator {
+public class BalanceReportGenerator extends AbstractBalanceReportGenerator<EventBalanceState, BalanceVisualizerConfig> {
 	private ChartBuilder<EventBalanceState> chartBuilder;
-	private final BalanceVisualizerConfig config;
-
+	
 	public BalanceReportGenerator(BalanceVisualizerConfig config) {
-		this.config = config;
+		super(config);
 		final List<String> assetsToTrack = config.isConvertToUSD() ? List.of(USD) : config.getAssetsToTrack();
 		this.chartBuilder = new AssetChartBuilder(assetsToTrack);
 	}
 
+	@Override
 	public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {
 		Collections.sort(balanceStates, Comparator.comparing(EventBalanceState::getDateTime));
 		final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
@@ -52,12 +49,6 @@ public class BalanceReportGenerator {
 				.min(findMinBalance(assetList)).max(findMaxBalance(assetList)).outputPath(generatedPlotPath)
 				.balanceDifference(delta).build();
 	}
-	
-	//for now will be implemented as such (maybe later it will be the main method)
-	public BalanceReport getStateReport(List<SpotIncomeState> incomeStates) {
-		
-		return null;
-	}
 
 	private BigDecimal findBalanceUpdateDelta(List<EventBalanceState> balanceStates) {
 		BigDecimal delta = balanceStates.stream().map(EventBalanceState::getBalanceState).filter(Objects::nonNull)
@@ -70,7 +61,7 @@ public class BalanceReportGenerator {
 				.add(assetList.get(0).getAvailableBalance().negate()) : BigDecimal.ZERO;
 	}
 
-	private static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {
+	public static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {
 		File file = new File(outputFileName);
 		ChartUtils.saveChartAsJPEG(file, chart, 2000, 1000);
 		return file.getPath();

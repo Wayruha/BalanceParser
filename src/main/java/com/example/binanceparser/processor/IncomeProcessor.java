@@ -23,7 +23,7 @@ public class IncomeProcessor extends Processor<IncomeConfig> {
         super(config);
         this.eventSource = eventSource;
         this.config = config;
-        this.reportGenerator = new IncomeReportGenerator();
+        this.reportGenerator = new IncomeReportGenerator(config);
         this.algorithm = new IncomeCalculationAlgorithm();
     }
 
@@ -35,7 +35,7 @@ public class IncomeProcessor extends Processor<IncomeConfig> {
             Collections.sort(incomes, Comparator.comparing(IncomeHistoryItem::getTime));
 
             final List<IncomeBalanceState> logBalanceStates = algorithm.calculateBalance(incomes);
-            final BalanceReport balanceReport = reportGenerator.getBalanceReport(config, logBalanceStates);
+            final BalanceReport balanceReport = reportGenerator.getBalanceReport(logBalanceStates);
             System.out.println("Processor done for config: " + config);
             return balanceReport;
         } catch (IOException exception) {

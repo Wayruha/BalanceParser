@@ -3,6 +3,7 @@ package com.example.binanceparser.algorithm;
 import static com.example.binanceparser.Constants.USDT;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +29,8 @@ public class TestSpotBalancecalcAlgorithm implements CalculationAlgorithm<SpotIn
 		return processEvents(events, config.getAssetsToTrack());
 	}
 
-	// will contain new implementation
 	@Override
 	public List<SpotIncomeState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {
-
 		final List<SpotIncomeState> spotIncomeStates = new ArrayList<>();
 
 		for (int i = 0; i < events.size() - 1; i++) {
@@ -73,31 +72,45 @@ public class TestSpotBalancecalcAlgorithm implements CalculationAlgorithm<SpotIn
 			
 			SpotIncomeState incomeState = new SpotIncomeState(currentEvent.getDateTime());
 			
+			if (incomeState.findAssetState(orderSymbol) == null) {
+				incomeState.setAssetState(incomeState.new AssetState(
+						orderSymbol, 
+						BigDecimal.ZERO,
+						BigDecimal.ZERO)
+						);
+			}
+			
 			if(orderEvent.getSide().equals("BUY")) {
 				incomeState.findAssetState(orderSymbol)
 					.updateAssetState(
 						orderEvent.getOriginalQuantity(), 
-						orderEvent.getPrice()//COMISSION WORKS ONLY FOR USDT NOW
-							.add(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity()))
-							);
+						includeCommissionToBuyPrice(orderEvent)
+						);
 			}
 			else if(orderEvent.getSide().equals("SELL")) {
 				incomeState.findAssetState(orderSymbol)
 					.updateAssetState(
 						orderEvent.getOriginalQuantity().negate(), 
-						orderEvent.getPrice()//COMISSION WORKS ONLY FOR USDT NOW
-							.subtract(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity()))
-							);
+						includeCommissionToSellPrice(orderEvent)
+						);
 			}
 			else {
 				continue;
 			}
 			
-			spotIncomeStates.add(incomeState);
-			
+			spotIncomeStates.add(incomeState);	
 		}
-
 		return spotIncomeStates;
+	}
+	
+	private BigDecimal includeCommissionToBuyPrice(OrderTradeUpdateEvent orderEvent) {
+		return orderEvent.getPrice()//COMISSION WORKS ONLY FOR USDT NOW
+				.add(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), 8, RoundingMode.FLOOR));
+	}
+	
+	private BigDecimal includeCommissionToSellPrice(OrderTradeUpdateEvent orderEvent) {
+		return orderEvent.getPrice()//COMISSION WORKS ONLY FOR USDT NOW
+				.subtract(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), 8, RoundingMode.FLOOR));
 	}
 	
 	private void logTrade(OrderTradeUpdateEvent orderEvent) {

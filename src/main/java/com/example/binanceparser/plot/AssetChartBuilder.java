@@ -20,15 +20,15 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
         this.assetsToTrack = assetsToTrack;
     }
 
-    public JFreeChart buildLineChart(List<EventBalanceState> eventBalanceStates) {
-        final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
-        for (String asset : assetsToTrack) {
-            dataSeries.addSeries(createTimeSeries(eventBalanceStates, asset));
-        }
-        return ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", dataSeries);
-
-    }
-
+    @Override
+	public JFreeChart buildLineChart(List<EventBalanceState> eventBalanceStates) {
+		final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
+		for (String asset : assetsToTrack) {
+			dataSeries.addSeries(createTimeSeries(eventBalanceStates, asset));
+		}
+		return ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", dataSeries);
+	}
+	
     private TimeSeries createTimeSeries(List<EventBalanceState> eventBalanceStates, String assetToTrack) {
         final TimeSeries series = new TimeSeries(assetToTrack);
         for (EventBalanceState eventBalanceState : eventBalanceStates) {
