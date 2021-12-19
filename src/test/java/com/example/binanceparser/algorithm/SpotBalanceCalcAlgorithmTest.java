@@ -159,14 +159,14 @@ public class SpotBalanceCalcAlgorithmTest {
 	
 	@Test
 	public void shouldReturnCorrectBalanceStatesForAllAssets() throws SecurityException, IllegalArgumentException{		
-		TestSpotBalancecalcAlgorithm alg = new TestSpotBalancecalcAlgorithm(noAssetsConfig);
+		TestSpotBalanceСalcAlgorithm alg = new TestSpotBalanceСalcAlgorithm(noAssetsConfig);
 		List<SpotIncomeState> acceptedBSlist = alg.processEvents(aelist);
 		assertEquals(noAssetsBSlist, acceptedBSlist);
 	}
 	
 	@Test
 	public void shouldReturnCorrectBalanceStatesForSpecifiedAssets() throws SecurityException, IllegalArgumentException {
-		TestSpotBalancecalcAlgorithm alg = new TestSpotBalancecalcAlgorithm(config);
+		TestSpotBalanceСalcAlgorithm alg = new TestSpotBalanceСalcAlgorithm(config);
 		List<SpotIncomeState> acceptedBSlist = alg.processEvents(aelist);
 		assertEquals(bslist, acceptedBSlist);
 	}

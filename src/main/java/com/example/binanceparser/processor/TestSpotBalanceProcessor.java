@@ -3,7 +3,7 @@ package com.example.binanceparser.processor;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-import com.example.binanceparser.algorithm.TestSpotBalancecalcAlgorithm;
+import com.example.binanceparser.algorithm.TestSpotBalanceСalcAlgorithm;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.domain.SpotIncomeState;
@@ -14,12 +14,12 @@ import com.example.binanceparser.report.TestBalanceReportGenerator;
 public class TestSpotBalanceProcessor extends SpotBalanceProcessor {
 
 	private final TestBalanceReportGenerator balanceReportGenerator;
-	private final TestSpotBalancecalcAlgorithm algorithm;
+	private final TestSpotBalanceСalcAlgorithm algorithm;
 
 	public TestSpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
 		super(eventSource, config);
 		this.balanceReportGenerator = new TestBalanceReportGenerator(config);
-		this.algorithm = new TestSpotBalancecalcAlgorithm(config);
+		this.algorithm = new TestSpotBalanceСalcAlgorithm(config);
 	}
 
 	@Override

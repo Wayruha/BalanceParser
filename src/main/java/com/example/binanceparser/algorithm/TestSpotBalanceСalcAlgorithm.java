@@ -7,6 +7,8 @@ import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.binanceparser.Constants;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.events.AbstractEvent;
@@ -15,12 +17,11 @@ import com.example.binanceparser.domain.events.BalanceUpdateEvent;
 import com.example.binanceparser.domain.events.EventType;
 import com.example.binanceparser.domain.events.OrderTradeUpdateEvent;
 
-public class TestSpotBalancecalcAlgorithm implements CalculationAlgorithm<SpotIncomeState> {
-
+public class TestSpotBalanceСalcAlgorithm implements CalculationAlgorithm<SpotIncomeState> {
 	private final BalanceVisualizerConfig config;
 	private final int MAX_SECONDS_DELAY_FOR_VALID_EVENTS = 1;
 	
-	public TestSpotBalancecalcAlgorithm(BalanceVisualizerConfig config) {
+	public TestSpotBalanceСalcAlgorithm(BalanceVisualizerConfig config) {
 		this.config = config;
 	}
 
@@ -32,9 +33,7 @@ public class TestSpotBalancecalcAlgorithm implements CalculationAlgorithm<SpotIn
 	@Override
 	public List<SpotIncomeState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {
 		final List<SpotIncomeState> spotIncomeStates = new ArrayList<>();
-
 		for (int i = 0; i < events.size() - 1; i++) {
-
 			final AbstractEvent currentEvent = events.get(i);
 			final AbstractEvent nextEvent = events.get(i + 1);
 
@@ -51,11 +50,10 @@ public class TestSpotBalancecalcAlgorithm implements CalculationAlgorithm<SpotIn
 
 			//FOR NOW VERY QUESTIONABLE HOW TO HANDLE
 			if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
-				final BalanceUpdateEvent balanceUpdateEvent = (BalanceUpdateEvent) currentEvent;
-				SpotIncomeState incomeState = new SpotIncomeState(balanceUpdateEvent.getDateTime());
-				incomeState.findAssetState(balanceUpdateEvent.getBalances())
-					.updateAssetState(balanceUpdateEvent.getBalanceDelta(), null);
-				//spotIncomeStates.add(incomeState);
+				final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
+				SpotIncomeState incomeState = new SpotIncomeState(balanceEvent.getDateTime());
+				incomeState.updateAssetState(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
+				//spotIncomeStates.add(incomeState); TODO
 				continue;
 			}
 
@@ -71,46 +69,31 @@ public class TestSpotBalancecalcAlgorithm implements CalculationAlgorithm<SpotIn
 			logTrade(orderEvent);
 			
 			SpotIncomeState incomeState = new SpotIncomeState(currentEvent.getDateTime());
-			
-			if (incomeState.findAssetState(orderSymbol) == null) {
-				incomeState.setAssetState(incomeState.new AssetState(
-						orderSymbol, 
-						BigDecimal.ZERO,
-						BigDecimal.ZERO)
-						);
-			}
-			
+
 			if(orderEvent.getSide().equals("BUY")) {
-				incomeState.findAssetState(orderSymbol)
-					.updateAssetState(
-						orderEvent.getOriginalQuantity(), 
-						includeCommissionToBuyPrice(orderEvent)
-						);
-			}
-			else if(orderEvent.getSide().equals("SELL")) {
-				incomeState.findAssetState(orderSymbol)
-					.updateAssetState(
-						orderEvent.getOriginalQuantity().negate(), 
-						includeCommissionToSellPrice(orderEvent)
-						);
-			}
-			else {
-				continue;
+				incomeState.updateAssetState(orderSymbol, orderEvent.getOriginalQuantity(), includeCommissionToBuyPrice(orderEvent));
+			} else if(orderEvent.getSide().equals("SELL")) {
+				incomeState.updateAssetState(orderSymbol, orderEvent.getOriginalQuantity().negate(), includeCommissionToSellPrice(orderEvent));
+			} else {
+				throw new IllegalArgumentException("Unrecognized order.Side");
 			}
 			
 			spotIncomeStates.add(incomeState);	
 		}
 		return spotIncomeStates;
 	}
-	
+
+
+	//TODO чого в одному випадку ми віднімаємо комісію а в іншому додаємо?
+	// ми ж  в обох випадках ПЛАТИМО комісію біржі. Думаю потрібно завжди додавати (?)
 	private BigDecimal includeCommissionToBuyPrice(OrderTradeUpdateEvent orderEvent) {
 		return orderEvent.getPrice()//COMISSION WORKS ONLY FOR USDT NOW
-				.add(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), 8, RoundingMode.FLOOR));
+				.add(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT));
 	}
 	
 	private BigDecimal includeCommissionToSellPrice(OrderTradeUpdateEvent orderEvent) {
 		return orderEvent.getPrice()//COMISSION WORKS ONLY FOR USDT NOW
-				.subtract(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), 8, RoundingMode.FLOOR));
+				.subtract(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT));
 	}
 	
 	private void logTrade(OrderTradeUpdateEvent orderEvent) {

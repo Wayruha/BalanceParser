@@ -1,6 +1,8 @@
 package com.example.binanceparser;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +18,8 @@ public class Constants {
     public static final String BTC = "BTC";
     public static final String AXS = "AXS";
     //...
+
+    public static final MathContext MATH_CONTEXT = new MathContext(8, RoundingMode.FLOOR);
     
     public static final Map<String, BigDecimal> STABLECOIN_RATE = new HashMap<>();
     static {
