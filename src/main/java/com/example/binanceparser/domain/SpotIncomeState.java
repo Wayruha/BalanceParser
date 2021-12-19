@@ -4,13 +4,12 @@ import com.example.binanceparser.Constants;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-
-import static com.example.binanceparser.Constants.USD;
+import static com.example.binanceparser.Constants.*;
 
 @Data
 @EqualsAndHashCode(callSuper=false)
@@ -31,33 +30,50 @@ public class SpotIncomeState extends BalanceState {
 		lockedAssetStates = new HashSet<>();
 	}
 	
-	public SpotIncomeState(BigDecimal conditionedUSDTBalsnce, LocalDateTime dateTime, SpotIncomeState incomeState) {
-		super(conditionedUSDTBalsnce, dateTime);
+	public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
+		super(incomeState.getBalanceState(), dateTime);
 		currentAssets = new HashSet<>(incomeState.getCurrentAssets());
 		lockedAssetStates = new HashSet<>(incomeState.getLockedAssetStates());
 	}
 
 	public BigDecimal totalBalanceToRelativeAsset() {
-		return null;
+		BigDecimal sum = new BigDecimal(0);
+		for (Asset asset : currentAssets) {
+			if (asset.getAsset().equals(USDT) || asset.getAsset().equals(BUSD)) {
+				sum = sum.add(asset.getAvailableBalance());
+			}
+		}
+
+		for (AssetState assetState : lockedAssetStates) {
+			sum = sum.add(assetState.getAvailableBalance().multiply(assetState.getAveragePrice()));
+		}
+		return sum;
 	}
 
 	public AssetState findAssetState(String assetName) {
 		return lockedAssetStates.stream().filter(a -> a.getAsset().equals(assetName)).findFirst().orElse(null);
 	}
 
-	public AssetState addAssetIfNotExist(String assetName, BigDecimal assetQty) {
+	public AssetState addAssetIfNotExist(String assetName) {
 		final AssetState assetState = findAssetState(assetName);
 		if(assetState != null) return assetState;
 
-		final AssetState newAsset = new AssetState(assetName, assetQty, BigDecimal.ZERO);
+		final AssetState newAsset = new AssetState(assetName, BigDecimal.ZERO, BigDecimal.ZERO);
 		lockedAssetStates.add(newAsset);
 		return newAsset;
+	}
+	
+	public void updateCurrentAssets(List<Asset> updatedAssets) {
+		updatedAssets.stream().forEach((updatedAsset)->{
+			currentAssets.removeIf((currentAsset) -> currentAsset.getAsset().equals(updatedAsset.getAsset()));
+			currentAssets.add(updatedAsset);
+		});
 	}
 	//TODO  AssetState i BalanceState - була намішана логіка і розмиті сфери відповідальності
 	// публічні методи внутрішнього класу використоувалися для зміни стану зовнішнього обєкта.
 	// - один метод AssetState змінював і себе і зовншій клас одночасно
 	public void updateAssetState(String assetName, BigDecimal assetDelta, BigDecimal transactionPrice) {
-		final AssetState asset = addAssetIfNotExist(assetName, assetDelta);
+		final AssetState asset = addAssetIfNotExist(assetName);
 
 		if (assetDelta.compareTo(BigDecimal.ZERO) < 0) {
 			//SELL operation

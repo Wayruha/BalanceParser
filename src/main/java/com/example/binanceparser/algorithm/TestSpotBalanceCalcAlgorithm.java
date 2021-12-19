@@ -3,13 +3,13 @@ package com.example.binanceparser.algorithm;
 import static com.example.binanceparser.Constants.USDT;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.stream.Collectors;
 import com.example.binanceparser.Constants;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
+import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.AccountPositionUpdateEvent;
@@ -17,11 +17,11 @@ import com.example.binanceparser.domain.events.BalanceUpdateEvent;
 import com.example.binanceparser.domain.events.EventType;
 import com.example.binanceparser.domain.events.OrderTradeUpdateEvent;
 
-public class TestSpotBalanceСalcAlgorithm implements CalculationAlgorithm<SpotIncomeState> {
+public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncomeState> {
 	private final BalanceVisualizerConfig config;
 	private final int MAX_SECONDS_DELAY_FOR_VALID_EVENTS = 1;
 	
-	public TestSpotBalanceСalcAlgorithm(BalanceVisualizerConfig config) {
+	public TestSpotBalanceCalcAlgorithm(BalanceVisualizerConfig config) {
 		this.config = config;
 	}
 
@@ -48,7 +48,7 @@ public class TestSpotBalanceСalcAlgorithm implements CalculationAlgorithm<SpotI
 				continue;
 			}
 
-			//FOR NOW VERY QUESTIONABLE HOW TO HANDLE
+			//TODO FOR NOW VERY QUESTIONABLE HOW TO HANDLE
 			if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
 				final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
 				SpotIncomeState incomeState = new SpotIncomeState(balanceEvent.getDateTime());
@@ -68,7 +68,15 @@ public class TestSpotBalanceСalcAlgorithm implements CalculationAlgorithm<SpotI
 			
 			logTrade(orderEvent);
 			
-			SpotIncomeState incomeState = new SpotIncomeState(currentEvent.getDateTime());
+			SpotIncomeState incomeState = spotIncomeStates.size() == 0 ? 
+					new SpotIncomeState(currentEvent.getDateTime())
+					:
+					new SpotIncomeState(currentEvent.getDateTime(), spotIncomeStates.get(spotIncomeStates.size() - 1));
+			
+			incomeState.updateCurrentAssets(accEvent.getBalances().stream()
+					.filter(asset -> assetsToTrack.contains(asset.getAsset()) || assetsToTrack.size() == 0)
+					.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked())))
+					.collect(Collectors.toList()));
 
 			if(orderEvent.getSide().equals("BUY")) {
 				incomeState.updateAssetState(orderSymbol, orderEvent.getOriginalQuantity(), includeCommissionToBuyPrice(orderEvent));
