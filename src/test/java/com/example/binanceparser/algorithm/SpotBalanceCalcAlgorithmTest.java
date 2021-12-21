@@ -145,10 +145,10 @@ public class SpotBalanceCalcAlgorithmTest {
 		
 		//definind income states for config with no assets to track(track all assets available)
 		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
-		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.valueOf(-10), null));
-		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.valueOf(-10), null));
-		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.valueOf(-10), null));
-		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.valueOf(-6), null));
+		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
+		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
+		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
+		bslist.add(new SpotIncomeState(BigDecimal.valueOf(4), null));
 		
 		//defining income states for config with specified assets to track
 		bslist.add(new SpotIncomeState(BigDecimal.ZERO, null));

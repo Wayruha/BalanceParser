@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Data
 public abstract class BalanceState {
-	
 	private BigDecimal balanceState;
     private LocalDateTime dateTime;
 

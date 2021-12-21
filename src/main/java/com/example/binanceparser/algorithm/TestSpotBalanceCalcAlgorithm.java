@@ -20,7 +20,7 @@ import com.example.binanceparser.domain.events.OrderTradeUpdateEvent;
 public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncomeState> {
 	private final BalanceVisualizerConfig config;
 	private final int MAX_SECONDS_DELAY_FOR_VALID_EVENTS = 1;
-	
+
 	public TestSpotBalanceCalcAlgorithm(BalanceVisualizerConfig config) {
 		this.config = config;
 	}
@@ -48,12 +48,18 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 				continue;
 			}
 
-			//TODO FOR NOW VERY QUESTIONABLE HOW TO HANDLE
+			SpotIncomeState incomeState = spotIncomeStates.size() == 0 ? new SpotIncomeState(currentEvent.getDateTime())
+					: new SpotIncomeState(currentEvent.getDateTime(),
+							spotIncomeStates.get(spotIncomeStates.size() - 1));
+
+			// TODO FOR NOW VERY QUESTIONABLE HOW TO HANDLE
 			if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
 				final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
-				SpotIncomeState incomeState = new SpotIncomeState(balanceEvent.getDateTime());
+				if (!assetsToTrack.contains(balanceEvent.getBalances()) && assetsToTrack.size() != 0) {
+					continue;
+				}
 				incomeState.updateAssetState(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
-				//spotIncomeStates.add(incomeState); TODO
+				spotIncomeStates.add(incomeState);
 				continue;
 			}
 
@@ -65,45 +71,45 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 					|| (!assetsToTrack.contains(orderSymbol) && assetsToTrack.size() != 0)) {
 				continue;
 			}
-			
+
 			logTrade(orderEvent);
-			
-			SpotIncomeState incomeState = spotIncomeStates.size() == 0 ? 
-					new SpotIncomeState(currentEvent.getDateTime())
-					:
-					new SpotIncomeState(currentEvent.getDateTime(), spotIncomeStates.get(spotIncomeStates.size() - 1));
-			
+
 			incomeState.updateCurrentAssets(accEvent.getBalances().stream()
 					.filter(asset -> assetsToTrack.contains(asset.getAsset()) || assetsToTrack.size() == 0)
 					.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked())))
 					.collect(Collectors.toList()));
 
-			if(orderEvent.getSide().equals("BUY")) {
-				incomeState.updateAssetState(orderSymbol, orderEvent.getOriginalQuantity(), includeCommissionToBuyPrice(orderEvent));
-			} else if(orderEvent.getSide().equals("SELL")) {
-				incomeState.updateAssetState(orderSymbol, orderEvent.getOriginalQuantity().negate(), includeCommissionToSellPrice(orderEvent));
+			if (orderEvent.getSide().equals("BUY")) {
+				incomeState.updateAssetState(orderSymbol, orderEvent.getOriginalQuantity(),
+						includeCommissionToBuyPrice(orderEvent));
+			} else if (orderEvent.getSide().equals("SELL")) {
+				incomeState.updateAssetState(orderSymbol, orderEvent.getOriginalQuantity().negate(),
+						includeCommissionToSellPrice(orderEvent));
 			} else {
 				throw new IllegalArgumentException("Unrecognized order.Side");
 			}
-			
-			spotIncomeStates.add(incomeState);	
+
+			spotIncomeStates.add(incomeState);
 		}
 		return spotIncomeStates;
 	}
 
-
-	//TODO чого в одному випадку ми віднімаємо комісію а в іншому додаємо?
-	// ми ж  в обох випадках ПЛАТИМО комісію біржі. Думаю потрібно завжди додавати (?)
 	private BigDecimal includeCommissionToBuyPrice(OrderTradeUpdateEvent orderEvent) {
-		return orderEvent.getPrice()//COMISSION WORKS ONLY FOR USDT NOW
-				.add(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT));
+		// COMISSION WORKS ONLY FOR USDT NOW
+		return orderEvent.getCommissionAsset().equals(USDT)
+				? orderEvent.getPrice().add(
+						orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT))
+				: orderEvent.getPrice();
 	}
-	
+
 	private BigDecimal includeCommissionToSellPrice(OrderTradeUpdateEvent orderEvent) {
-		return orderEvent.getPrice()//COMISSION WORKS ONLY FOR USDT NOW
-				.subtract(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT));
+		// COMISSION WORKS ONLY FOR USDT NOW
+		return orderEvent.getCommissionAsset().equals(USDT)
+				? orderEvent.getPrice().subtract(
+						orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT))
+				: orderEvent.getPrice();
 	}
-	
+
 	private void logTrade(OrderTradeUpdateEvent orderEvent) {
 		final BigDecimal quoteAssetQty = orderEvent.getOriginalQuantity()
 				.multiply(orderEvent.getPriceOfLastFilledTrade());

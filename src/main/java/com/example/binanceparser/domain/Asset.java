@@ -12,4 +12,10 @@ import java.math.BigDecimal;
 public class Asset {
 	protected String asset;
 	protected BigDecimal availableBalance;
+	private AssetInfo assetInfo;
+	
+	public Asset(String asset, BigDecimal availableBalance) {
+		this.asset = asset;
+		this.availableBalance = availableBalance;
+	}
 }
