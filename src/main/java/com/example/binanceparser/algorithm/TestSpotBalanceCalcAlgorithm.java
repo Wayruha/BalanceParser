@@ -46,14 +46,21 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
                 continue;
             }
 
-            //TODO FOR NOW VERY QUESTIONABLE HOW TO HANDLE
-            if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
-                final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
-                SpotIncomeState incomeState = new SpotIncomeState(balanceEvent.getDateTime());
-                incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
-                //spotIncomeStates.add(incomeState); TODO
-                continue;
-            }
+            final SpotIncomeState incomeState = spotIncomeStates.size() == 0 ?
+                    new SpotIncomeState(currentEvent.getDateTime())
+                    : new SpotIncomeState(currentEvent.getDateTime(), spotIncomeStates.get(spotIncomeStates.size() - 1));
+
+            
+            // TODO FOR NOW VERY QUESTIONABLE HOW TO HANDLE
+         	if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
+         		final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
+         		if (!assetsToTrack.contains(balanceEvent.getBalances()) && assetsToTrack.size() != 0) {
+         			continue;
+         		}
+         		incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
+         		spotIncomeStates.add(incomeState);
+         		continue;
+         	}
 
             final OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) currentEvent;
             final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
@@ -65,11 +72,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
             }
 
             logTrade(orderEvent);
-
-            final SpotIncomeState incomeState = spotIncomeStates.size() == 0 ?
-                    new SpotIncomeState(currentEvent.getDateTime())
-                    : new SpotIncomeState(currentEvent.getDateTime(), spotIncomeStates.get(spotIncomeStates.size() - 1));
-
+            
             //update asset balances
 			final List<Asset> updatedAssets = accEvent.getBalances().stream()
 					.filter(asset -> assetsToTrack.contains(asset.getAsset()) || assetsToTrack.size() == 0)
@@ -90,18 +93,21 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
         return spotIncomeStates;
     }
 
-
-    //TODO чого в одному випадку ми віднімаємо комісію а в іншому додаємо?
-    // ми ж  в обох випадках ПЛАТИМО комісію біржі. Думаю потрібно завжди додавати (?)
     private BigDecimal includeCommissionToBuyPrice(OrderTradeUpdateEvent orderEvent) {
-        return orderEvent.getPrice()//COMISSION WORKS ONLY FOR USDT NOW
-                .add(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT));
-    }
+		// COMISSION WORKS ONLY FOR USDT NOW
+		return orderEvent.getCommissionAsset().equals(USDT)
+				? orderEvent.getPrice().add(
+						orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT))
+				: orderEvent.getPrice();
+	}
 
-    private BigDecimal includeCommissionToSellPrice(OrderTradeUpdateEvent orderEvent) {
-        return orderEvent.getPrice()//COMISSION WORKS ONLY FOR USDT NOW
-                .subtract(orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT));
-    }
+	private BigDecimal includeCommissionToSellPrice(OrderTradeUpdateEvent orderEvent) {
+		// COMISSION WORKS ONLY FOR USDT NOW
+		return orderEvent.getCommissionAsset().equals(USDT)
+				? orderEvent.getPrice().subtract(
+						orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT))
+				: orderEvent.getPrice();
+	}
 
     private void logTrade(OrderTradeUpdateEvent orderEvent) {
         final BigDecimal quoteAssetQty = orderEvent.getOriginalQuantity()
@@ -112,5 +118,4 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
                 quoteAssetQty.toPlainString());
         System.out.println(str);
     }
-
 }
