@@ -50,13 +50,12 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
                     new SpotIncomeState(currentEvent.getDateTime())
                     : new SpotIncomeState(currentEvent.getDateTime(), spotIncomeStates.get(spotIncomeStates.size() - 1));
 
-            
-            // TODO FOR NOW VERY QUESTIONABLE HOW TO HANDLE
          	if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
          		final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
          		if (!assetsToTrack.contains(balanceEvent.getBalances()) && assetsToTrack.size() != 0) {
          			continue;
          		}
+         		System.out.println(balanceEvent.getBalances()+" "+balanceEvent.getBalanceDelta());
          		incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
          		spotIncomeStates.add(incomeState);
          		continue;
@@ -87,7 +86,6 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
             } else {
                 throw new IllegalArgumentException("Unrecognized order.Side");
             }
-
             spotIncomeStates.add(incomeState);
         }
         return spotIncomeStates;

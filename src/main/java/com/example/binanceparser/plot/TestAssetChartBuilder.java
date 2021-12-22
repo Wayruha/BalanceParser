@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.time.Second;
@@ -23,7 +24,7 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 	public JFreeChart buildLineChart(List<SpotIncomeState> logBalanceStates) {
 		final TimeSeries series = new TimeSeries("Overall income (USD)");
 		for (SpotIncomeState state : logBalanceStates) {
-			series.addOrUpdate(dateTimeToSecond(state.getDateTime()), state.getBalanceState());
+			series.addOrUpdate(dateTimeToSecond(state.getDateTime()), state.getBalanceState().doubleValue());
 		}
 		return ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", new TimeSeriesCollection(series));
 	}

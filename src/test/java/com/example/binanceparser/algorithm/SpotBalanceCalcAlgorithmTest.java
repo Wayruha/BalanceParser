@@ -1,10 +1,6 @@
 package com.example.binanceparser.algorithm;
 
-import static com.example.binanceparser.Constants.AXS;
-import static com.example.binanceparser.Constants.BTC;
-import static com.example.binanceparser.Constants.BUSD;
-import static com.example.binanceparser.Constants.ETH;
-import static com.example.binanceparser.Constants.USDT;
+import static com.example.binanceparser.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
@@ -45,12 +41,12 @@ public class SpotBalanceCalcAlgorithmTest {
 		config.setAssetsToTrack(List.of(BUSD, BTC));
 		config.setConvertToUSD(true);
 		
-		config.setStartTrackDate(LocalDateTime.parse("2021-08-16 00:00:00", dateFormat));
-		config.setFinishTrackDate(LocalDateTime.parse("2021-09-15 00:00:00", dateFormat));
-		config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
-		config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
-		config.setAssetsToTrack(Collections.emptyList());
-		config.setConvertToUSD(true);
+		noAssetsConfig.setStartTrackDate(LocalDateTime.parse("2021-08-16 00:00:00", dateFormat));
+		noAssetsConfig.setFinishTrackDate(LocalDateTime.parse("2021-09-15 00:00:00", dateFormat));
+		noAssetsConfig.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
+		noAssetsConfig.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
+		noAssetsConfig.setAssetsToTrack(Collections.emptyList());
+		noAssetsConfig.setConvertToUSD(true);
 		
 		//defining events
 		aelist.add(OrderTradeUpdateEvent.builder().eventType(EventType.ORDER_TRADE_UPDATE).orderStatus("NEW").build());//should skip
@@ -148,13 +144,12 @@ public class SpotBalanceCalcAlgorithmTest {
 		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
 		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
 		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
-		bslist.add(new SpotIncomeState(BigDecimal.valueOf(4), null));
+		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.valueOf(4), null));
 		
 		//defining income states for config with specified assets to track
 		bslist.add(new SpotIncomeState(BigDecimal.ZERO, null));
 		bslist.add(new SpotIncomeState(BigDecimal.ZERO, null));
 		bslist.add(new SpotIncomeState(BigDecimal.valueOf(4), null));
-		
 	}
 	
 	@Test
@@ -170,5 +165,4 @@ public class SpotBalanceCalcAlgorithmTest {
 		List<SpotIncomeState> acceptedBSlist = alg.processEvents(aelist);
 		assertEquals(bslist, acceptedBSlist);
 	}
-	
 }

@@ -7,6 +7,7 @@ import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.datasource.filters.SourceFilter;
 import com.example.binanceparser.processor.FuturesBalanceStateProcessor;
 import com.example.binanceparser.processor.SpotBalanceProcessor;
+import com.example.binanceparser.processor.TestSpotBalanceProcessor;
 import com.example.binanceparser.report.BalanceReport;
 
 import java.io.File;
@@ -29,7 +30,6 @@ public class BalanceStateVisualizer {
 
 	public void futuresStateChangeFromLogs(String person) throws IOException {
 		final BalanceVisualizerConfig config = configure();
-		// config.setAssetsToTrack(Collections.emptyList());
 		addSubject(config, person, "FUTURES_PRODUCER");
 
 		final File logsDir = new File(config.getInputFilepath());
@@ -42,26 +42,33 @@ public class BalanceStateVisualizer {
 
 	public void spotStateChangeFromLogs(String person) throws IOException {
 		final BalanceVisualizerConfig config = configure();
-		// config.setAssetsToTrack(Collections.emptyList());
 		addSubject(config, person, "SPOT_PRODUCER");
 
 		final File logsDir = new File(config.getInputFilepath());
 		final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
 		SpotBalanceProcessor processor = new SpotBalanceProcessor(logsEventSource, config);
+		TestSpotBalanceProcessor testProcessor = new TestSpotBalanceProcessor(logsEventSource, config);
 		final BalanceReport report = processor.process();
+		final BalanceReport testReport = testProcessor.process();
 		System.out.println("Report....");
 		System.out.println(report.toPrettyString());
+		System.out.println("Test report....");
+		System.out.println(testReport.toPrettyString());
 	}
 
 	private static BalanceVisualizerConfig configure() {
 		final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
 		LocalDateTime start = LocalDateTime.parse("2021-08-16 00:00:00", dateFormat);
 		LocalDateTime finish = LocalDateTime.parse("2021-09-15 00:00:00", dateFormat);
+		//sample that shows work of algorithm in small time period
+//		LocalDateTime start = LocalDateTime.parse("2021-08-21 12:45:28", dateFormat);
+//		LocalDateTime finish = LocalDateTime.parse("2021-08-21 13:01:16", dateFormat);
 		config.setStartTrackDate(start);
 		config.setFinishTrackDate(finish);
 		config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
 		config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
-		config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
+		//config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
+		config.setAssetsToTrack(Collections.emptyList());
 		config.setConvertToUSD(true);
 		return config;
 	}

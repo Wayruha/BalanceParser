@@ -30,6 +30,7 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
 		final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
 		
 		final String chartPath = new StringBuilder().append(config.getOutputDir()).append("/")
+				.append("TEST_")
 				.append(config.getSubject().get(0)).append(".jpg").toString();
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 		
