@@ -120,8 +120,7 @@ public class SpotIncomeState extends BalanceState {
 				assetState.setAvailableBalance(assetState.getAvailableBalance().subtract(maxAssetTrackedAmount.abs()));//unlock asset
 			} else {
 				transactions.add(Transaction.WITHDRAW_IN_PROCESS);
-				processOrderDetails(assetName, assetState.getAvailableBalance().compareTo(assetDelta.abs()) >= 0 ? assetDelta
-						: assetState.getAvailableBalance().negate(), assetState.getAveragePrice());
+				processOrderDetails(assetName, assetDelta, assetState.getAveragePrice());
 				transactions.set(transactions.size() - 1, Transaction.WITHDRAW);
 			}
 
