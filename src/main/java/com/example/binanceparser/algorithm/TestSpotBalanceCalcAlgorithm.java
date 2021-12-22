@@ -55,7 +55,6 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
          		if (!assetsToTrack.contains(balanceEvent.getBalances()) && assetsToTrack.size() != 0) {
          			continue;
          		}
-         		System.out.println(balanceEvent.getBalances()+" "+balanceEvent.getBalanceDelta());
          		incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
          		spotIncomeStates.add(incomeState);
          		continue;

@@ -26,7 +26,7 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		for (SpotIncomeState state : logBalanceStates) {
 			series.addOrUpdate(dateTimeToSecond(state.getDateTime()), state.getBalanceState().doubleValue());
 		}
-		return ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", new TimeSeriesCollection(series));
+		return ChartFactory.createTimeSeriesChart("Account income", "Date", "Income", new TimeSeriesCollection(series));
 	}
 	
 	private Second dateTimeToSecond(LocalDateTime dateTime) {
