@@ -128,10 +128,10 @@ public class SpotIncomeState extends BalanceState {
 				assetState.setAvailableBalance(assetState.getAvailableBalance().subtract(maxAssetTrackedAmount.abs()));//unlock asset
 			} else {
 				transactions.add(new Transaction(TransactionType.WITHDRAW_IN_PROCESS, assetName,
-						assetState.getQuoteAsset(), assetDelta, transactionPrice, null));
+						"", assetDelta, transactionPrice, null));
 				processOrderDetails(assetName, assetDelta, assetState.getAveragePrice());
 				transactions.set(transactions.size() - 1,
-						new Transaction(TransactionType.WITHDRAW, assetName, assetState.getQuoteAsset(), assetDelta,
+						new Transaction(TransactionType.WITHDRAW, assetName, "", assetDelta,
 								transactionPrice, transactions.get(transactions.size() - 1).getIncome()));
 			}
 
@@ -149,7 +149,7 @@ public class SpotIncomeState extends BalanceState {
 				return;
 			}
 			//else DEPOSIT operation (we do not add deposit to locked assets)
-			transactions.add(new Transaction(TransactionType.DEPOSIT, assetName, assetState.getQuoteAsset(), assetDelta,
+			transactions.add(new Transaction(TransactionType.DEPOSIT, assetName, "", assetDelta,
 					transactionPrice, BigDecimal.ZERO));
 		}
     }

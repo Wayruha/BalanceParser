@@ -69,7 +69,8 @@ public class BalanceStateVisualizer {
 		config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
 		//config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
 		config.setAssetsToTrack(Collections.emptyList());
-		config.setConvertToUSD(true);
+		//true -> only overall income, false -> overall + income for every asset
+		config.setConvertToUSD(false);
 		return config;
 	}
 
