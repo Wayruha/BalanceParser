@@ -21,6 +21,8 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.Transaction;
+import com.example.binanceparser.domain.TransactionType;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,7 +48,6 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		return chart;
 	}
 
-	// maybe not needed
 	private XYItemRenderer getRenderer() {
 		XYItemRenderer renderer = new XYLineAndShapeRenderer() {
 			private static final long serialVersionUID = 1L;
@@ -73,8 +74,13 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 
 	private TimeSeries getOverallIncomeTimeSeries(List<SpotIncomeState> incomeStates) {
 		final TimeSeries series = new TimeSeries("Overall income (USD)");
-		for (SpotIncomeState state : incomeStates) {
-			series.addOrUpdate(dateTimeToSecond(state.getDateTime()), state.getBalanceState().doubleValue());
+		for (int item = 0; item < incomeStates.size(); item++) {
+			Transaction transaction = incomeStates.get(item).getTransactions().get(0);
+			series.addOrUpdate(dateTimeToSecond(incomeStates.get(item).getDateTime()),
+					incomeStates.get(item).getBalanceState().doubleValue());
+			if (transaction.getTransactionType().equals(TransactionType.WITHDRAW)) {
+				withdrawPoints.add(new WithdrawPoint(0, item));
+			}
 		}
 		return series;
 	}
@@ -84,8 +90,8 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		List<TimeSeries> timeSeriesList = new ArrayList<>();
 		if (incomeStates.size() != 0) {
 			assetsToTrack = updateAssetsToTrack(incomeStates.get(incomeStates.size() - 1));
-			for (int i = 0; i < assetsToTrack.size(); i++) {
-				timeSeriesList.add(createTimeSeries(incomeStates, assetsToTrack.get(i), i));
+			for (int row = 0; row < assetsToTrack.size(); row++) {
+				timeSeriesList.add(createTimeSeries(incomeStates, assetsToTrack.get(row), row));
 			}
 		}
 		return timeSeriesList;
@@ -100,13 +106,14 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 			if (transaction.getBaseAsset().equals(assetToTrack)) {
 				assetIncome = assetIncome.add(transaction.getIncome());
 				series.add(dateTimeToSecond(incomeStates.get(item).getDateTime()), assetIncome);
-				withdrawPoints.add(new WithdrawPoint(row, item));
+				if (transaction.getTransactionType().equals(TransactionType.WITHDRAW)) {
+					withdrawPoints.add(new WithdrawPoint(row, item));
+				}
 			}
 		}
 		return series;
 	}
 
-	// maybe not needed
 	private boolean isWithdraw(int row, int item) {
 		return withdrawPoints.stream()
 				.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
