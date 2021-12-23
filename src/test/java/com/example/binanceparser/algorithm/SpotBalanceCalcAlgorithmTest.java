@@ -6,10 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.events.AbstractEvent;
@@ -23,15 +24,14 @@ import com.example.binanceparser.domain.events.OrderTradeUpdateEvent;
 
 public class SpotBalanceCalcAlgorithmTest {
 
-	private List<AbstractEvent> aelist = null;
-	private List<SpotIncomeState> noAssetsBSlist = null;
-	private List<SpotIncomeState> bslist = null;
-	private BalanceVisualizerConfig noAssetsConfig = null;
-	private BalanceVisualizerConfig config = null;
+	private static List<AbstractEvent> aelist = new ArrayList<>();
+	private static List<SpotIncomeState> noAssetsBSlist = new ArrayList<>();
+	private static List<SpotIncomeState> bslist = new ArrayList<>();
+	private static BalanceVisualizerConfig noAssetsConfig = new BalanceVisualizerConfig();
+	private static BalanceVisualizerConfig config = new BalanceVisualizerConfig();
 	
-	@BeforeAll
-	public void init() {
-		
+	@BeforeTestClass
+	public static void init() {
 		//defining config objects
 		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		config.setStartTrackDate(LocalDateTime.parse("2021-08-16 00:00:00", dateFormat));
