@@ -100,34 +100,46 @@ public class SpotIncomeState extends BalanceState {
     	findAssetState(BUSD).setAveragePrice(BigDecimal.ONE);
     }
     
-	public Transaction getLastTransaction() {
-		return transactions.size() != 0 ? transactions.get(transactions.size() - 1) : null;
+	public TransactionType getLastTransactionType() {
+		return transactions.size() != 0 ? transactions.get(transactions.size() - 1).getTransactionType() : null;
 	}
 
+	//TODO refactor
     public void processOrderDetails(String assetName, BigDecimal assetDelta, BigDecimal transactionPrice) {
     	final AssetState assetState = addAssetStateIfNotExist(assetName);
     	
 		if (assetDelta.compareTo(BigDecimal.ZERO) <= 0) {
 			if (transactionPrice != null) {
-				if (!Transaction.WITHDRAW_IN_PROCESS.equals(getLastTransaction())) {
-					transactions.add(Transaction.SELL);
+				Transaction transaction;
+				if (!TransactionType.WITHDRAW_IN_PROCESS.equals(getLastTransactionType())) {
+					transaction = new Transaction(TransactionType.SELL, assetName, assetState.getQuoteAsset(),
+							assetDelta, transactionPrice, null);
+					transactions.add(transaction);
+				} else {
+					transaction = transactions.get(transactions.size() - 1);
 				}
 				
 				BigDecimal maxAssetTrackedAmount = assetState.getAvailableBalance().compareTo(assetDelta.abs()) >= 0 ? assetDelta
 						: assetState.getAvailableBalance().negate();
-				setBalanceState(getBalanceState().add(maxAssetTrackedAmount.abs().multiply(transactionPrice))// what we got when sold asset
-						.subtract(maxAssetTrackedAmount.abs().multiply(assetState.getAveragePrice())));// what we spent when bought asset
+				BigDecimal transactionIncome = maxAssetTrackedAmount.abs().multiply(transactionPrice)// what we got when sold asset
+						.subtract(maxAssetTrackedAmount.abs().multiply(assetState.getAveragePrice()));// what we spent when bought asset
+				transaction.setIncome(transactionIncome);
+				setBalanceState(getBalanceState().add(transactionIncome));
 				assetState.setAvailableBalance(assetState.getAvailableBalance().subtract(maxAssetTrackedAmount.abs()));//unlock asset
 			} else {
-				transactions.add(Transaction.WITHDRAW_IN_PROCESS);
+				transactions.add(new Transaction(TransactionType.WITHDRAW_IN_PROCESS, assetName,
+						assetState.getQuoteAsset(), assetDelta, transactionPrice, null));
 				processOrderDetails(assetName, assetDelta, assetState.getAveragePrice());
-				transactions.set(transactions.size() - 1, Transaction.WITHDRAW);
+				transactions.set(transactions.size() - 1,
+						new Transaction(TransactionType.WITHDRAW, assetName, assetState.getQuoteAsset(), assetDelta,
+								transactionPrice, transactions.get(transactions.size() - 1).getIncome()));
 			}
 
 			removeAssetStateIfEmpty(assetName);
 		} else {
 			if (transactionPrice != null) {
-				transactions.add(Transaction.BUY);
+				transactions.add(new Transaction(TransactionType.BUY, assetName, assetState.getQuoteAsset(), assetDelta,
+						transactionPrice, BigDecimal.ZERO));
 				final BigDecimal transactionQuoteQty = assetDelta.multiply(transactionPrice);
 				final BigDecimal newAssetQty = assetState.getAvailableBalance().add(assetDelta);
 				final BigDecimal newCalculatedPrice = assetState.totalQuoteAssetValue().add(transactionQuoteQty)
@@ -137,7 +149,8 @@ public class SpotIncomeState extends BalanceState {
 				return;
 			}
 			//else DEPOSIT operation (we do not add deposit to locked assets)
-			transactions.add(Transaction.DEPOSIT);
+			transactions.add(new Transaction(TransactionType.DEPOSIT, assetName, assetState.getQuoteAsset(), assetDelta,
+					transactionPrice, BigDecimal.ZERO));
 		}
     }
 

@@ -1,9 +1,19 @@
 package com.example.binanceparser.domain;
 
-public enum Transaction {
-	SELL,
-	BUY,
-	WITHDRAW,
-	WITHDRAW_IN_PROCESS,
-	DEPOSIT;
+import java.math.BigDecimal;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Transaction {
+	private TransactionType transactionType;
+	private String baseAsset;
+	private String quoteAsset;
+	private BigDecimal assetDelta;
+	private BigDecimal price;
+	private BigDecimal income;
 }
