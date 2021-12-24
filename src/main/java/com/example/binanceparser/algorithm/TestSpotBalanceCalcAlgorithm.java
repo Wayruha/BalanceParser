@@ -1,6 +1,5 @@
 package com.example.binanceparser.algorithm;
 
-import com.example.binanceparser.Constants;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.AssetInfo;
@@ -12,8 +11,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.example.binanceparser.Constants.USDT;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncomeState> {
@@ -69,31 +66,19 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 
 			final OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) currentEvent;
 			final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
-			final String orderSymbol = orderEvent.getSymbol().replace(USDT, "");
 
 			if (!orderEvent.getOrderStatus().equals("FILLED")
-					|| (!assetsToTrack.contains(orderSymbol) && assetsToTrack.size() != 0)) {
+					|| (!assetsToTrack.contains(orderEvent.getOrderSymbol()) && assetsToTrack.size() != 0)) {
 				continue;
 			}
 
 			logTrade(orderEvent);
 
-			// track user's absolute trade performance
-			if (orderEvent.getSide().equals("BUY")) {
-				// update asset balances
-				incomeState.updateAssetBalance(getAssets(accEvent.getBalances(),
-						new AssetInfo(orderEvent.getDateTime(), USDT, orderEvent.getPrice()), assetsToTrack));
-				incomeState.processOrderDetails(orderSymbol, orderEvent.getOriginalQuantity(),
-						includeCommissionToBuyPrice(orderEvent));
-			} else if (orderEvent.getSide().equals("SELL")) {
-				// update asset balances
-				incomeState.updateAssetBalance(getAssets(accEvent.getBalances(),
-						new AssetInfo(orderEvent.getDateTime(), orderSymbol, orderEvent.getPrice()), assetsToTrack));
-				incomeState.processOrderDetails(orderSymbol, orderEvent.getOriginalQuantity().negate(),
-						includeCommissionToSellPrice(orderEvent));
-			} else {
-				throw new IllegalArgumentException("Unrecognized order.Side");
-			}
+			incomeState.updateAssetBalance(getAssets(accEvent.getBalances(),
+					new AssetInfo(orderEvent.getDateTime(), orderEvent.getQuoteAsset(), orderEvent.getPrice()), assetsToTrack));
+			incomeState.processOrderDetails(orderEvent.getOrderSymbol(), orderEvent.getTradeDelta(),
+					orderEvent.getPriceIncludingCommission());
+
 			spotIncomeStates.add(incomeState);
 		}
 		return spotIncomeStates;
@@ -104,22 +89,6 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 		return balances.stream().filter(asset -> assetsToTrack.contains(asset.getAsset()) || assetsToTrack.size() == 0)
 				.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()), assetInfo))
 				.collect(Collectors.toList());
-	}
-
-	private BigDecimal includeCommissionToBuyPrice(OrderTradeUpdateEvent orderEvent) {
-		// COMISSION WORKS ONLY FOR USDT NOW
-		return orderEvent.getCommissionAsset().equals(USDT)
-				? orderEvent.getPrice().add(
-						orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT))
-				: orderEvent.getPrice();
-	}
-
-	private BigDecimal includeCommissionToSellPrice(OrderTradeUpdateEvent orderEvent) {
-		// COMISSION WORKS ONLY FOR USDT NOW
-		return orderEvent.getCommissionAsset().equals(USDT)
-				? orderEvent.getPrice().subtract(
-						orderEvent.getCommission().divide(orderEvent.getOriginalQuantity(), Constants.MATH_CONTEXT))
-				: orderEvent.getPrice();
 	}
 
 	private void logTrade(OrderTradeUpdateEvent orderEvent) {

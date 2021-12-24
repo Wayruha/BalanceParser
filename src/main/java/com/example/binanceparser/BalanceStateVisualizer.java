@@ -71,7 +71,7 @@ public class BalanceStateVisualizer {
 		config.setAssetsToTrack(Collections.emptyList());
 		
 		//true -> only overall income, false -> overall + income for every asset
-		config.setConvertToUSD(true);
+		config.setConvertToUSD(false);
 		return config;
 	}
 
