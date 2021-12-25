@@ -15,7 +15,6 @@ import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.plot.TestAssetChartBuilder;
 
 public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<SpotIncomeState, BalanceVisualizerConfig> {
-
 	private ChartBuilder<SpotIncomeState> chartBuilder;
 
 	public TestBalanceReportGenerator(BalanceVisualizerConfig config) {
@@ -35,16 +34,18 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
 
 		List<BigDecimal> values = balanceStates.stream().map((n) -> n.getBalanceState()).collect(Collectors.toList());
 
-		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
-				.finishTrackDate(config.getFinishTrackDate()).balanceAtStart(BigDecimal.ZERO)
+		return BalanceReport.builder()
+				.startTrackDate(config.getStartTrackDate())
+				.finishTrackDate(config.getFinishTrackDate())
+				.balanceAtStart(BigDecimal.ZERO)
 				.balanceAtEnd(balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()
 						: BigDecimal.ZERO)
 				.min(values.stream().reduce(BigDecimal::min).orElse(BigDecimal.ZERO))
-				.max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO)).outputPath(generatedPlotPath)
+				.max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO))
+				.outputPath(generatedPlotPath)
 				.balanceDifference(
 						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()
 								: BigDecimal.ZERO)
 				.build();
 	}
-
 }

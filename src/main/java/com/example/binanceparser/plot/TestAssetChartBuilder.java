@@ -41,9 +41,7 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		TimeSeriesCollection dataSeries = new TimeSeriesCollection();
 		dataSeries.addSeries(getOverallIncomeTimeSeries(incomeStates));
 		if (!assetsToTrack.equals(List.of(USD))) {
-			for (TimeSeries series : getTimeSeriesForEveryAsset(incomeStates)) {
-				dataSeries.addSeries(series);
-			}
+			getTimeSeriesForEveryAsset(incomeStates).stream().forEachOrdered((series) -> dataSeries.addSeries(series));
 		}
 		JFreeChart chart = ChartFactory.createTimeSeriesChart("Account income", "Date", "Income", dataSeries);
 		chart.getXYPlot().setRenderer(getRenderer());
@@ -76,17 +74,17 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 	private TimeSeries getOverallIncomeTimeSeries(List<SpotIncomeState> incomeStates) {
 		final TimeSeries series = new TimeSeries("Overall income (USD)");
 		for (int item = 0; item < incomeStates.size(); item++) {
-			Transaction transaction = incomeStates.get(item).getTransactions().get(0);
-			series.addOrUpdate(dateTimeToSecond(incomeStates.get(item).getDateTime()),
-					incomeStates.get(item).getBalanceState().doubleValue());
-			if (transaction.getTransactionType().equals(TransactionType.WITHDRAW)) {
+			SpotIncomeState incomeState = incomeStates.get(item);
+			series.addOrUpdate(dateTimeToSecond(incomeState.getDateTime()),
+					incomeState.getBalanceState().doubleValue());
+			if (incomeState.getTransactions().stream()
+					.anyMatch((transaction) -> transaction.getTransactionType().equals(TransactionType.WITHDRAW))) {
 				withdrawPoints.add(new WithdrawPoint(0, item));
 			}
 		}
 		return series;
 	}
 
-	// building income chart for every asset
 	private List<TimeSeries> getTimeSeriesForEveryAsset(List<SpotIncomeState> incomeStates) {
 		List<TimeSeries> timeSeriesList = new ArrayList<>();
 		if (incomeStates.size() != 0) {
@@ -98,19 +96,21 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		return timeSeriesList;
 	}
 
-	// not final
 	private TimeSeries createTimeSeries(List<SpotIncomeState> incomeStates, String assetToTrack, int row) {
 		final TimeSeries series = new TimeSeries(assetToTrack + " income (USD)");
 		BigDecimal assetIncome = BigDecimal.ZERO;
 		for (int n = 0, item = 0; n < incomeStates.size(); n++) {
-			Transaction transaction = incomeStates.get(n).getTransactions().get(0);
-			if (transaction.getBaseAsset().equals(assetToTrack)) {
-				assetIncome = assetIncome.add(transaction.getIncome());
-				series.add(dateTimeToSecond(incomeStates.get(n).getDateTime()), assetIncome);
-				if (transaction.getTransactionType().equals(TransactionType.WITHDRAW)) {
-					withdrawPoints.add(new WithdrawPoint(row, item));
+			SpotIncomeState incomeState = incomeStates.get(n);
+			for (Transaction transaction : incomeState.getTransactions()) {
+				if (transaction.getBaseAsset().equals(assetToTrack)) {
+					assetIncome = assetIncome.add(transaction.getIncome());
+					if (transaction.getTransactionType().equals(TransactionType.WITHDRAW)) {
+						withdrawPoints.add(new WithdrawPoint(row, item));
+					}
+					if (series.addOrUpdate(dateTimeToSecond(incomeState.getDateTime()), assetIncome) == null) {
+						item++;
+					}
 				}
-				item++;
 			}
 		}
 		return series;
