@@ -75,7 +75,8 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 			logTrade(orderEvent);
 
 			incomeState.updateAssetBalance(getAssets(accEvent.getBalances(),
-					new AssetInfo(orderEvent.getDateTime(), orderEvent.getQuoteAsset(), orderEvent.getPrice()), assetsToTrack));
+					new AssetInfo(orderEvent.getDateTime(), orderEvent.getQuoteAsset(), orderEvent.getPrice()),
+					assetsToTrack));
 			incomeState.processOrderDetails(orderEvent.getOrderSymbol(), orderEvent.getTradeDelta(),
 					orderEvent.getPriceIncludingCommission());
 

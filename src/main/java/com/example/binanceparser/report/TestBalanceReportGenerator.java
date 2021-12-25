@@ -20,7 +20,7 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
 
 	public TestBalanceReportGenerator(BalanceVisualizerConfig config) {
 		super(config);
-		final List<String> assetsToTrack = config.isConvertToUSD() ? List.of(USD) : config.getAssetsToTrack();
+		List<String> assetsToTrack = config.isConvertToUSD() ? List.of(USD) : config.getAssetsToTrack();
 		chartBuilder = new TestAssetChartBuilder(assetsToTrack);
 	}
 
@@ -28,26 +28,23 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
 	public BalanceReport getBalanceReport(List<SpotIncomeState> balanceStates) throws IOException {
 		Collections.sort(balanceStates, Comparator.comparing(SpotIncomeState::getDateTime));
 		final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
-		
-		final String chartPath = new StringBuilder().append(config.getOutputDir()).append("/")
-				.append("TEST_")
+
+		final String chartPath = new StringBuilder().append(config.getOutputDir()).append("/").append("TEST_")
 				.append(config.getSubject().get(0)).append(".jpg").toString();
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
-		
-		List<BigDecimal> values = balanceStates.stream().map((n)->n.getBalanceState()).collect(Collectors.toList());
-		
-		return BalanceReport.builder()
-				.startTrackDate(config.getStartTrackDate())
-				.finishTrackDate(config.getFinishTrackDate())
-				.balanceAtStart(BigDecimal.ZERO)
-				.balanceAtEnd(
+
+		List<BigDecimal> values = balanceStates.stream().map((n) -> n.getBalanceState()).collect(Collectors.toList());
+
+		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
+				.finishTrackDate(config.getFinishTrackDate()).balanceAtStart(BigDecimal.ZERO)
+				.balanceAtEnd(balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()
+						: BigDecimal.ZERO)
+				.min(values.stream().reduce(BigDecimal::min).orElse(BigDecimal.ZERO))
+				.max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO)).outputPath(generatedPlotPath)
+				.balanceDifference(
 						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()
 								: BigDecimal.ZERO)
-				.min(values.stream().reduce(BigDecimal::min).orElse(BigDecimal.ZERO))
-				.max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO))
-				.outputPath(generatedPlotPath)
-				.balanceDifference(balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()
-						: BigDecimal.ZERO).build();
+				.build();
 	}
 
 }
