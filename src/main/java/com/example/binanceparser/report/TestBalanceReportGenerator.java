@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.example.binanceparser.domain.BalanceState;
 import org.jfree.chart.JFreeChart;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.SpotIncomeState;
@@ -15,7 +17,7 @@ import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.plot.TestAssetChartBuilder;
 
 public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<SpotIncomeState, BalanceVisualizerConfig> {
-	private ChartBuilder<SpotIncomeState> chartBuilder;
+	private final ChartBuilder<SpotIncomeState> chartBuilder;
 
 	public TestBalanceReportGenerator(BalanceVisualizerConfig config) {
 		super(config);
@@ -25,14 +27,13 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
 
 	@Override
 	public BalanceReport getBalanceReport(List<SpotIncomeState> balanceStates) throws IOException {
-		Collections.sort(balanceStates, Comparator.comparing(SpotIncomeState::getDateTime));
+		balanceStates.sort(Comparator.comparing(SpotIncomeState::getDateTime));
 		final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
 
-		final String chartPath = new StringBuilder().append(config.getOutputDir()).append("/").append("TEST_")
-				.append(config.getSubject().get(0)).append(".jpg").toString();
+		final String chartPath = config.getOutputDir() + "/" + "TEST_" + config.getSubject().get(0) + ".jpg";
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
-		List<BigDecimal> values = balanceStates.stream().map((n) -> n.getBalanceState()).collect(Collectors.toList());
+		List<BigDecimal> values = balanceStates.stream().map(BalanceState::getBalanceState).collect(Collectors.toList());
 
 		return BalanceReport.builder()
 				.startTrackDate(config.getStartTrackDate())
@@ -44,7 +45,7 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
 				.max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO))
 				.outputPath(generatedPlotPath)
 				.balanceDifference(
-						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()
+						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()  //TODO чого balanceState? На початок проміжку в нас могло вже бути 1к на балансі
 								: BigDecimal.ZERO)
 				.build();
 	}

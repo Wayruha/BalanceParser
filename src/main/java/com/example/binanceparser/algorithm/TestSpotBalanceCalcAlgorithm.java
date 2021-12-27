@@ -2,7 +2,7 @@ package com.example.binanceparser.algorithm;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.Asset;
-import com.example.binanceparser.domain.AssetInfo;
+import com.example.binanceparser.domain.AssetMetadata;
 import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.events.*;
 
@@ -57,8 +57,13 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 					continue;
 				}
 				// update asset balances
-				incomeState.updateAssetBalance(getAssets(accEvent.getBalances(),
-						new AssetInfo(balanceEvent.getDateTime(), "", BigDecimal.ZERO), assetsToTrack));
+				final AssetMetadata assetMetadata =AssetMetadata.builder()
+						.dateOfLastTransaction(balanceEvent.getDateTime())
+						.quoteAsset("")
+						.priceOfLastTrade(BigDecimal.ZERO)
+						.build();
+				final List<Asset> assetsInvolved = extractAssetsFromEvent(accEvent, assetMetadata, assetsToTrack);
+				incomeState.updateAssetBalance(assetsInvolved);
 				incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
 				spotIncomeStates.add(incomeState);
 				continue;
@@ -73,10 +78,15 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 			}
 
 			logTrade(orderEvent);
+			//TODO іноді в трейд-івентах price=0 (це ціна за якою виставлявся ордер. але в маркет-ордерах ціни може не бути. беремо priceOfLastFilledTrade, вона є завжди
+			final AssetMetadata assetMetadata = AssetMetadata.builder()
+					.dateOfLastTransaction(orderEvent.getDateTime())
+					.quoteAsset(orderEvent.getQuoteAsset())
+					.priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
+					.build();
 
-			incomeState.updateAssetBalance(getAssets(accEvent.getBalances(),
-					new AssetInfo(orderEvent.getDateTime(), orderEvent.getQuoteAsset(), orderEvent.getPrice()),
-					assetsToTrack));
+			final List<Asset> assetsInvolved = extractAssetsFromEvent(accEvent, assetMetadata, assetsToTrack);
+			incomeState.updateAssetBalance(assetsInvolved);
 			incomeState.processOrderDetails(orderEvent.getOrderSymbol(), orderEvent.getTradeDelta(),
 					orderEvent.getPriceIncludingCommission());
 
@@ -85,10 +95,10 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 		return spotIncomeStates;
 	}
 
-	private List<Asset> getAssets(List<AccountPositionUpdateEvent.Asset> balances, AssetInfo assetInfo,
-			List<String> assetsToTrack) {
-		return balances.stream().filter(asset -> assetsToTrack.contains(asset.getAsset()) || assetsToTrack.size() == 0)
-				.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()), assetInfo))
+	//TODO metadata застосовується до всіх асетів (там буде принаймні 2, правильно?) Хоча, метадата повинна застосовуватися тільки до base-asset
+	private List<Asset> extractAssetsFromEvent(AccountPositionUpdateEvent event, AssetMetadata assetMetadata, List<String> assetsToTrack) {
+		return event.getBalances().stream().filter(asset -> assetsToTrack.contains(asset.getAsset()) || assetsToTrack.size() == 0)
+				.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()), assetMetadata))
 				.collect(Collectors.toList());
 	}
 

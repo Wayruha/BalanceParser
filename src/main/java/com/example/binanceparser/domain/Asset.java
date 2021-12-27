@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 public class Asset {
 	protected String asset;
 	protected BigDecimal availableBalance;
-	private AssetInfo assetInfo;
+	private AssetMetadata assetMetadata;
 	
 	public Asset(String asset, BigDecimal availableBalance) {
 		this.asset = asset;

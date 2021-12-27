@@ -41,7 +41,7 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		TimeSeriesCollection dataSeries = new TimeSeriesCollection();
 		dataSeries.addSeries(getOverallIncomeTimeSeries(incomeStates));
 		if (!assetsToTrack.equals(List.of(USD))) {
-			getTimeSeriesForEveryAsset(incomeStates).stream().forEachOrdered((series) -> dataSeries.addSeries(series));
+			getTimeSeriesForEveryAsset(incomeStates).forEach(dataSeries::addSeries);
 		}
 		JFreeChart chart = ChartFactory.createTimeSeriesChart("Account income", "Date", "Income", dataSeries);
 		chart.getXYPlot().setRenderer(getRenderer());
@@ -49,34 +49,18 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 	}
 
 	private XYItemRenderer getRenderer() {
-		XYItemRenderer renderer = new XYLineAndShapeRenderer() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public Paint getItemPaint(int row, int item) {
-				if (isWithdraw(row, item)) {
-					return Color.yellow;
-				}
-				return super.getItemPaint(row, item);
-			}
-
-			@Override
-			public Shape getItemShape(int row, int item) {
-				if (isWithdraw(row, item)) {
-					return ShapeUtils.createDiagonalCross(6, 2);
-				}
-				return super.getItemShape(row, item);
-			}
-		};
-		return renderer;
+		return new Renderer();
 	}
 
+	//TODO ми можемо обєднати getOverallIncomeTimeSeries i createTimeSeries?
+	// Типу, замість того щоб мати два методи, мати тільки один загальний який приймає ассет.
+	//TODO 2 замість того щоб виділяти окрему змінну під наш usd-баланс (getBalanceState), ми могли б просто додавати цей баланс в новий ассет "USD".
+	// таким чином, у нас це буде як звичайний ассет і обробляти ми це зможемо універсальними методами
 	private TimeSeries getOverallIncomeTimeSeries(List<SpotIncomeState> incomeStates) {
 		final TimeSeries series = new TimeSeries("Overall income (USD)");
 		for (int item = 0; item < incomeStates.size(); item++) {
 			SpotIncomeState incomeState = incomeStates.get(item);
-			series.addOrUpdate(dateTimeToSecond(incomeState.getDateTime()),
-					incomeState.getBalanceState().doubleValue());
+			series.addOrUpdate(dateTimeToSecond(incomeState.getDateTime()), incomeState.getBalanceState().doubleValue());
 			if (incomeState.getTransactions().stream()
 					.anyMatch((transaction) -> transaction.getTransactionType().equals(TransactionType.WITHDRAW))) {
 				withdrawPoints.add(new WithdrawPoint(0, item));
@@ -96,13 +80,13 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		return timeSeriesList;
 	}
 
-	private TimeSeries createTimeSeries(List<SpotIncomeState> incomeStates, String assetToTrack, int row) {
-		final TimeSeries series = new TimeSeries(assetToTrack + " income (USD)");
+	private TimeSeries createTimeSeries(List<SpotIncomeState> incomeStates, String trackedAsset, int row) {
+		final TimeSeries series = new TimeSeries(trackedAsset + " income (USD)");
 		BigDecimal assetIncome = BigDecimal.ZERO;
 		for (int n = 0, item = 0; n < incomeStates.size(); n++) {
 			SpotIncomeState incomeState = incomeStates.get(n);
 			for (Transaction transaction : incomeState.getTransactions()) {
-				if (transaction.getBaseAsset().equals(assetToTrack)) {
+				if (transaction.getBaseAsset().equals(trackedAsset)) {
 					assetIncome = assetIncome.add(transaction.getIncome());
 					if (transaction.getTransactionType().equals(TransactionType.WITHDRAW)) {
 						withdrawPoints.add(new WithdrawPoint(row, item));
@@ -136,5 +120,25 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 	private class WithdrawPoint {
 		private int row;
 		private int item;
+	}
+
+	private class Renderer extends XYLineAndShapeRenderer{
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Paint getItemPaint(int row, int item) {
+			if (isWithdraw(row, item)) {
+				return Color.yellow;
+			}
+			return super.getItemPaint(row, item);
+		}
+
+		@Override
+		public Shape getItemShape(int row, int item) {
+			if (isWithdraw(row, item)) {
+				return ShapeUtils.createDiagonalCross(6, 2);
+			}
+			return super.getItemShape(row, item);
+		}
 	}
 }
