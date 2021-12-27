@@ -43,6 +43,25 @@ public class SpotIncomeState extends BalanceState {
         transactions = new ArrayList<>();
     }
 
+	/**
+	 * Calculate VIRTUAL USD-balance
+	 * //TODO ми хочемо цей баланс додати в currentAssets з імям типу "VIRT_USD"
+	 */
+	private BigDecimal calculateVirtualUSDBalance(){
+    	//todo iterate over stablecoins (BUSD, USDT) in currentAssets:
+		// var virtBalance = 0;
+		// for stablecoin {USDT, BUSD} {
+		//	virtBlance += stablecoint.balance
+		//}
+
+		//for AssetState lockedState : lockedAssetStates {
+		// virtBalance += lockedState.balance
+		//}
+		//return virtBalance
+	}
+
+
+
     public BigDecimal totalBalanceToRelativeAsset() {
 		BigDecimal sum = new BigDecimal(0);
 
