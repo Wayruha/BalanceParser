@@ -1,4 +1,3 @@
-
 package com.example.binanceparser.domain.events;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -28,8 +27,6 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
 	private BigDecimal priceOfLastFilledTrade;
 
-	// Double->BigDecimal may cause some buds when parsing event, should check if
-	// this change is safe
 	private BigDecimal originalQuantity;
 
 	private String side;
@@ -40,40 +37,34 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
 	private Long orderId;
 
-	//возникли проблемы с использованием BinanceClient, поэтому пока оставил так
-	public String getOrderSymbol() {
-		return symbol.replace(USDT, "");
-	}
-
 	public BigDecimal getAquiredQuantity() {
-		return commissionAsset != null && commissionAsset.equals(getOrderSymbol())
-				? originalQuantity.subtract(commission)
+		return commissionAsset != null && commissionAsset.equals(getBaseAsset()) ? originalQuantity.subtract(commission)
 				: originalQuantity;
 	}
 
 	public BigDecimal getPriceIncludingCommission() {
 		if (orderStatus.equals("FILLED")) {
 			if (side.equals("BUY")) {
-				if (commissionAsset.equals(USDT)) {
-					return price.add(commission.divide(getAquiredQuantity(), MATH_CONTEXT));
-				} else if (commissionAsset.equals(getOrderSymbol())) {
-					return price.multiply(originalQuantity).divide(getAquiredQuantity(), MATH_CONTEXT);
+				if (commissionAsset.equals(getQuoteAsset())) {
+					return priceOfLastFilledTrade.add(commission.divide(getAquiredQuantity(), MATH_CONTEXT));
+				} else if (commissionAsset.equals(getBaseAsset())) {
+					return priceOfLastFilledTrade.multiply(originalQuantity).divide(getAquiredQuantity(), MATH_CONTEXT);
 				} else {
-					return price;
+					return priceOfLastFilledTrade;
 				}
 			} else if (side.equals("SELL")) {
-				if (commissionAsset.equals(USDT)) {
-					return price.subtract(commission.divide(getAquiredQuantity(), MATH_CONTEXT));
-				} else if (commissionAsset.equals(getOrderSymbol())) {
-					return price.multiply(getAquiredQuantity()).divide(originalQuantity, MATH_CONTEXT);
+				if (commissionAsset.equals(getQuoteAsset())) {
+					return priceOfLastFilledTrade.subtract(commission.divide(getAquiredQuantity(), MATH_CONTEXT));
+				} else if (commissionAsset.equals(getBaseAsset())) {
+					return priceOfLastFilledTrade.multiply(getAquiredQuantity()).divide(originalQuantity, MATH_CONTEXT);
 				} else {
-					return price;
+					return priceOfLastFilledTrade;
 				}
 			} else {
 				throw new IllegalArgumentException("Unrecognized order.Side");
 			}
 		} else {
-			return price;
+			return priceOfLastFilledTrade;
 		}
 	}
 
@@ -87,13 +78,11 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 		}
 	}
 
+	public String getBaseAsset() {
+		return EXCHANGE_INFO.getSymbolInfo(symbol).getBaseAsset();
+	}
+
 	public String getQuoteAsset() {
-		if (side.equals("BUY")) {
-			return USDT;
-		} else if (side.equals("SELL")) {
-			return getOrderSymbol();
-		} else {
-			throw new IllegalArgumentException("Unrecognized order.Side");
-		}
+		return EXCHANGE_INFO.getSymbolInfo(symbol).getQuoteAsset();
 	}
 }

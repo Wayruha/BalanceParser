@@ -53,10 +53,6 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 			if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
 				final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
 				final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
-
-//				if (!assetsToTrack.contains(balanceEvent.getBalances()) && assetsToTrack.size() != 0) {
-//					continue;
-//				}
 				
 				logBalanceUpdate(balanceEvent);
 				// update asset balances
@@ -74,22 +70,18 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 			final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 
 			if (!orderEvent.getOrderStatus().equals("FILLED"))
-			//		|| (!assetsToTrack.contains(orderEvent.getBaseAsset()) && assetsToTrack.size() != 0)) 
 			{
 				continue;
 			}
 
 			logTrade(orderEvent);
-			// TODO іноді в трейд-івентах price=0 (це ціна за якою виставлявся ордер. але в
-			// маркет-ордерах ціни може не бути. беремо priceOfLastFilledTrade, вона є
-			// завжди
 			final AssetMetadata assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
 					.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 					.build();
 
 			final List<Asset> assetsInvolved = extractAssetsFromEvent(accEvent, assetMetadata);
 			incomeState.updateAssetBalance(assetsInvolved);
-			incomeState.processOrderDetails(orderEvent.getOrderSymbol(), orderEvent.getTradeDelta(),
+			incomeState.processOrderDetails(orderEvent.getBaseAsset(), orderEvent.getTradeDelta(),
 					orderEvent.getPriceIncludingCommission());
 
 			spotIncomeStates.add(incomeState);

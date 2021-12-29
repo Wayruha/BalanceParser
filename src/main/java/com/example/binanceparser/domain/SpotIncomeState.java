@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -24,36 +25,43 @@ public class SpotIncomeState extends BalanceState {
 
 	public SpotIncomeState(LocalDateTime dateTime) {
 		super(BigDecimal.ZERO, dateTime);
-		currentAssets = new HashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
+		currentAssets = new LinkedHashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
 		lockedAssetStates = new HashSet<>();
 		transactions = new ArrayList<>();
 	}
 
 	public SpotIncomeState(BigDecimal conditionedUSDTBalsnce, LocalDateTime dateTime) {
 		super(conditionedUSDTBalsnce, dateTime);
-		currentAssets = new HashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
+		currentAssets = new LinkedHashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
 		lockedAssetStates = new HashSet<>();
 		transactions = new ArrayList<>();
 	}
 
 	public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
 		super(incomeState.getBalanceState(), dateTime);
-		currentAssets = new HashSet<>(incomeState.getCurrentAssets());
+		currentAssets = new LinkedHashSet<>(incomeState.getCurrentAssets());
 		lockedAssetStates = new HashSet<>(incomeState.getLockedAssetStates());
 		transactions = new ArrayList<>();
 	}
 
-	/**
-	 * Calculate VIRTUAL USD-balance //TODO ми хочемо цей баланс додати в
-	 * currentAssets з імям типу "VIRT_USD"
-	 */
 	private BigDecimal calculateVirtualUSDBalance() {
 		BigDecimal virtualBalance = BigDecimal.ZERO;
-		//works for quoteAsset = USD
+		// works for quoteAsset = USD
 		for (AssetState assetState : lockedAssetStates) {
-			virtualBalance = virtualBalance.add(assetState.getAvailableBalance().multiply(assetState.getAveragePrice()));
+			virtualBalance = virtualBalance
+					.add(assetState.getAvailableBalance().multiply(assetState.getAveragePrice()));
 		}
 		return virtualBalance;
+	}
+
+	public BigDecimal calculateVirtualUSDBalance(String asset) {
+		if (asset.equals(VIRTUAL_USD)) {
+			return calculateVirtualUSDBalance();
+		}
+		//works for quoteAsset = USD
+		AssetState assetState = findAssetState(asset);
+		return assetState == null ? BigDecimal.ZERO
+				: assetState.getAvailableBalance().multiply(assetState.getAveragePrice());
 	}
 
 	public BigDecimal totalBalanceToRelativeAsset() {
@@ -169,7 +177,7 @@ public class SpotIncomeState extends BalanceState {
 			transactions.add(new Transaction(TransactionType.DEPOSIT, assetName, "", assetDelta, transactionPrice,
 					BigDecimal.ZERO));
 		}
-		
+
 		findAsset(VIRTUAL_USD).setAvailableBalance(calculateVirtualUSDBalance());
 	}
 

@@ -1,7 +1,6 @@
 package com.example.binanceparser.plot;
 
 import java.awt.Shape;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -19,8 +18,8 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
 import com.example.binanceparser.config.ChartBuilderConfig;
+import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.SpotIncomeState;
-import com.example.binanceparser.domain.Transaction;
 import com.example.binanceparser.domain.TransactionType;
 
 import lombok.AllArgsConstructor;
@@ -46,7 +45,7 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 	public JFreeChart buildLineChart(List<SpotIncomeState> incomeStates) {
 		TimeSeriesCollection dataSeries = new TimeSeriesCollection();
 		getTimeSeriesForEveryAsset(incomeStates).forEach(dataSeries::addSeries);
-		JFreeChart chart = ChartFactory.createTimeSeriesChart("Account income", "Date", "Income", dataSeries);
+		JFreeChart chart = ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", dataSeries);
 		if (config.isDrawPoints()) {
 			chart.getXYPlot().setRenderer(getRenderer());
 		}
@@ -70,20 +69,17 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 
 	private TimeSeries createTimeSeries(List<SpotIncomeState> incomeStates, String trackedAsset, int row) {
 		final TimeSeries series = new TimeSeries(trackedAsset + " balance (USD)");
-		BigDecimal assetIncome = BigDecimal.ZERO;
-		for (int n = 0, item = 0; n < incomeStates.size(); n++) {
+		for (int n = 0; n < incomeStates.size(); n++) {
 			SpotIncomeState incomeState = incomeStates.get(n);
-			for (Transaction transaction : incomeState.getTransactions()) {
-				if (transaction.getBaseAsset().equals(trackedAsset)) {
-					assetIncome = assetIncome.add(transaction.getIncome());
-					if (transaction.getTransactionType().equals(TransactionType.WITHDRAW)) {
-						withdrawPoints.add(new WithdrawPoint(row, item));
-					}
-					if (series.addOrUpdate(dateTimeToSecond(incomeState.getDateTime()), assetIncome) == null) {
-						item++;
-					}
-				}
+			if (incomeState.getTransactions().stream()
+					.anyMatch((transaction) -> transaction.getBaseAsset().equals(trackedAsset)
+							&& transaction.getTransactionType().equals(TransactionType.WITHDRAW))) {
+				withdrawPoints.add(new WithdrawPoint(row, n));
+				//TODO NOW OVERALL IS NOT AT 0 INDEX
+				withdrawPoints.add(new WithdrawPoint(0, n));
 			}
+			series.addOrUpdate(dateTimeToSecond(incomeState.getDateTime()),
+					incomeState.calculateVirtualUSDBalance(trackedAsset));
 		}
 		return series;
 	}
@@ -93,9 +89,9 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 				.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
 	}
 
-	private List<String> updateAssetsToTrack(SpotIncomeState lastIncomeState) {
+	private List<String> updateAssetsToTrack(SpotIncomeState lastIncomeState) {	
 		return assetsToTrack.isEmpty() ? new ArrayList<String>(lastIncomeState.getCurrentAssets().stream()
-				.map((asset) -> asset.getAsset()).collect(Collectors.toList())) : assetsToTrack;
+				.map(Asset::getAsset).collect(Collectors.toList())) : assetsToTrack;
 	}
 
 	private Second dateTimeToSecond(LocalDateTime dateTime) {
