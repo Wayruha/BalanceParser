@@ -31,11 +31,10 @@ public class TestSpotBalanceProcessor extends SpotBalanceProcessor {
 		List<SpotIncomeState> balanceStates = algorithm.processEvents(events).stream()
 			.filter(state -> inRange(state, config.getStartTrackDate(), config.getFinishTrackDate()))
 			.collect(Collectors.toList());
-
+		
 		final BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
 
 		System.out.println("Processor done for config: " + config);
 		return balanceReport;
 	}
-
 }

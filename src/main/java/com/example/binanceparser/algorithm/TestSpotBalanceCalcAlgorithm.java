@@ -4,6 +4,7 @@ import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.AssetMetadata;
 import com.example.binanceparser.domain.SpotIncomeState;
+import com.example.binanceparser.domain.TransactionType;
 import com.example.binanceparser.domain.events.*;
 
 import java.math.BigDecimal;
@@ -53,16 +54,16 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 				final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
 				final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 
-				if (!assetsToTrack.contains(balanceEvent.getBalances()) && assetsToTrack.size() != 0) {
-					continue;
-				}
+//				if (!assetsToTrack.contains(balanceEvent.getBalances()) && assetsToTrack.size() != 0) {
+//					continue;
+//				}
+				
+				logBalanceUpdate(balanceEvent);
 				// update asset balances
-				final AssetMetadata assetMetadata =AssetMetadata.builder()
-						.dateOfLastTransaction(balanceEvent.getDateTime())
-						.quoteAsset("")
-						.priceOfLastTrade(BigDecimal.ZERO)
-						.build();
-				final List<Asset> assetsInvolved = extractAssetsFromEvent(accEvent, assetMetadata, assetsToTrack);
+				final AssetMetadata assetMetadata = AssetMetadata.builder()
+						.dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
+						.priceOfLastTrade(BigDecimal.ZERO).build();
+				final List<Asset> assetsInvolved = extractAssetsFromEvent(accEvent, assetMetadata);
 				incomeState.updateAssetBalance(assetsInvolved);
 				incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
 				spotIncomeStates.add(incomeState);
@@ -72,20 +73,21 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 			final OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) currentEvent;
 			final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 
-			if (!orderEvent.getOrderStatus().equals("FILLED")
-					|| (!assetsToTrack.contains(orderEvent.getOrderSymbol()) && assetsToTrack.size() != 0)) {
+			if (!orderEvent.getOrderStatus().equals("FILLED"))
+			//		|| (!assetsToTrack.contains(orderEvent.getBaseAsset()) && assetsToTrack.size() != 0)) 
+			{
 				continue;
 			}
 
 			logTrade(orderEvent);
-			//TODO іноді в трейд-івентах price=0 (це ціна за якою виставлявся ордер. але в маркет-ордерах ціни може не бути. беремо priceOfLastFilledTrade, вона є завжди
-			final AssetMetadata assetMetadata = AssetMetadata.builder()
-					.dateOfLastTransaction(orderEvent.getDateTime())
-					.quoteAsset(orderEvent.getQuoteAsset())
-					.priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
+			// TODO іноді в трейд-івентах price=0 (це ціна за якою виставлявся ордер. але в
+			// маркет-ордерах ціни може не бути. беремо priceOfLastFilledTrade, вона є
+			// завжди
+			final AssetMetadata assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
+					.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 					.build();
 
-			final List<Asset> assetsInvolved = extractAssetsFromEvent(accEvent, assetMetadata, assetsToTrack);
+			final List<Asset> assetsInvolved = extractAssetsFromEvent(accEvent, assetMetadata);
 			incomeState.updateAssetBalance(assetsInvolved);
 			incomeState.processOrderDetails(orderEvent.getOrderSymbol(), orderEvent.getTradeDelta(),
 					orderEvent.getPriceIncludingCommission());
@@ -95,11 +97,25 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 		return spotIncomeStates;
 	}
 
-	//TODO metadata застосовується до всіх асетів (там буде принаймні 2, правильно?) Хоча, метадата повинна застосовуватися тільки до base-asset
-	private List<Asset> extractAssetsFromEvent(AccountPositionUpdateEvent event, AssetMetadata assetMetadata, List<String> assetsToTrack) {
-		return event.getBalances().stream().filter(asset -> assetsToTrack.contains(asset.getAsset()) || assetsToTrack.size() == 0)
+	// TODO metadata застосовується до всіх асетів (там буде принаймні 2,
+	// правильно?) Хоча, метадата повинна застосовуватися тільки до base-asset
+	private List<Asset> extractAssetsFromEvent(AccountPositionUpdateEvent event, AssetMetadata assetMetadata) {
+		return event.getBalances().stream()
+				//.filter(asset -> assetsToTrack.contains(asset.getAsset()) || assetsToTrack.size() == 0)
 				.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()), assetMetadata))
 				.collect(Collectors.toList());
+	}
+
+	private void logBalanceUpdate(BalanceUpdateEvent balanceEvent) {
+		TransactionType transactionType = balanceEvent.getBalanceDelta().compareTo(BigDecimal.ZERO) > 0
+				? TransactionType.DEPOSIT
+				: TransactionType.WITHDRAW;
+		final String str = String.format("%s %s %s %s", 
+				balanceEvent.getDateTime().format(ISO_DATE_TIME),
+				transactionType, 
+				balanceEvent.getBalances(),
+				balanceEvent.getBalanceDelta().abs());
+		System.out.println(str);
 	}
 
 	private void logTrade(OrderTradeUpdateEvent orderEvent) {

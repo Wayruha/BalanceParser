@@ -1,3 +1,4 @@
+
 package com.example.binanceparser.domain.events;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -39,6 +40,7 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
 	private Long orderId;
 
+	//возникли проблемы с использованием BinanceClient, поэтому пока оставил так
 	public String getOrderSymbol() {
 		return symbol.replace(USDT, "");
 	}

@@ -1,6 +1,5 @@
 package com.example.binanceparser.plot;
 
-import static com.example.binanceparser.Constants.*;
 import java.awt.Shape;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -10,7 +9,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.awt.Paint;
-import java.awt.Color;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
@@ -19,6 +17,8 @@ import org.jfree.chart.util.ShapeUtils;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+
+import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.Transaction;
 import com.example.binanceparser.domain.TransactionType;
@@ -30,21 +30,26 @@ import lombok.NoArgsConstructor;
 public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 	private List<String> assetsToTrack;
 	private List<WithdrawPoint> withdrawPoints;
+	private ChartBuilderConfig config;
 
 	public TestAssetChartBuilder(List<String> assetsToTrack) {
 		this.assetsToTrack = assetsToTrack;
 		withdrawPoints = new ArrayList<>();
+		config = ChartBuilderConfig.getDefaultConfig();
+	}
+
+	public TestAssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
+		this.config = config;
 	}
 
 	@Override
 	public JFreeChart buildLineChart(List<SpotIncomeState> incomeStates) {
 		TimeSeriesCollection dataSeries = new TimeSeriesCollection();
-		dataSeries.addSeries(getOverallIncomeTimeSeries(incomeStates));
-		if (!assetsToTrack.equals(List.of(USD))) {
-			getTimeSeriesForEveryAsset(incomeStates).forEach(dataSeries::addSeries);
-		}
+		getTimeSeriesForEveryAsset(incomeStates).forEach(dataSeries::addSeries);
 		JFreeChart chart = ChartFactory.createTimeSeriesChart("Account income", "Date", "Income", dataSeries);
-		chart.getXYPlot().setRenderer(getRenderer());
+		if (config.isDrawPoints()) {
+			chart.getXYPlot().setRenderer(getRenderer());
+		}
 		return chart;
 	}
 
@@ -52,36 +57,19 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		return new Renderer();
 	}
 
-	//TODO ми можемо обєднати getOverallIncomeTimeSeries i createTimeSeries?
-	// Типу, замість того щоб мати два методи, мати тільки один загальний який приймає ассет.
-	//TODO 2 замість того щоб виділяти окрему змінну під наш usd-баланс (getBalanceState), ми могли б просто додавати цей баланс в новий ассет "USD".
-	// таким чином, у нас це буде як звичайний ассет і обробляти ми це зможемо універсальними методами
-	private TimeSeries getOverallIncomeTimeSeries(List<SpotIncomeState> incomeStates) {
-		final TimeSeries series = new TimeSeries("Overall income (USD)");
-		for (int item = 0; item < incomeStates.size(); item++) {
-			SpotIncomeState incomeState = incomeStates.get(item);
-			series.addOrUpdate(dateTimeToSecond(incomeState.getDateTime()), incomeState.getBalanceState().doubleValue());
-			if (incomeState.getTransactions().stream()
-					.anyMatch((transaction) -> transaction.getTransactionType().equals(TransactionType.WITHDRAW))) {
-				withdrawPoints.add(new WithdrawPoint(0, item));
-			}
-		}
-		return series;
-	}
-
 	private List<TimeSeries> getTimeSeriesForEveryAsset(List<SpotIncomeState> incomeStates) {
 		List<TimeSeries> timeSeriesList = new ArrayList<>();
 		if (incomeStates.size() != 0) {
 			assetsToTrack = updateAssetsToTrack(incomeStates.get(incomeStates.size() - 1));
 			for (int n = 0; n < assetsToTrack.size(); n++) {
-				timeSeriesList.add(createTimeSeries(incomeStates, assetsToTrack.get(n), n + 1));
+				timeSeriesList.add(createTimeSeries(incomeStates, assetsToTrack.get(n), n));
 			}
 		}
 		return timeSeriesList;
 	}
 
 	private TimeSeries createTimeSeries(List<SpotIncomeState> incomeStates, String trackedAsset, int row) {
-		final TimeSeries series = new TimeSeries(trackedAsset + " income (USD)");
+		final TimeSeries series = new TimeSeries(trackedAsset + " balance (USD)");
 		BigDecimal assetIncome = BigDecimal.ZERO;
 		for (int n = 0, item = 0; n < incomeStates.size(); n++) {
 			SpotIncomeState incomeState = incomeStates.get(n);
@@ -122,21 +110,21 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		private int item;
 	}
 
-	private class Renderer extends XYLineAndShapeRenderer{
+	private class Renderer extends XYLineAndShapeRenderer {
 		private static final long serialVersionUID = 1L;
 
 		@Override
 		public Paint getItemPaint(int row, int item) {
 			if (isWithdraw(row, item)) {
-				return Color.yellow;
+				return config.getWithdrawColor();
 			}
 			return super.getItemPaint(row, item);
 		}
 
 		@Override
 		public Shape getItemShape(int row, int item) {
-			if (isWithdraw(row, item)) {
-				return ShapeUtils.createDiagonalCross(6, 2);
+			if (isWithdraw(row, item) && config.isDrawCross()) {
+				return ShapeUtils.createDiagonalCross(config.getCrossLength(), config.getCrossWidth());
 			}
 			return super.getItemShape(row, item);
 		}

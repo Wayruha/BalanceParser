@@ -1,10 +1,8 @@
 package com.example.binanceparser.report;
 
-import static com.example.binanceparser.Constants.USD;
 import static com.example.binanceparser.report.BalanceReportGenerator.saveChartToFile;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,7 +19,7 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
 
 	public TestBalanceReportGenerator(BalanceVisualizerConfig config) {
 		super(config);
-		List<String> assetsToTrack = config.isConvertToUSD() ? List.of(USD) : config.getAssetsToTrack();
+		List<String> assetsToTrack = config.getAssetsToTrack();
 		chartBuilder = new TestAssetChartBuilder(assetsToTrack);
 	}
 

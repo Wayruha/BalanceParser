@@ -16,8 +16,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.example.binanceparser.Constants.*;
-
 public class BalanceStateVisualizer {
 	public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -46,12 +44,12 @@ public class BalanceStateVisualizer {
 
 		final File logsDir = new File(config.getInputFilepath());
 		final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
-		SpotBalanceProcessor processor = new SpotBalanceProcessor(logsEventSource, config);
+//		SpotBalanceProcessor processor = new SpotBalanceProcessor(logsEventSource, config);
 		TestSpotBalanceProcessor testProcessor = new TestSpotBalanceProcessor(logsEventSource, config);
-		final BalanceReport report = processor.process();
+//		final BalanceReport report = processor.process();
 		final BalanceReport testReport = testProcessor.process();
-		System.out.println("Report....");
-		System.out.println(report.toPrettyString());
+//		System.out.println("Report....");
+//		System.out.println(report.toPrettyString());
 		System.out.println("Test report....");
 		System.out.println(testReport.toPrettyString());
 	}
@@ -65,12 +63,10 @@ public class BalanceStateVisualizer {
 //		LocalDateTime finish = LocalDateTime.parse("2021-08-21 13:01:16", dateFormat);
 		config.setStartTrackDate(start);
 		config.setFinishTrackDate(finish);
-		config.setInputFilepath("/Users/roman/Programming/PortfolioClone/backup/logs/events");
-		config.setOutputDir("/Users/roman/Desktop");
+		config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/events");
+		config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
 		//config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
 		config.setAssetsToTrack(Collections.emptyList());
-		
-		//true -> only overall income, false -> overall + income for every asset
 		config.setConvertToUSD(true);
 		return config;
 	}

@@ -52,6 +52,7 @@ public class SpotBalanceCalcAlgorithmTest {
 		aelist.add(OrderTradeUpdateEvent.builder().eventType(EventType.ORDER_TRADE_UPDATE).orderStatus("NEW").build());//should skip
 		aelist.add(FuturesOrderTradeUpdateEvent.builder().eventType(EventType.FUTURES_ORDER_TRADE_UPDATE).build());//should skip
 		aelist.add(FuturesAccountUpdateEvent.builder().eventType(EventType.FUTURES_ACCOUNT_UPDATE).build());//should skip
+		//buying 0.001 BTC with price 45000 UST
 		aelist.add(OrderTradeUpdateEvent.builder()
 				.eventType(EventType.ORDER_TRADE_UPDATE)
 				.symbol(BTC+USDT)
@@ -71,6 +72,7 @@ public class SpotBalanceCalcAlgorithmTest {
 						new Asset(AXS, BigDecimal.valueOf(0.5), BigDecimal.valueOf(0.0))
 						)).build());
 		aelist.add(FuturesAccountUpdateEvent.builder().eventType(EventType.FUTURES_ACCOUNT_UPDATE).build());//should skip
+		//withdrawing 10 USDT
 		aelist.add(BalanceUpdateEvent.builder()
 				.eventType(EventType.BALANCE_UPDATE)
 				.balances(USDT)
@@ -83,6 +85,7 @@ public class SpotBalanceCalcAlgorithmTest {
 						new Asset(USDT, BigDecimal.valueOf(90), BigDecimal.valueOf(0.0)),
 						new Asset(AXS, BigDecimal.valueOf(0.5), BigDecimal.valueOf(0.0))
 						)).build());
+		//selling 0.05 ETH with price 4500
 		aelist.add(OrderTradeUpdateEvent.builder()
 				.eventType(EventType.ORDER_TRADE_UPDATE)
 				.symbol(ETH+USDT)
@@ -101,6 +104,7 @@ public class SpotBalanceCalcAlgorithmTest {
 						new Asset(USDT, BigDecimal.valueOf(314.5), BigDecimal.valueOf(0.0)),
 						new Asset(AXS, BigDecimal.valueOf(0.5), BigDecimal.valueOf(0.0))
 						)).build());
+		//buying 0.001 BTC with price 50000
 		aelist.add(OrderTradeUpdateEvent.builder()
 				.eventType(EventType.ORDER_TRADE_UPDATE)
 				.symbol(BTC+USDT)
@@ -119,6 +123,7 @@ public class SpotBalanceCalcAlgorithmTest {
 						new Asset(USDT, BigDecimal.valueOf(263.5), BigDecimal.valueOf(0.0)),
 						new Asset(AXS, BigDecimal.valueOf(0.5), BigDecimal.valueOf(0.0))
 						)).build());
+		//selling 0.002 BTC with price 51000
 		aelist.add(OrderTradeUpdateEvent.builder()
 				.eventType(EventType.ORDER_TRADE_UPDATE)
 				.symbol(BTC+USDT)
