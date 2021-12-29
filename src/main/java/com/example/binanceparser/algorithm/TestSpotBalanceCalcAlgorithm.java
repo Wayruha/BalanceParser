@@ -53,13 +53,13 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 			if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
 				final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
 				final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
-				
+
 				logBalanceUpdate(balanceEvent);
 				// update asset balances
 				final AssetMetadata assetMetadata = AssetMetadata.builder()
 						.dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
 						.priceOfLastTrade(BigDecimal.ZERO).build();
-				final List<Asset> assetsInvolved = extractAssetsFromEvent(accEvent, assetMetadata);
+				final List<Asset> assetsInvolved = extractAssetsFromEvent(balanceEvent.getBalances(), accEvent, assetMetadata);
 				incomeState.updateAssetBalance(assetsInvolved);
 				incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
 				spotIncomeStates.add(incomeState);
@@ -69,8 +69,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 			final OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) currentEvent;
 			final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 
-			if (!orderEvent.getOrderStatus().equals("FILLED"))
-			{
+			if (!orderEvent.getOrderStatus().equals("FILLED")) {
 				continue;
 			}
 
@@ -79,7 +78,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 					.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 					.build();
 
-			final List<Asset> assetsInvolved = extractAssetsFromEvent(accEvent, assetMetadata);
+			final List<Asset> assetsInvolved = extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, assetMetadata);
 			incomeState.updateAssetBalance(assetsInvolved);
 			incomeState.processOrderDetails(orderEvent.getBaseAsset(), orderEvent.getTradeDelta(),
 					orderEvent.getPriceIncludingCommission());
@@ -89,11 +88,9 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 		return spotIncomeStates;
 	}
 
-	// TODO metadata застосовується до всіх асетів (там буде принаймні 2,
-	// правильно?) Хоча, метадата повинна застосовуватися тільки до base-asset
-	private List<Asset> extractAssetsFromEvent(AccountPositionUpdateEvent event, AssetMetadata assetMetadata) {
-		return event.getBalances().stream()
-				//.filter(asset -> assetsToTrack.contains(asset.getAsset()) || assetsToTrack.size() == 0)
+	private List<Asset> extractAssetsFromEvent(String baseAsset, AccountPositionUpdateEvent event,
+			AssetMetadata assetMetadata) {
+		return event.getBalances().stream().filter((asset) -> asset.getAsset().equals(baseAsset))
 				.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()), assetMetadata))
 				.collect(Collectors.toList());
 	}
@@ -102,11 +99,8 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 		TransactionType transactionType = balanceEvent.getBalanceDelta().compareTo(BigDecimal.ZERO) > 0
 				? TransactionType.DEPOSIT
 				: TransactionType.WITHDRAW;
-		final String str = String.format("%s %s %s %s", 
-				balanceEvent.getDateTime().format(ISO_DATE_TIME),
-				transactionType, 
-				balanceEvent.getBalances(),
-				balanceEvent.getBalanceDelta().abs());
+		final String str = String.format("%s %s %s %s", balanceEvent.getDateTime().format(ISO_DATE_TIME),
+				transactionType, balanceEvent.getBalances(), balanceEvent.getBalanceDelta().abs());
 		System.out.println(str);
 	}
 

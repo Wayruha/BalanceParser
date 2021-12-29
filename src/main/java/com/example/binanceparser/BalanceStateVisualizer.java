@@ -1,5 +1,6 @@
 package com.example.binanceparser;
 
+import static com.example.binanceparser.Constants.*;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;

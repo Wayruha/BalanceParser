@@ -9,13 +9,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.event.annotation.BeforeTestClass;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
+import com.example.binanceparser.domain.Asset;
+import com.example.binanceparser.domain.AssetMetadata;
 import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.AccountPositionUpdateEvent;
-import com.example.binanceparser.domain.events.AccountPositionUpdateEvent.Asset;
 import com.example.binanceparser.domain.events.BalanceUpdateEvent;
 import com.example.binanceparser.domain.events.EventType;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
@@ -23,11 +26,8 @@ import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 import com.example.binanceparser.domain.events.OrderTradeUpdateEvent;
 
 public class SpotBalanceCalcAlgorithmTest {
-
 	private static List<AbstractEvent> aelist = new ArrayList<>();
-	private static List<SpotIncomeState> noAssetsBSlist = new ArrayList<>();
-	private static List<SpotIncomeState> bslist = new ArrayList<>();
-	private static BalanceVisualizerConfig noAssetsConfig = new BalanceVisualizerConfig();
+	private static List<SpotIncomeState> bsList = new ArrayList<>();
 	private static BalanceVisualizerConfig config = new BalanceVisualizerConfig();
 	
 	@BeforeTestClass
@@ -38,22 +38,20 @@ public class SpotBalanceCalcAlgorithmTest {
 		config.setFinishTrackDate(LocalDateTime.parse("2021-09-15 00:00:00", dateFormat));
 		config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
 		config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
-		config.setAssetsToTrack(List.of(BUSD, BTC));
+		config.setAssetsToTrack(Collections.emptyList());
 		config.setConvertToUSD(true);
 		
-		noAssetsConfig.setStartTrackDate(LocalDateTime.parse("2021-08-16 00:00:00", dateFormat));
-		noAssetsConfig.setFinishTrackDate(LocalDateTime.parse("2021-09-15 00:00:00", dateFormat));
-		noAssetsConfig.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
-		noAssetsConfig.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
-		noAssetsConfig.setAssetsToTrack(Collections.emptyList());
-		noAssetsConfig.setConvertToUSD(true);
+		//defining events and income states
+		BalanceUpdateEvent balanceEvent;
+		OrderTradeUpdateEvent orderEvent;
+		AccountPositionUpdateEvent accEvent;
+		SpotIncomeState incomeState;
 		
-		//defining events
 		aelist.add(OrderTradeUpdateEvent.builder().eventType(EventType.ORDER_TRADE_UPDATE).orderStatus("NEW").build());//should skip
 		aelist.add(FuturesOrderTradeUpdateEvent.builder().eventType(EventType.FUTURES_ORDER_TRADE_UPDATE).build());//should skip
 		aelist.add(FuturesAccountUpdateEvent.builder().eventType(EventType.FUTURES_ACCOUNT_UPDATE).build());//should skip
 		//buying 0.001 BTC with price 45000 UST
-		aelist.add(OrderTradeUpdateEvent.builder()
+		orderEvent = OrderTradeUpdateEvent.builder()
 				.eventType(EventType.ORDER_TRADE_UPDATE)
 				.symbol(BTC+USDT)
 				.orderStatus("FILLED")
@@ -62,31 +60,36 @@ public class SpotBalanceCalcAlgorithmTest {
 				.priceOfLastFilledTrade(BigDecimal.valueOf(45000.0))
 				.originalQuantity(BigDecimal.valueOf(0.001))
 				.commission(BigDecimal.valueOf(0.5))
-				.commissionAsset(USDT).build());
-		aelist.add(AccountPositionUpdateEvent.builder()
+				.commissionAsset(USDT).build();
+		accEvent = AccountPositionUpdateEvent.builder()
 				.eventType(EventType.ACCOUNT_POSITION_UPDATE)
 				.balances(List.of(
-						new Asset(BTC, BigDecimal.valueOf(0.0015), BigDecimal.valueOf(0.0)),
-						new Asset(ETH, BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.0)),
-						new Asset(USDT, BigDecimal.valueOf(100), BigDecimal.valueOf(0.0)),
-						new Asset(AXS, BigDecimal.valueOf(0.5), BigDecimal.valueOf(0.0))
-						)).build());
+						new AccountPositionUpdateEvent.Asset(BTC, BigDecimal.valueOf(0.0015), BigDecimal.valueOf(0.0)),
+						new AccountPositionUpdateEvent.Asset(USDT, BigDecimal.valueOf(100), BigDecimal.valueOf(0.0))
+						)).build();
+		incomeState = new SpotIncomeState(null);
+		incomeState.updateAssetBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, null));
+		bsList.add(incomeState);
+		aelist.add(orderEvent);
+		aelist.add(accEvent);
 		aelist.add(FuturesAccountUpdateEvent.builder().eventType(EventType.FUTURES_ACCOUNT_UPDATE).build());//should skip
 		//withdrawing 10 USDT
-		aelist.add(BalanceUpdateEvent.builder()
+		balanceEvent = BalanceUpdateEvent.builder()
 				.eventType(EventType.BALANCE_UPDATE)
 				.balances(USDT)
-				.balanceDelta(BigDecimal.valueOf(-10.0)).build());
-		aelist.add(AccountPositionUpdateEvent.builder()
+				.balanceDelta(BigDecimal.valueOf(-10.0)).build();
+		accEvent = AccountPositionUpdateEvent.builder()
 				.eventType(EventType.ACCOUNT_POSITION_UPDATE)
 				.balances(List.of(
-						new Asset(BTC, BigDecimal.valueOf(0.0015), BigDecimal.valueOf(0.0)),
-						new Asset(ETH, BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.0)),
-						new Asset(USDT, BigDecimal.valueOf(90), BigDecimal.valueOf(0.0)),
-						new Asset(AXS, BigDecimal.valueOf(0.5), BigDecimal.valueOf(0.0))
-						)).build());
+						new AccountPositionUpdateEvent.Asset(USDT, BigDecimal.valueOf(90), BigDecimal.valueOf(0.0))
+						)).build();
+		incomeState = new SpotIncomeState(null, incomeState);
+		incomeState.updateAssetBalance(extractAssetsFromEvent(balanceEvent.getBalances(), accEvent, null));
+		bsList.add(incomeState);
+		aelist.add(balanceEvent);
+		aelist.add(accEvent);
 		//selling 0.05 ETH with price 4500
-		aelist.add(OrderTradeUpdateEvent.builder()
+		orderEvent = OrderTradeUpdateEvent.builder()
 				.eventType(EventType.ORDER_TRADE_UPDATE)
 				.symbol(ETH+USDT)
 				.orderStatus("FILLED")
@@ -95,17 +98,20 @@ public class SpotBalanceCalcAlgorithmTest {
 				.priceOfLastFilledTrade(BigDecimal.valueOf(4500.0))
 				.originalQuantity(BigDecimal.valueOf(0.05))
 				.commission(BigDecimal.valueOf(0.5))
-				.commissionAsset(USDT).build());
-		aelist.add(AccountPositionUpdateEvent.builder()
+				.commissionAsset(USDT).build();
+		accEvent = AccountPositionUpdateEvent.builder()
 				.eventType(EventType.ACCOUNT_POSITION_UPDATE)
 				.balances(List.of(
-						new Asset(BTC, BigDecimal.valueOf(0.0015), BigDecimal.valueOf(0.0)),
-						new Asset(ETH, BigDecimal.valueOf(0.10), BigDecimal.valueOf(0.0)),
-						new Asset(USDT, BigDecimal.valueOf(314.5), BigDecimal.valueOf(0.0)),
-						new Asset(AXS, BigDecimal.valueOf(0.5), BigDecimal.valueOf(0.0))
-						)).build());
+						new AccountPositionUpdateEvent.Asset(ETH, BigDecimal.valueOf(0.10), BigDecimal.valueOf(0.0)),
+						new AccountPositionUpdateEvent.Asset(USDT, BigDecimal.valueOf(314.5), BigDecimal.valueOf(0.0))
+						)).build();
+		incomeState = new SpotIncomeState(null, incomeState);
+		incomeState.updateAssetBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, null));
+		bsList.add(incomeState);
+		aelist.add(orderEvent);
+		aelist.add(accEvent);
 		//buying 0.001 BTC with price 50000
-		aelist.add(OrderTradeUpdateEvent.builder()
+		orderEvent = OrderTradeUpdateEvent.builder()
 				.eventType(EventType.ORDER_TRADE_UPDATE)
 				.symbol(BTC+USDT)
 				.orderStatus("FILLED")
@@ -114,17 +120,20 @@ public class SpotBalanceCalcAlgorithmTest {
 				.priceOfLastFilledTrade(BigDecimal.valueOf(50000.0))
 				.originalQuantity(BigDecimal.valueOf(0.001))
 				.commission(BigDecimal.valueOf(1.0))
-				.commissionAsset(USDT).build());
-		aelist.add(AccountPositionUpdateEvent.builder()
+				.commissionAsset(USDT).build();
+		accEvent = AccountPositionUpdateEvent.builder()
 				.eventType(EventType.ACCOUNT_POSITION_UPDATE)
 				.balances(List.of(
-						new Asset(BTC, BigDecimal.valueOf(0.0025), BigDecimal.valueOf(0.0)),
-						new Asset(ETH, BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.0)),
-						new Asset(USDT, BigDecimal.valueOf(263.5), BigDecimal.valueOf(0.0)),
-						new Asset(AXS, BigDecimal.valueOf(0.5), BigDecimal.valueOf(0.0))
-						)).build());
+						new AccountPositionUpdateEvent.Asset(BTC, BigDecimal.valueOf(0.0025), BigDecimal.valueOf(0.0)),
+						new AccountPositionUpdateEvent.Asset(USDT, BigDecimal.valueOf(263.5), BigDecimal.valueOf(0.0))
+						)).build();
+		incomeState = new SpotIncomeState(null, incomeState);
+		incomeState.updateAssetBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, null));
+		bsList.add(incomeState);
+		aelist.add(orderEvent);
+		aelist.add(accEvent);
 		//selling 0.002 BTC with price 51000
-		aelist.add(OrderTradeUpdateEvent.builder()
+		orderEvent = OrderTradeUpdateEvent.builder()
 				.eventType(EventType.ORDER_TRADE_UPDATE)
 				.symbol(BTC+USDT)
 				.orderStatus("FILLED")
@@ -133,41 +142,31 @@ public class SpotBalanceCalcAlgorithmTest {
 				.priceOfLastFilledTrade(BigDecimal.valueOf(51000.0))
 				.originalQuantity(BigDecimal.valueOf(0.002))
 				.commission(BigDecimal.valueOf(1.5))
-				.commissionAsset(USDT).build());
-		aelist.add(AccountPositionUpdateEvent.builder()
+				.commissionAsset(USDT).build();
+		accEvent = AccountPositionUpdateEvent.builder()
 				.eventType(EventType.ACCOUNT_POSITION_UPDATE)
 				.balances(List.of(
-						new Asset(BTC, BigDecimal.valueOf(0.0005), BigDecimal.valueOf(0.0)),
-						new Asset(ETH, BigDecimal.valueOf(0.15), BigDecimal.valueOf(0.0)),
-						new Asset(USDT, BigDecimal.valueOf(364), BigDecimal.valueOf(0.0)),
-						new Asset(AXS, BigDecimal.valueOf(0.5), BigDecimal.valueOf(0.0))
-						)).build());
-		
-		
-		//definind income states for config with no assets to track(track all assets available)
-		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
-		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
-		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
-		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.ZERO, null));
-		noAssetsBSlist.add(new SpotIncomeState(BigDecimal.valueOf(4), null));
-		
-		//defining income states for config with specified assets to track
-		bslist.add(new SpotIncomeState(BigDecimal.ZERO, null));
-		bslist.add(new SpotIncomeState(BigDecimal.ZERO, null));
-		bslist.add(new SpotIncomeState(BigDecimal.valueOf(4), null));
+						new AccountPositionUpdateEvent.Asset(BTC, BigDecimal.valueOf(0.0005), BigDecimal.valueOf(0.0)),
+						new AccountPositionUpdateEvent.Asset(USDT, BigDecimal.valueOf(364), BigDecimal.valueOf(0.0))
+						)).build();
+		incomeState = new SpotIncomeState(null, incomeState);
+		incomeState.updateAssetBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, null));
+		bsList.add(incomeState);
+		aelist.add(orderEvent);
+		aelist.add(accEvent);
+	}
+	
+	private static List<Asset> extractAssetsFromEvent(String baseAsset, AccountPositionUpdateEvent event,
+			AssetMetadata assetMetadata) {
+		return event.getBalances().stream().filter((asset) -> asset.getAsset().equals(baseAsset))
+				.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()), assetMetadata))
+				.collect(Collectors.toList());
 	}
 	
 	@Test
 	public void shouldReturnCorrectBalanceStatesForAllAssets() throws SecurityException, IllegalArgumentException{		
-		TestSpotBalanceCalcAlgorithm alg = new TestSpotBalanceCalcAlgorithm(noAssetsConfig);
-		List<SpotIncomeState> acceptedBSlist = alg.processEvents(aelist);
-		assertEquals(noAssetsBSlist, acceptedBSlist);
-	}
-	
-	@Test
-	public void shouldReturnCorrectBalanceStatesForSpecifiedAssets() throws SecurityException, IllegalArgumentException {
 		TestSpotBalanceCalcAlgorithm alg = new TestSpotBalanceCalcAlgorithm(config);
 		List<SpotIncomeState> acceptedBSlist = alg.processEvents(aelist);
-		assertEquals(bslist, acceptedBSlist);
+		assertEquals(bsList, acceptedBSlist);
 	}
 }

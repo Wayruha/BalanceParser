@@ -75,7 +75,6 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 					.anyMatch((transaction) -> transaction.getBaseAsset().equals(trackedAsset)
 							&& transaction.getTransactionType().equals(TransactionType.WITHDRAW))) {
 				withdrawPoints.add(new WithdrawPoint(row, n));
-				//TODO NOW OVERALL IS NOT AT 0 INDEX
 				withdrawPoints.add(new WithdrawPoint(0, n));
 			}
 			series.addOrUpdate(dateTimeToSecond(incomeState.getDateTime()),

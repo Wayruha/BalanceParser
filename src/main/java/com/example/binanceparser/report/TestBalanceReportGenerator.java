@@ -1,6 +1,7 @@
 package com.example.binanceparser.report;
 
 import static com.example.binanceparser.report.BalanceReportGenerator.saveChartToFile;
+import static com.example.binanceparser.Constants.VIRTUAL_USD;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -14,7 +15,8 @@ import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.plot.TestAssetChartBuilder;
 
-public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<SpotIncomeState, BalanceVisualizerConfig> {
+public class TestBalanceReportGenerator
+		extends AbstractBalanceReportGenerator<SpotIncomeState, BalanceVisualizerConfig> {
 	private final ChartBuilder<SpotIncomeState> chartBuilder;
 
 	public TestBalanceReportGenerator(BalanceVisualizerConfig config) {
@@ -31,20 +33,20 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
 		final String chartPath = config.getOutputDir() + "/" + "TEST_" + config.getSubject().get(0) + ".jpg";
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
-		List<BigDecimal> values = balanceStates.stream().map(BalanceState::getBalanceState).collect(Collectors.toList());
+		List<BigDecimal> values = balanceStates.stream().map(BalanceState::getBalanceState)
+				.collect(Collectors.toList());
 
-		return BalanceReport.builder()
-				.startTrackDate(config.getStartTrackDate())
-				.finishTrackDate(config.getFinishTrackDate())
-				.balanceAtStart(BigDecimal.ZERO)
+		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
+				.finishTrackDate(config.getFinishTrackDate()).balanceAtStart(BigDecimal.ZERO)
 				.balanceAtEnd(balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()
 						: BigDecimal.ZERO)
 				.min(values.stream().reduce(BigDecimal::min).orElse(BigDecimal.ZERO))
-				.max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO))
-				.outputPath(generatedPlotPath)
-				.balanceDifference(
-						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()  //TODO чого balanceState? На початок проміжку в нас могло вже бути 1к на балансі
-								: BigDecimal.ZERO)
+				.max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO)).outputPath(
+						generatedPlotPath)
+				.balanceDifference(balanceStates.size() != 0
+						? balanceStates.get(balanceStates.size() - 1).findAsset(VIRTUAL_USD).getAvailableBalance()
+								.subtract(balanceStates.get(0).findAsset(VIRTUAL_USD).getAvailableBalance())
+						: BigDecimal.ZERO)
 				.build();
 	}
 }
