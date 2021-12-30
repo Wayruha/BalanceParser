@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,28 +18,28 @@ import static com.example.binanceparser.Constants.*;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 public class SpotIncomeState extends BalanceState {
-	transient private Set<Asset> currentAssets;// transient for tests
-	transient private Set<AssetState> lockedAssetStates;// transient for tests
-	transient private List<Transaction> transactions;// transient for tests
+	private Set<Asset> currentAssets;
+	private Set<AssetState> lockedAssetStates;
+	private List<Transaction> transactions;
 
 	public SpotIncomeState(LocalDateTime dateTime) {
 		super(BigDecimal.ZERO, dateTime);
 		currentAssets = new LinkedHashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
-		lockedAssetStates = new HashSet<>();
+		lockedAssetStates = new LinkedHashSet<>();
 		transactions = new ArrayList<>();
 	}
 
 	public SpotIncomeState(BigDecimal conditionedUSDTBalsnce, LocalDateTime dateTime) {
 		super(conditionedUSDTBalsnce, dateTime);
 		currentAssets = new LinkedHashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
-		lockedAssetStates = new HashSet<>();
+		lockedAssetStates = new LinkedHashSet<>();
 		transactions = new ArrayList<>();
 	}
 
 	public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
 		super(incomeState.getBalanceState(), dateTime);
 		currentAssets = new LinkedHashSet<>(incomeState.getCurrentAssets());
-		lockedAssetStates = new HashSet<>(incomeState.getLockedAssetStates());
+		lockedAssetStates = new LinkedHashSet<>(incomeState.getLockedAssetStates());
 		transactions = new ArrayList<>();
 	}
 

@@ -1,5 +1,6 @@
 package com.example.binanceparser.plot;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -53,7 +54,11 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 	}
 
 	private XYItemRenderer getRenderer() {
-		return new Renderer();
+		Renderer renderer = new Renderer();
+		for (int i = 0; i < assetsToTrack.size(); i++) {
+			renderer.setSeriesShape(i, new Rectangle(config.getPointSize(), config.getPointSize()));
+		}
+		return renderer;
 	}
 
 	private List<TimeSeries> getTimeSeriesForEveryAsset(List<SpotIncomeState> incomeStates) {
@@ -88,9 +93,11 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 				.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
 	}
 
-	private List<String> updateAssetsToTrack(SpotIncomeState lastIncomeState) {	
-		return assetsToTrack.isEmpty() ? new ArrayList<String>(lastIncomeState.getCurrentAssets().stream()
-				.map(Asset::getAsset).collect(Collectors.toList())) : assetsToTrack;
+	private List<String> updateAssetsToTrack(SpotIncomeState lastIncomeState) {
+		return assetsToTrack.isEmpty()
+				? new ArrayList<String>(
+						lastIncomeState.getCurrentAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
+				: assetsToTrack;
 	}
 
 	private Second dateTimeToSecond(LocalDateTime dateTime) {

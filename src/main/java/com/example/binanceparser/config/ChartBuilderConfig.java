@@ -11,11 +11,12 @@ import java.awt.Color;
 public class ChartBuilderConfig {
 	private boolean drawPoints;
 	private boolean drawCross;
+	private int pointSize;
 	private float crossLength;
 	private float crossWidth;
 	private Color withdrawColor;
 
 	public static ChartBuilderConfig getDefaultConfig() {
-		return new ChartBuilderConfig(true, true, 6, 2, Color.yellow);
+		return new ChartBuilderConfig(true, true, 4, 6, 2, Color.yellow);
 	}
 }
