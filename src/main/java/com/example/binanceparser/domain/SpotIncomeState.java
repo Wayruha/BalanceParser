@@ -53,6 +53,7 @@ public class SpotIncomeState extends BalanceState {
 		return virtualBalance;
 	}
 
+	//TODO на цей метод теж потрібно написати тести. Взяти пару тестових SpotIncomeState і перекнатися що метод повертає те що ми очікували
 	public BigDecimal calculateVirtualUSDBalance(String asset) {
 		if (asset.equals(VIRTUAL_USD)) {
 			return calculateVirtualUSDBalance();

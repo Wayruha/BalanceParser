@@ -37,26 +37,29 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
 	private Long orderId;
 
-	public BigDecimal getAquiredQuantity() {
+	//TODO аналогічно як і з наступним методом. Цей метод простий, але якщо ми напишемо на нього тест, ми вже назавжди будемо знати що тут все ок.
+	public BigDecimal getAcquiredQuantity() {
 		return commissionAsset != null && commissionAsset.equals(getBaseAsset()) ? originalQuantity.subtract(commission)
 				: originalQuantity;
 	}
 
+	//TODO щоб бути впевненим що все працює так як потрібно, треба знайти реальний приклад такого івенту, і написати тест
+	// на цей метод, використовуючи такий ордерІвент. В ідеалі, треба покрити всі відгалудження (if-ів). але це в ідеалі.
 	public BigDecimal getPriceIncludingCommission() {
 		if (orderStatus.equals("FILLED")) {
 			if (side.equals("BUY")) {
 				if (commissionAsset.equals(getQuoteAsset())) {
-					return priceOfLastFilledTrade.add(commission.divide(getAquiredQuantity(), MATH_CONTEXT));
+					return priceOfLastFilledTrade.add(commission.divide(getAcquiredQuantity(), MATH_CONTEXT));
 				} else if (commissionAsset.equals(getBaseAsset())) {
-					return priceOfLastFilledTrade.multiply(originalQuantity).divide(getAquiredQuantity(), MATH_CONTEXT);
+					return priceOfLastFilledTrade.multiply(originalQuantity).divide(getAcquiredQuantity(), MATH_CONTEXT);
 				} else {
 					return priceOfLastFilledTrade;
 				}
 			} else if (side.equals("SELL")) {
 				if (commissionAsset.equals(getQuoteAsset())) {
-					return priceOfLastFilledTrade.subtract(commission.divide(getAquiredQuantity(), MATH_CONTEXT));
+					return priceOfLastFilledTrade.subtract(commission.divide(getAcquiredQuantity(), MATH_CONTEXT));
 				} else if (commissionAsset.equals(getBaseAsset())) {
-					return priceOfLastFilledTrade.multiply(getAquiredQuantity()).divide(originalQuantity, MATH_CONTEXT);
+					return priceOfLastFilledTrade.multiply(getAcquiredQuantity()).divide(originalQuantity, MATH_CONTEXT);
 				} else {
 					return priceOfLastFilledTrade;
 				}
@@ -70,9 +73,9 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
 	public BigDecimal getTradeDelta() {
 		if (side.equals("BUY")) {
-			return getAquiredQuantity();
+			return getAcquiredQuantity();
 		} else if (side.equals("SELL")) {
-			return getAquiredQuantity().negate();
+			return getAcquiredQuantity().negate();
 		} else {
 			throw new IllegalArgumentException("Unrecognized order.Side");
 		}

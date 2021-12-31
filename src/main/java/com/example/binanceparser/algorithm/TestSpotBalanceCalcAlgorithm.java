@@ -88,6 +88,8 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 		return spotIncomeStates;
 	}
 
+	//TODO baseAsset = BTC (наприклад). Чого ми з AccountPositionUpdateEvent витягуємо тільки баланс БТК але ігноруємо quoteAsset?
+	//List<Asset> каже нам що повертається ліст, хоча насправді (як мені здається) повернеться тільки один ассет для baseAsset
 	private List<Asset> extractAssetsFromEvent(String baseAsset, AccountPositionUpdateEvent event,
 			AssetMetadata assetMetadata) {
 		return event.getBalances().stream().filter((asset) -> asset.getAsset().equals(baseAsset))
