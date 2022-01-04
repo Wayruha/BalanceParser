@@ -39,6 +39,7 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 	}
 
 	public TestAssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
+		this.assetsToTrack = assetsToTrack;
 		this.config = config;
 	}
 

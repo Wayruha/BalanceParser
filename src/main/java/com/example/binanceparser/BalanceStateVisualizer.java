@@ -23,13 +23,13 @@ public class BalanceStateVisualizer {
 	public static void main(String[] args) throws IOException {
 		BalanceStateVisualizer app = new BalanceStateVisualizer();
 		final String person = "a.nefedov";
-//		app.futuresStateChangeFromLogs(person);
-		app.spotStateChangeFromLogs(person);
+		app.futuresStateChangeFromLogs(person);
+		//app.spotStateChangeFromLogs(person);
 	}
 
 	public void futuresStateChangeFromLogs(String person) throws IOException {
 		final BalanceVisualizerConfig config = configure();
-		addSubject(config, person, "FUTURES_PRODUCER");
+		addSubject(config, person, "FUTURES");
 
 		final File logsDir = new File(config.getInputFilepath());
 		final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
@@ -59,9 +59,6 @@ public class BalanceStateVisualizer {
 		final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
 		LocalDateTime start = LocalDateTime.parse("2021-08-16 00:00:00", dateFormat);
 		LocalDateTime finish = LocalDateTime.parse("2021-12-30 00:00:00", dateFormat);
-		//sample that shows work of algorithm in small time period
-//		LocalDateTime start = LocalDateTime.parse("2021-08-21 12:45:28", dateFormat);
-//		LocalDateTime finish = LocalDateTime.parse("2021-08-21 13:01:16", dateFormat);
 		config.setStartTrackDate(start);
 		config.setFinishTrackDate(finish);
 		config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/events");
