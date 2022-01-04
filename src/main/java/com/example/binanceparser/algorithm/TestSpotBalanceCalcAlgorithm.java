@@ -59,7 +59,8 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 				final AssetMetadata assetMetadata = AssetMetadata.builder()
 						.dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
 						.priceOfLastTrade(BigDecimal.ZERO).build();
-				final List<Asset> assetsInvolved = extractAssetsFromEvent(balanceEvent.getBalances(), accEvent, assetMetadata);
+				final List<Asset> assetsInvolved = extractAssetsFromEvent(balanceEvent.getBalances(), accEvent,
+						assetMetadata);
 				incomeState.updateAssetBalance(assetsInvolved);
 				incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
 				spotIncomeStates.add(incomeState);
@@ -78,7 +79,8 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 					.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 					.build();
 
-			final List<Asset> assetsInvolved = extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, assetMetadata);
+			final List<Asset> assetsInvolved = extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent,
+					assetMetadata);
 			incomeState.updateAssetBalance(assetsInvolved);
 			incomeState.processOrderDetails(orderEvent.getBaseAsset(), orderEvent.getTradeDelta(),
 					orderEvent.getPriceIncludingCommission());
@@ -88,12 +90,10 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 		return spotIncomeStates;
 	}
 
-	//TODO baseAsset = BTC (наприклад). Чого ми з AccountPositionUpdateEvent витягуємо тільки баланс БТК але ігноруємо quoteAsset?
-	//List<Asset> каже нам що повертається ліст, хоча насправді (як мені здається) повернеться тільки один ассет для baseAsset
 	private List<Asset> extractAssetsFromEvent(String baseAsset, AccountPositionUpdateEvent event,
 			AssetMetadata assetMetadata) {
-		return event.getBalances().stream().filter((asset) -> asset.getAsset().equals(baseAsset))
-				.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()), assetMetadata))
+		return event.getBalances().stream().map(asset -> new Asset(asset.getAsset(),
+				asset.getFree().add(asset.getLocked()), asset.getAsset().equals(baseAsset) ? assetMetadata : null))
 				.collect(Collectors.toList());
 	}
 

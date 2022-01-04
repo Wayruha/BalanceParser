@@ -58,13 +58,13 @@ public class SpotBalanceCalcAlgorithmTest {
 				.build());// should skip
 		// buying 0.001 BTC with price 45000 UST
 		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
-				.symbol(BTC + USDT).orderStatus("FILLED").side("BUY").price(BigDecimal.valueOf(45000.0))
-				.priceOfLastFilledTrade(BigDecimal.valueOf(45000.0)).originalQuantity(BigDecimal.valueOf(0.001))
-				.commission(BigDecimal.valueOf(0.5)).commissionAsset(USDT).build();
+				.symbol(BTC + USDT).orderStatus("FILLED").side("BUY").price(new BigDecimal("45000"))
+				.priceOfLastFilledTrade(new BigDecimal("45000")).originalQuantity(new BigDecimal("0.001"))
+				.commission(new BigDecimal("0.5")).commissionAsset(USDT).build();
 		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
 				.balances(List.of(
-						new AccountPositionUpdateEvent.Asset(BTC, BigDecimal.valueOf(0.0015), BigDecimal.valueOf(0.0)),
-						new AccountPositionUpdateEvent.Asset(USDT, BigDecimal.valueOf(100), BigDecimal.valueOf(0.0))))
+						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.0015"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(USDT, new BigDecimal("100"), new BigDecimal("0"))))
 				.build();
 		incomeState = new SpotIncomeState(dateTime);
 		assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
@@ -80,14 +80,14 @@ public class SpotBalanceCalcAlgorithmTest {
 				.build());// should skip
 		// withdrawing 10 USDT
 		balanceEvent = BalanceUpdateEvent.builder().dateTime(dateTime).eventType(EventType.BALANCE_UPDATE)
-				.balances(USDT).balanceDelta(BigDecimal.valueOf(-10.0)).build();
+				.balances(USDT).balanceDelta(new BigDecimal("-10")).build();
 		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
-				.balances(List.of(
-						new AccountPositionUpdateEvent.Asset(USDT, BigDecimal.valueOf(90), BigDecimal.valueOf(0.0))))
+				.balances(
+						List.of(new AccountPositionUpdateEvent.Asset(USDT, new BigDecimal("90"), new BigDecimal("0"))))
 				.build();
 		incomeState = new SpotIncomeState(dateTime, incomeState);
 		assetMetadata = AssetMetadata.builder().dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
-				.priceOfLastTrade(BigDecimal.ZERO).build();
+				.priceOfLastTrade(new BigDecimal("0")).build();
 		incomeState.updateAssetBalance(extractAssetsFromEvent(balanceEvent.getBalances(), accEvent, assetMetadata));
 		incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
 		bsList.add(incomeState);
@@ -95,13 +95,12 @@ public class SpotBalanceCalcAlgorithmTest {
 		aelist.add(accEvent);
 		// selling 0.05 ETH with price 4500
 		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
-				.symbol(ETH + USDT).orderStatus("FILLED").side("SELL").price(BigDecimal.valueOf(4500.0))
-				.priceOfLastFilledTrade(BigDecimal.valueOf(4500.0)).originalQuantity(BigDecimal.valueOf(0.05))
-				.commission(BigDecimal.valueOf(0.5)).commissionAsset(USDT).build();
+				.symbol(ETH + USDT).orderStatus("FILLED").side("SELL").price(new BigDecimal("4500"))
+				.priceOfLastFilledTrade(new BigDecimal("4500")).originalQuantity(new BigDecimal("0.05"))
+				.commission(new BigDecimal("0.5")).commissionAsset(USDT).build();
 		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
-				.balances(List.of(
-						new AccountPositionUpdateEvent.Asset(ETH, BigDecimal.valueOf(0.10), BigDecimal.valueOf(0.0)),
-						new AccountPositionUpdateEvent.Asset(USDT, BigDecimal.valueOf(314.5), BigDecimal.valueOf(0.0))))
+				.balances(List.of(new AccountPositionUpdateEvent.Asset(ETH, new BigDecimal("0.1"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(USDT, new BigDecimal("314.5"), new BigDecimal("0"))))
 				.build();
 		incomeState = new SpotIncomeState(dateTime, incomeState);
 		assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
@@ -115,13 +114,13 @@ public class SpotBalanceCalcAlgorithmTest {
 		aelist.add(accEvent);
 		// buying 0.001 BTC with price 50000
 		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
-				.symbol(BTC + USDT).orderStatus("FILLED").side("BUY").price(BigDecimal.valueOf(50000.0))
-				.priceOfLastFilledTrade(BigDecimal.valueOf(50000.0)).originalQuantity(BigDecimal.valueOf(0.001))
-				.commission(BigDecimal.valueOf(1.0)).commissionAsset(USDT).build();
+				.symbol(BTC + USDT).orderStatus("FILLED").side("BUY").price(new BigDecimal("50000"))
+				.priceOfLastFilledTrade(new BigDecimal("50000")).originalQuantity(new BigDecimal("0.001"))
+				.commission(new BigDecimal("1")).commissionAsset(USDT).build();
 		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
 				.balances(List.of(
-						new AccountPositionUpdateEvent.Asset(BTC, BigDecimal.valueOf(0.0025), BigDecimal.valueOf(0.0)),
-						new AccountPositionUpdateEvent.Asset(USDT, BigDecimal.valueOf(263.5), BigDecimal.valueOf(0.0))))
+						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.0025"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(USDT, new BigDecimal("263.5"), new BigDecimal("0"))))
 				.build();
 		incomeState = new SpotIncomeState(dateTime, incomeState);
 		assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
@@ -135,13 +134,13 @@ public class SpotBalanceCalcAlgorithmTest {
 		aelist.add(accEvent);
 		// selling 0.002 BTC with price 51000
 		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
-				.symbol(BTC + USDT).orderStatus("FILLED").side("SELL").price(BigDecimal.valueOf(51000.0))
-				.priceOfLastFilledTrade(BigDecimal.valueOf(51000.0)).originalQuantity(BigDecimal.valueOf(0.002))
-				.commission(BigDecimal.valueOf(1.5)).commissionAsset(USDT).build();
+				.symbol(BTC + USDT).orderStatus("FILLED").side("SELL").price(new BigDecimal("51000"))
+				.priceOfLastFilledTrade(new BigDecimal("51000")).originalQuantity(new BigDecimal("0.002"))
+				.commission(new BigDecimal("1.5")).commissionAsset(USDT).build();
 		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
 				.balances(List.of(
-						new AccountPositionUpdateEvent.Asset(BTC, BigDecimal.valueOf(0.0005), BigDecimal.valueOf(0.0)),
-						new AccountPositionUpdateEvent.Asset(USDT, BigDecimal.valueOf(364), BigDecimal.valueOf(0.0))))
+						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.0005"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(USDT, new BigDecimal("364"), new BigDecimal("0"))))
 				.build();
 		incomeState = new SpotIncomeState(dateTime, incomeState);
 		assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
@@ -157,8 +156,8 @@ public class SpotBalanceCalcAlgorithmTest {
 
 	private static List<Asset> extractAssetsFromEvent(String baseAsset, AccountPositionUpdateEvent event,
 			AssetMetadata assetMetadata) {
-		return event.getBalances().stream().filter((asset) -> asset.getAsset().equals(baseAsset))
-				.map(asset -> new Asset(asset.getAsset(), asset.getFree().add(asset.getLocked()), assetMetadata))
+		return event.getBalances().stream().map(asset -> new Asset(asset.getAsset(),
+				asset.getFree().add(asset.getLocked()), asset.getAsset().equals(baseAsset) ? assetMetadata : null))
 				.collect(Collectors.toList());
 	}
 

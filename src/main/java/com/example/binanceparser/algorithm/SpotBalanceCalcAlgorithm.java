@@ -74,7 +74,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalan
 
 			if (orderEvent.getSide().equals("BUY") && assetRate.containsKey(orderSymbol)) {
 				BigDecimal newQuantity = orderEvent.getOriginalQuantity();
-				BigDecimal currentQuantity = actualBalance.get(orderSymbol).getAvailableBalance();
+				BigDecimal currentQuantity = actualBalance.get(orderSymbol).getBalance();
 				BigDecimal newPrice = orderEvent.getPriceOfLastFilledTrade();
 				BigDecimal currentPrice = assetRate.get(orderSymbol);
 
@@ -129,9 +129,9 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalan
 			BigDecimal balance = new BigDecimal(0);
 			for (Asset asset : state.getAssets()) {
 				if (assetRate.get(asset.getAsset()) == null) {// should check if this condition is necessary
-					balance = balance.add(asset.getAvailableBalance());
+					balance = balance.add(asset.getBalance());
 				} else {
-					balance = balance.add(asset.getAvailableBalance().multiply(assetRate.get(asset.getAsset())));
+					balance = balance.add(asset.getBalance().multiply(assetRate.get(asset.getAsset())));
 				}
 			}
 			assets.add(new Asset(USD, balance));

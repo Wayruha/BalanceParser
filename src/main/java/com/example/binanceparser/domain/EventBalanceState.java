@@ -29,6 +29,6 @@ public class EventBalanceState extends BalanceState {
 
 	public BigDecimal getAssetBalance(String assetName) {
 		final Asset asset = findAsset(assetName);
-		return asset == null ? BigDecimal.ZERO : asset.getAvailableBalance();
+		return asset == null ? BigDecimal.ZERO : asset.getBalance();
 	}
 }

@@ -34,7 +34,7 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
         for (EventBalanceState eventBalanceState : eventBalanceStates) {
             final Asset asset = eventBalanceState.findAsset(assetToTrack);
             if (asset == null) continue;
-            series.addOrUpdate(dateTimeToSecond(eventBalanceState.getDateTime()), asset.getAvailableBalance());
+            series.addOrUpdate(dateTimeToSecond(eventBalanceState.getDateTime()), asset.getBalance());
         }
         return series;
     }

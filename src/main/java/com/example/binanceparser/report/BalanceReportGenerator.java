@@ -57,8 +57,8 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 	}
 
 	private BigDecimal calculateBalanceDelta(List<Asset> assetList) {
-		return assetList.size() != 0 ? assetList.get(assetList.size() - 1).getAvailableBalance()
-				.add(assetList.get(0).getAvailableBalance().negate()) : BigDecimal.ZERO;
+		return assetList.size() != 0 ? assetList.get(assetList.size() - 1).getBalance()
+				.add(assetList.get(0).getBalance().negate()) : BigDecimal.ZERO;
 	}
 
 	public static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {
@@ -68,10 +68,10 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 	}
 
 	private static BigDecimal findMaxBalance(List<Asset> assetList) {
-		return assetList.stream().map(Asset::getAvailableBalance).reduce(BigDecimal::max).orElse(BigDecimal.ZERO);
+		return assetList.stream().map(Asset::getBalance).reduce(BigDecimal::max).orElse(BigDecimal.ZERO);
 	}
 
 	private static BigDecimal findMinBalance(List<Asset> assetList) {
-		return assetList.stream().map(Asset::getAvailableBalance).reduce(BigDecimal::min).orElse(BigDecimal.ZERO);
+		return assetList.stream().map(Asset::getBalance).reduce(BigDecimal::min).orElse(BigDecimal.ZERO);
 	}
 }

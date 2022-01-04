@@ -37,14 +37,11 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
 	private Long orderId;
 
-	//TODO аналогічно як і з наступним методом. Цей метод простий, але якщо ми напишемо на нього тест, ми вже назавжди будемо знати що тут все ок.
 	public BigDecimal getAcquiredQuantity() {
 		return commissionAsset != null && commissionAsset.equals(getBaseAsset()) ? originalQuantity.subtract(commission)
 				: originalQuantity;
 	}
 
-	//TODO щоб бути впевненим що все працює так як потрібно, треба знайти реальний приклад такого івенту, і написати тест
-	// на цей метод, використовуючи такий ордерІвент. В ідеалі, треба покрити всі відгалудження (if-ів). але це в ідеалі.
 	public BigDecimal getPriceIncludingCommission() {
 		if (orderStatus.equals("FILLED")) {
 			if (side.equals("BUY")) {

@@ -65,7 +65,7 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<E
 
     public BigDecimal assetToUSD(Asset asset) {
         if (!currencyRate.containsKey(asset.getAsset())) return null;
-        return asset.getAvailableBalance().multiply(currencyRate.get(asset.getAsset()));
+        return asset.getBalance().multiply(currencyRate.get(asset.getAsset()));
     }
 
 	@Override

@@ -1,6 +1,8 @@
 package com.example.binanceparser.domain;
 
 import com.example.binanceparser.Constants;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,6 +19,7 @@ import static com.example.binanceparser.Constants.*;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
+@AllArgsConstructor
 public class SpotIncomeState extends BalanceState {
 	private Set<Asset> currentAssets;
 	private Set<AssetState> lockedAssetStates;
@@ -43,32 +46,31 @@ public class SpotIncomeState extends BalanceState {
 		transactions = new ArrayList<>();
 	}
 
-	private BigDecimal calculateVirtualUSDBalance() {
+	public BigDecimal calculateVirtualUSDBalance() {
 		BigDecimal virtualBalance = BigDecimal.ZERO;
 		// works for quoteAsset = USD
 		for (AssetState assetState : lockedAssetStates) {
 			virtualBalance = virtualBalance
-					.add(assetState.getAvailableBalance().multiply(assetState.getAveragePrice()));
+					.add(assetState.getBalance().multiply(assetState.getAveragePrice()));
 		}
 		return virtualBalance;
 	}
 
-	//TODO на цей метод теж потрібно написати тести. Взяти пару тестових SpotIncomeState і перекнатися що метод повертає те що ми очікували
 	public BigDecimal calculateVirtualUSDBalance(String asset) {
 		if (asset.equals(VIRTUAL_USD)) {
 			return calculateVirtualUSDBalance();
 		}
-		//works for quoteAsset = USD
+		// works for quoteAsset = USD
 		AssetState assetState = findAssetState(asset);
 		return assetState == null ? BigDecimal.ZERO
-				: assetState.getAvailableBalance().multiply(assetState.getAveragePrice());
+				: assetState.getBalance().multiply(assetState.getAveragePrice());
 	}
 
 	public BigDecimal totalBalanceToRelativeAsset() {
-		BigDecimal sum = new BigDecimal(0);
+		BigDecimal sum = BigDecimal.ZERO;
 
 		for (AssetState assetState : lockedAssetStates) {
-			sum = sum.add(assetState.getAvailableBalance().multiply(assetState.getAveragePrice()));
+			sum = sum.add(assetState.getBalance().multiply(assetState.getAveragePrice()));
 		}
 		return sum;
 	}
@@ -103,7 +105,7 @@ public class SpotIncomeState extends BalanceState {
 
 	public void removeAssetStateIfEmpty(String assetName) {
 		AssetState assetState = findAssetState(assetName);
-		if (assetState != null && assetState.getAvailableBalance().compareTo(BigDecimal.ZERO) == 0) {
+		if (assetState != null && assetState.getBalance().compareTo(BigDecimal.ZERO) == 0) {
 			lockedAssetStates.remove(assetState);
 		}
 	}
@@ -115,9 +117,9 @@ public class SpotIncomeState extends BalanceState {
 		});
 
 		// copying current stableCoins to AssetStates set
-		addAssetStateIfNotExist(USDT).setAvailableBalance(addAssetIfNotExist(USDT).getAvailableBalance());
+		addAssetStateIfNotExist(USDT).setBalance(addAssetIfNotExist(USDT).getBalance());
 		findAssetState(USDT).setAveragePrice(BigDecimal.ONE);
-		addAssetStateIfNotExist(BUSD).setAvailableBalance(addAssetIfNotExist(BUSD).getAvailableBalance());
+		addAssetStateIfNotExist(BUSD).setBalance(addAssetIfNotExist(BUSD).getBalance());
 		findAssetState(BUSD).setAveragePrice(BigDecimal.ONE);
 	}
 
@@ -140,9 +142,9 @@ public class SpotIncomeState extends BalanceState {
 					transaction = transactions.get(transactions.size() - 1);
 				}
 
-				BigDecimal maxAssetTrackedAmount = assetState.getAvailableBalance().compareTo(assetDelta.abs()) >= 0
+				BigDecimal maxAssetTrackedAmount = assetState.getBalance().compareTo(assetDelta.abs()) >= 0
 						? assetDelta
-						: assetState.getAvailableBalance().negate();
+						: assetState.getBalance().negate();
 				BigDecimal transactionIncome = maxAssetTrackedAmount.abs().multiply(transactionPrice)// what we got when
 																										// sold asset
 						.subtract(maxAssetTrackedAmount.abs().multiply(assetState.getAveragePrice()));// what we spent
@@ -150,7 +152,7 @@ public class SpotIncomeState extends BalanceState {
 																										// asset
 				transaction.setIncome(transactionIncome);
 				setBalanceState(getBalanceState().add(transactionIncome));
-				assetState.setAvailableBalance(assetState.getAvailableBalance().subtract(maxAssetTrackedAmount.abs()));// unlock
+				assetState.setBalance(assetState.getBalance().subtract(maxAssetTrackedAmount.abs()));// unlock
 																														// asset
 			} else {
 				transactions.add(new Transaction(TransactionType.WITHDRAW_IN_PROCESS, assetName, "", assetDelta,
@@ -166,11 +168,11 @@ public class SpotIncomeState extends BalanceState {
 				transactions.add(new Transaction(TransactionType.BUY, assetName, assetState.getQuoteAsset(), assetDelta,
 						transactionPrice, BigDecimal.ZERO));
 				final BigDecimal transactionQuoteQty = assetDelta.multiply(transactionPrice);
-				final BigDecimal newAssetQty = assetState.getAvailableBalance().add(assetDelta);
+				final BigDecimal newAssetQty = assetState.getBalance().add(assetDelta);
 				final BigDecimal newCalculatedPrice = assetState.totalQuoteAssetValue().add(transactionQuoteQty)
 						.divide(newAssetQty, Constants.MATH_CONTEXT);
 				assetState.setAveragePrice(newCalculatedPrice);
-				assetState.setAvailableBalance(newAssetQty);
+				assetState.setBalance(newAssetQty);
 				return;
 			}
 			// else DEPOSIT operation (we do not add deposit to locked assets)
@@ -178,7 +180,7 @@ public class SpotIncomeState extends BalanceState {
 					BigDecimal.ZERO));
 		}
 
-		findAsset(VIRTUAL_USD).setAvailableBalance(calculateVirtualUSDBalance());
+		findAsset(VIRTUAL_USD).setBalance(calculateVirtualUSDBalance());
 	}
 
 	@Data
@@ -194,7 +196,7 @@ public class SpotIncomeState extends BalanceState {
 		}
 
 		public BigDecimal totalQuoteAssetValue() {
-			return averagePrice.multiply(availableBalance);
+			return averagePrice.multiply(balance);
 		}
 
 		@Override

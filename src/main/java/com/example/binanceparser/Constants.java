@@ -20,6 +20,7 @@ public class Constants {
     public static final String ETH = "ETH";
     public static final String BTC = "BTC";
     public static final String AXS = "AXS";
+    public static final String BNB = "BNB";
     public static final String VIRTUAL_USD = "VIRTUAL_USD";
     //...
     

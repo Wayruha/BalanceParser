@@ -44,8 +44,8 @@ public class TestBalanceReportGenerator
 				.max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO)).outputPath(
 						generatedPlotPath)
 				.balanceDifference(balanceStates.size() != 0
-						? balanceStates.get(balanceStates.size() - 1).findAsset(VIRTUAL_USD).getAvailableBalance()
-								.subtract(balanceStates.get(0).findAsset(VIRTUAL_USD).getAvailableBalance())
+						? balanceStates.get(balanceStates.size() - 1).findAsset(VIRTUAL_USD).getBalance()
+								.subtract(balanceStates.get(0).findAsset(VIRTUAL_USD).getBalance())
 						: BigDecimal.ZERO)
 				.build();
 	}
