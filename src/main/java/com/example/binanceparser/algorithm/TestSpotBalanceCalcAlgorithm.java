@@ -59,8 +59,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 				final AssetMetadata assetMetadata = AssetMetadata.builder()
 						.dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
 						.priceOfLastTrade(BigDecimal.ZERO).build();
-				final List<Asset> assetsInvolved = extractAssetsFromEvent(balanceEvent.getBalances(), accEvent,
-						assetMetadata);
+				final List<Asset> assetsInvolved = extractAssetsFromEvent(balanceEvent.getBalances(), accEvent, assetMetadata);
 				incomeState.updateAssetBalance(assetsInvolved);
 				incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
 				spotIncomeStates.add(incomeState);
@@ -79,6 +78,11 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 					.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 					.build();
 
+			//TODO orderEvent.getBaseAsset() - це один ассет, напр. BTC
+			// ми декларуємо  СПИСОК assetsInvolved, в який покладемо лише один Asset для BTC (їх не може бути кілька, правда?
+			// бо для кожної монети буде один обєкт Asset, так?)
+			// чого задекларували список а кладемо гарантовано один об'єкт? обманули читача виходить...
+			// після цього, ми юзаємо метод updateAssetBalance()
 			final List<Asset> assetsInvolved = extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent,
 					assetMetadata);
 			incomeState.updateAssetBalance(assetsInvolved);
@@ -92,9 +96,13 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 
 	private List<Asset> extractAssetsFromEvent(String baseAsset, AccountPositionUpdateEvent event,
 			AssetMetadata assetMetadata) {
-		return event.getBalances().stream().map(asset -> new Asset(asset.getAsset(),
-				asset.getFree().add(asset.getLocked()), asset.getAsset().equals(baseAsset) ? assetMetadata : null))
-				.collect(Collectors.toList());
+		return event.getBalances().stream().map(asset ->
+			Asset.builder()
+					.asset(asset.getAsset())
+					.balance(asset.getFree().add(asset.getLocked()))
+					.assetMetadata(asset.getAsset().equals(baseAsset) ? assetMetadata : null)
+					.build()
+		).collect(Collectors.toList());
 	}
 
 	private void logBalanceUpdate(BalanceUpdateEvent balanceEvent) {

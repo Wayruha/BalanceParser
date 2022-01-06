@@ -9,10 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.example.binanceparser.Constants.*;
 
@@ -27,22 +24,16 @@ public class SpotIncomeState extends BalanceState {
 
 	public SpotIncomeState(LocalDateTime dateTime) {
 		super(BigDecimal.ZERO, dateTime);
-		currentAssets = new LinkedHashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
-		lockedAssetStates = new LinkedHashSet<>();
+		currentAssets = new HashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
+		lockedAssetStates = new HashSet<>();
 		transactions = new ArrayList<>();
 	}
 
-	public SpotIncomeState(BigDecimal conditionedUSDTBalsnce, LocalDateTime dateTime) {
-		super(conditionedUSDTBalsnce, dateTime);
-		currentAssets = new LinkedHashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
-		lockedAssetStates = new LinkedHashSet<>();
-		transactions = new ArrayList<>();
-	}
 
 	public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
 		super(incomeState.getBalanceState(), dateTime);
-		currentAssets = new LinkedHashSet<>(incomeState.getCurrentAssets());
-		lockedAssetStates = new LinkedHashSet<>(incomeState.getLockedAssetStates());
+		currentAssets = new HashSet<>(incomeState.getCurrentAssets());
+		lockedAssetStates = new HashSet<>(incomeState.getLockedAssetStates());
 		transactions = new ArrayList<>();
 	}
 
@@ -61,7 +52,7 @@ public class SpotIncomeState extends BalanceState {
 			return calculateVirtualUSDBalance();
 		}
 		// works for quoteAsset = USD
-		AssetState assetState = findAssetState(asset);
+		AssetState assetState = findLockedAsset(asset);
 		return assetState == null ? BigDecimal.ZERO
 				: assetState.getBalance().multiply(assetState.getAveragePrice());
 	}
@@ -75,12 +66,12 @@ public class SpotIncomeState extends BalanceState {
 		return sum;
 	}
 
-	public AssetState findAssetState(String assetName) {
+	public AssetState findLockedAsset(String assetName) {
 		return lockedAssetStates.stream().filter(a -> a.getAsset().equals(assetName)).findFirst().orElse(null);
 	}
 
-	public AssetState addAssetStateIfNotExist(String assetName) {
-		final AssetState assetState = findAssetState(assetName);
+	public AssetState addLockedAssetIfNotExist(String assetName) {
+		final AssetState assetState = findLockedAsset(assetName);
 		if (assetState != null)
 			return assetState;
 
@@ -104,23 +95,28 @@ public class SpotIncomeState extends BalanceState {
 	}
 
 	public void removeAssetStateIfEmpty(String assetName) {
-		AssetState assetState = findAssetState(assetName);
+		AssetState assetState = findLockedAsset(assetName);
 		if (assetState != null && assetState.getBalance().compareTo(BigDecimal.ZERO) == 0) {
 			lockedAssetStates.remove(assetState);
 		}
 	}
 
 	public void updateAssetBalance(List<Asset> updatedAssets) {
-		updatedAssets.stream().forEach((updatedAsset) -> {
-			currentAssets.removeIf((currentAsset) -> currentAsset.getAsset().equals(updatedAsset.getAsset()));
+		updatedAssets.forEach(updatedAsset -> {
+			currentAssets.removeIf(asset -> asset.getAsset().equals(updatedAsset.getAsset()));
 			currentAssets.add(updatedAsset);
 		});
 
+		//TODO повторити це для всіх стейблкоінів (повинен десь глобально бути список стейблкоінів і їхні $-ціни.
 		// copying current stableCoins to AssetStates set
-		addAssetStateIfNotExist(USDT).setBalance(addAssetIfNotExist(USDT).getBalance());
-		findAssetState(USDT).setAveragePrice(BigDecimal.ONE);
-		addAssetStateIfNotExist(BUSD).setBalance(addAssetIfNotExist(BUSD).getBalance());
-		findAssetState(BUSD).setAveragePrice(BigDecimal.ONE);
+		addLockedAssetIfNotExist(USDT);
+		addAssetIfNotExist(USDT);
+		findLockedAsset(USDT).setBalance(findAsset(USDT).getBalance());
+		findLockedAsset(USDT).setAveragePrice(BigDecimal.ONE);
+		addLockedAssetIfNotExist(BUSD);
+		addAssetIfNotExist(BUSD);
+		findLockedAsset(BUSD).setBalance(findAsset(BUSD).getBalance());
+		findLockedAsset(BUSD).setAveragePrice(BigDecimal.ONE);
 	}
 
 	public TransactionType getLastTransactionType() {
@@ -129,7 +125,7 @@ public class SpotIncomeState extends BalanceState {
 
 	// TODO refactor
 	public void processOrderDetails(String assetName, BigDecimal assetDelta, BigDecimal transactionPrice) {
-		final AssetState assetState = addAssetStateIfNotExist(assetName);
+		final AssetState assetState = addLockedAssetIfNotExist(assetName);
 
 		if (assetDelta.compareTo(BigDecimal.ZERO) <= 0) {
 			if (transactionPrice != null) {

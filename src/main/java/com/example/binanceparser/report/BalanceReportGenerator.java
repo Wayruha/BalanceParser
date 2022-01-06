@@ -56,9 +56,12 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 		return delta;
 	}
 
+	//TODO це було дуже важко читати. прибери цей туду поітм
 	private BigDecimal calculateBalanceDelta(List<Asset> assetList) {
-		return assetList.size() != 0 ? assetList.get(assetList.size() - 1).getBalance()
-				.add(assetList.get(0).getBalance().negate()) : BigDecimal.ZERO;
+		if(assetList.size() == 0) return BigDecimal.ZERO;
+		final Asset lastAsset = assetList.get(assetList.size() - 1);
+		final Asset firstAsset = assetList.get(0);
+		return lastAsset.getBalance().subtract(firstAsset.getBalance());
 	}
 
 	public static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {

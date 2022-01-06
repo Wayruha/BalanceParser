@@ -38,15 +38,23 @@ public class TestBalanceReportGenerator
 
 		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
 				.finishTrackDate(config.getFinishTrackDate()).balanceAtStart(BigDecimal.ZERO)
-				.balanceAtEnd(balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()
-						: BigDecimal.ZERO)
+				.balanceAtEnd(getLastBalance(balanceStates))
 				.min(values.stream().reduce(BigDecimal::min).orElse(BigDecimal.ZERO))
 				.max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO)).outputPath(
 						generatedPlotPath)
-				.balanceDifference(balanceStates.size() != 0
-						? balanceStates.get(balanceStates.size() - 1).findAsset(VIRTUAL_USD).getBalance()
-								.subtract(balanceStates.get(0).findAsset(VIRTUAL_USD).getBalance())
-						: BigDecimal.ZERO)
+				.balanceDifference(calcBalanceDelta(balanceStates))
 				.build();
+	}
+
+	private BigDecimal calcBalanceDelta(List<SpotIncomeState> balanceStates) {
+		return balanceStates.size() != 0
+				? balanceStates.get(balanceStates.size() - 1).findAsset(VIRTUAL_USD).getBalance()
+				.subtract(balanceStates.get(0).findAsset(VIRTUAL_USD).getBalance())
+				: BigDecimal.ZERO;
+	}
+
+	private BigDecimal getLastBalance(List<SpotIncomeState> balanceStates) {
+		return balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getBalanceState()
+				: BigDecimal.ZERO;
 	}
 }
