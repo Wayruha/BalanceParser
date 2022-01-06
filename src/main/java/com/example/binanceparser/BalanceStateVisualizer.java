@@ -22,14 +22,14 @@ public class BalanceStateVisualizer {
 
 	public static void main(String[] args) throws IOException {
 		BalanceStateVisualizer app = new BalanceStateVisualizer();
-		final String person = "a.nefedov";
+		final String person = "Kozhukhar";
 		app.futuresStateChangeFromLogs(person);
-		//app.spotStateChangeFromLogs(person);
+		app.spotStateChangeFromLogs(person);
 	}
 
 	public void futuresStateChangeFromLogs(String person) throws IOException {
 		final BalanceVisualizerConfig config = configure();
-		addSubject(config, person, "FUTURES");
+		addSubject(config, person, "FUTURES_PRODUCER");
 
 		final File logsDir = new File(config.getInputFilepath());
 		final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
@@ -41,7 +41,7 @@ public class BalanceStateVisualizer {
 
 	public void spotStateChangeFromLogs(String person) throws IOException {
 		final BalanceVisualizerConfig config = configure();
-		addSubject(config, person, "SPOT");
+		addSubject(config, person, "SPOT_PRODUCER");
 
 		final File logsDir = new File(config.getInputFilepath());
 		final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
@@ -61,11 +61,11 @@ public class BalanceStateVisualizer {
 		LocalDateTime finish = LocalDateTime.parse("2021-12-30 00:00:00", dateFormat);
 		config.setStartTrackDate(start);
 		config.setFinishTrackDate(finish);
-		config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/events");
+		config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
 		config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
 		//config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
 		config.setAssetsToTrack(Collections.emptyList());
-		config.setConvertToUSD(true);
+		config.setConvertToUSD(false);
 		return config;
 	}
 

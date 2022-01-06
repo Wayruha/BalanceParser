@@ -79,7 +79,8 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 			SpotIncomeState incomeState = incomeStates.get(n);
 			if (incomeState.getTransactions().stream()
 					.anyMatch((transaction) -> transaction.getBaseAsset().equals(trackedAsset)
-							&& transaction.getTransactionType().equals(TransactionType.WITHDRAW))) {
+							&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
+									|| transaction.getTransactionType().equals(TransactionType.DEPOSIT)))) {
 				withdrawPoints.add(new WithdrawPoint(row, n));
 				withdrawPoints.add(new WithdrawPoint(0, n));
 			}

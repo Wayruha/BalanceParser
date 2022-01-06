@@ -22,8 +22,8 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 	
 	public BalanceReportGenerator(BalanceVisualizerConfig config) {
 		super(config);
-		final List<String> assetsToTrack = config.isConvertToUSD() ? List.of(USD) : config.getAssetsToTrack();
-		this.chartBuilder = new AssetChartBuilder(assetsToTrack);
+		List<String> assetsToTrack = config.getAssetsToTrack();
+		chartBuilder = new AssetChartBuilder(assetsToTrack);
 	}
 
 	@Override

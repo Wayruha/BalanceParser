@@ -13,6 +13,7 @@ import static com.example.binanceparser.Constants.*;
 import static java.math.BigDecimal.valueOf;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
+//class is not used anymore
 public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalanceState> {
 	private final BalanceVisualizerConfig config;
 	final int MAX_SECONDS_DELAY_FOR_VALID_EVENTS = 1;
@@ -31,7 +32,14 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalan
 	}
 
 	@Override
-	public List<EventBalanceState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {//for now checks if assetsToTrack is empty=>process all assets available
+	public List<EventBalanceState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {// for now
+																											// checks if
+																											// assetsToTrack
+																											// is
+																											// empty=>process
+																											// all
+																											// assets
+																											// available
 		final List<EventBalanceState> eventBalanceStates = new ArrayList<>();
 		Map<String, Asset> actualBalance = new HashMap<>();
 		for (int i = 0; i < events.size() - 1; i++) {
@@ -48,6 +56,11 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalan
 					nextEvent.getDateTime()) > MAX_SECONDS_DELAY_FOR_VALID_EVENTS) {
 				continue;
 			}
+
+			final EventBalanceState eventState = eventBalanceStates.size() == 0
+					? new EventBalanceState(currentEvent.getDateTime(), null)
+					: new EventBalanceState(currentEvent.getDateTime(),
+							eventBalanceStates.get(eventBalanceStates.size() - 1), null);
 
 			if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
 				final BalanceUpdateEvent balanceUpdateEvent = (BalanceUpdateEvent) currentEvent;
@@ -89,8 +102,9 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalan
 			}
 
 			actualBalance = processBalance(actualBalance, newEventAssets);
-			eventBalanceStates
-					.add(new EventBalanceState(accEvent.getDateTime(), new HashSet<>(actualBalance.values()), null));
+			eventState.updateAssets(new ArrayList<>(actualBalance.values()));
+			eventState.processOrderDetails(null, null, null, null, null);
+			eventBalanceStates.add(eventState);
 		}
 		return config.isConvertToUSD() ? balanceToUSDT(eventBalanceStates) : eventBalanceStates;
 	}
@@ -114,7 +128,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalan
 				.collect(Collectors.toSet());
 
 		actualBalance = processBalance(actualBalance, newEventAssets);
-		return new EventBalanceState(accEvent.getDateTime(), new HashSet<>(actualBalance.values()), balanceUpdateDelta);
+		//return new EventBalanceState(accEvent.getDateTime(), new HashSet<>(actualBalance.values()), balanceUpdateDelta);
+		return null;
 	}
 
 	public Map<String, Asset> processBalance(Map<String, Asset> actualBalance, Set<Asset> newBalance) {
@@ -135,8 +150,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalan
 				}
 			}
 			assets.add(new Asset(USD, balance));
-			updatedEventBalanceState
-					.add(new EventBalanceState(state.getDateTime(), assets, state.getBalanceState()));
+			//updatedEventBalanceState.add(new EventBalanceState(state.getDateTime(), assets, state.getBalanceState()));
 		}
 		// System.out.println(updatedEventBalanceState);
 		return updatedEventBalanceState;

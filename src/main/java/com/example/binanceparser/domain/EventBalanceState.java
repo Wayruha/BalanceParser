@@ -4,28 +4,59 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
-import java.security.cert.CertPathValidatorException.Reason;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 @Data
-@EqualsAndHashCode(callSuper=false)
-@NoArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
+@NoArgsConstructor
 public class EventBalanceState extends BalanceState {
 	private Set<Asset> assets;
 	private List<Transaction> transactions;
 
-	public EventBalanceState(LocalDateTime dateTime, Set<Asset> assets, BigDecimal balanceUpdateDelta) {
+	public EventBalanceState(LocalDateTime dateTime, BigDecimal balanceUpdateDelta) {
 		super(balanceUpdateDelta, dateTime);
-		this.assets = assets;
+		// TODO add virtual usd
+		assets = new LinkedHashSet<>();
+		transactions = new ArrayList<>();
+	}
+
+	public EventBalanceState(LocalDateTime dateTime, List<Asset> assets, BigDecimal balanceUpdateDelta) {
+		super(balanceUpdateDelta, dateTime);
+		// TODO add virtual usd
+		this.assets = new LinkedHashSet<>(assets);
+		transactions = new ArrayList<>();
 	}
 	
-	//TODO
-	public void processReasonType(AccountUpdateReasonType reasonType) {
+	public EventBalanceState(LocalDateTime dateTime, EventBalanceState balanceState, BigDecimal balanceUpdateDelta) {
+		super(balanceUpdateDelta, dateTime);
+		assets = new LinkedHashSet<>(balanceState.getAssets());
+		transactions = new ArrayList<>();
+	}
+	
+	public void updateAssets(List<Asset> newAssets) {
+		newAssets.stream().forEach((updatedAsset) -> {
+			assets.removeIf((currentAsset) -> currentAsset.getAsset().equals(updatedAsset.getAsset()));
+			assets.add(updatedAsset);
+		});
+	}
 
+	public void processOrderDetails(AccountUpdateReasonType reasonType, String baseAsset, String quoteAsset,
+			BigDecimal assetDelta, BigDecimal price) {
+		if (reasonType.equals(AccountUpdateReasonType.WITHDRAW)) {
+			transactions.add(new Transaction(TransactionType.WITHDRAW, baseAsset, quoteAsset, assetDelta, price, null));
+		} else if (reasonType.equals(AccountUpdateReasonType.DEPOSIT)) {
+			transactions.add(new Transaction(TransactionType.DEPOSIT, baseAsset, quoteAsset, assetDelta, price, null));
+		} else {
+			// TODO handle all other types
+			transactions.add(new Transaction());
+		}
 	}
 
 	public Asset findAsset(String assetName) {

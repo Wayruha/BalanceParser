@@ -26,21 +26,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
-    private List<String> assetsToTrack;
-    private List<WithdrawPoint> withdrawPoints;
-    private ChartBuilderConfig config;
-    
-    public AssetChartBuilder(List<String> assetsToTrack) {
-        this.assetsToTrack = assetsToTrack;
-        config = ChartBuilderConfig.getDefaultConfig();
-    }
-    
-    public AssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
-    	this.assetsToTrack = assetsToTrack;
-    	this.config = config;
-    }
+	private List<String> assetsToTrack;
+	private List<WithdrawPoint> withdrawPoints;
+	private ChartBuilderConfig config;
 
-    @Override
+	public AssetChartBuilder(List<String> assetsToTrack) {
+		withdrawPoints = new ArrayList<>();
+		this.assetsToTrack = assetsToTrack;
+		config = ChartBuilderConfig.getDefaultConfig();
+	}
+
+	public AssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
+		withdrawPoints = new ArrayList<>();
+		this.assetsToTrack = assetsToTrack;
+		this.config = config;
+	}
+
+	@Override
 	public JFreeChart buildLineChart(List<EventBalanceState> eventBalanceStates) {
 		final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
 		getTimeSeriesForEveryAsset(eventBalanceStates).forEach(dataSeries::addSeries);
@@ -50,18 +52,8 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 		}
 		return chart;
 	}
-	
-//    private TimeSeries createTimeSeries(List<EventBalanceState> eventBalanceStates, String assetToTrack) {
-//        final TimeSeries series = new TimeSeries(assetToTrack);
-//        for (EventBalanceState eventBalanceState : eventBalanceStates) {
-//            final Asset asset = eventBalanceState.findAsset(assetToTrack);
-//            if (asset == null) continue;
-//            series.addOrUpdate(dateTimeToSecond(eventBalanceState.getDateTime()), asset.getBalance());
-//        }
-//        return series;
-//    }
-    
-    private List<TimeSeries> getTimeSeriesForEveryAsset(List<EventBalanceState> incomeStates) {
+
+	private List<TimeSeries> getTimeSeriesForEveryAsset(List<EventBalanceState> incomeStates) {
 		List<TimeSeries> timeSeriesList = new ArrayList<>();
 		if (incomeStates.size() != 0) {
 			assetsToTrack = updateAssetsToTrack(incomeStates.get(incomeStates.size() - 1));
@@ -78,8 +70,10 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 			EventBalanceState eventBalanceState = eventStates.get(n);
 			Asset asset = eventBalanceState.findAsset(trackedAsset);
 			if (eventBalanceState.getTransactions().stream()
-					.anyMatch((transaction) -> transaction.getBaseAsset().equals(trackedAsset)
-							&& transaction.getTransactionType().equals(TransactionType.WITHDRAW))) {
+					.anyMatch((transaction) -> trackedAsset.equals(transaction.getBaseAsset())
+							&& transaction.getTransactionType() != null
+							&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
+									|| transaction.getTransactionType().equals(TransactionType.DEPOSIT)))) {
 				withdrawPoints.add(new WithdrawPoint(row, n));
 				withdrawPoints.add(new WithdrawPoint(0, n));
 			}
@@ -88,31 +82,31 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 		return series;
 	}
 
-    private Second dateTimeToSecond(LocalDateTime dateTime) {
-        return new Second(Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant()));
-    }
-    
-    private List<String> updateAssetsToTrack(EventBalanceState lastIncomeState) {
+	private Second dateTimeToSecond(LocalDateTime dateTime) {
+		return new Second(Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant()));
+	}
+
+	private List<String> updateAssetsToTrack(EventBalanceState lastIncomeState) {
 		return assetsToTrack.isEmpty()
 				? new ArrayList<String>(
 						lastIncomeState.getAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
 				: assetsToTrack;
 	}
-    
-    private XYItemRenderer getRenderer() {
+
+	private XYItemRenderer getRenderer() {
 		Renderer renderer = new Renderer();
 		for (int i = 0; i < assetsToTrack.size(); i++) {
 			renderer.setSeriesShape(i, new Rectangle(config.getPointSize(), config.getPointSize()));
 		}
 		return renderer;
 	}
-    
-    private boolean isWithdraw(int row, int item) {
+
+	private boolean isWithdraw(int row, int item) {
 		return withdrawPoints.stream()
 				.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
 	}
-    
-    @Data
+
+	@Data
 	@NoArgsConstructor
 	@AllArgsConstructor
 	private class WithdrawPoint {
