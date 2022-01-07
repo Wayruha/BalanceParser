@@ -56,7 +56,6 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 		return delta;
 	}
 
-	//TODO це було дуже важко читати. прибери цей туду поітм
 	private BigDecimal calculateBalanceDelta(List<Asset> assetList) {
 		if(assetList.size() == 0) return BigDecimal.ZERO;
 		final Asset lastAsset = assetList.get(assetList.size() - 1);

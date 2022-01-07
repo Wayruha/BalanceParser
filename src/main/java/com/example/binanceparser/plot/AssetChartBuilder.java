@@ -1,5 +1,6 @@
 package com.example.binanceparser.plot;
 
+import static com.example.binanceparser.Constants.*;
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
@@ -69,8 +70,9 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 		for (int n = 0; n < eventStates.size(); n++) {
 			EventBalanceState eventBalanceState = eventStates.get(n);
 			Asset asset = eventBalanceState.findAsset(trackedAsset);
-			if (eventBalanceState.getTransactions().stream()
-					.anyMatch((transaction) -> trackedAsset.equals(transaction.getBaseAsset())
+			if (eventBalanceState.getTransactions().stream().anyMatch((
+					transaction) -> isStableCoin(transaction.getBaseAsset())
+							&& trackedAsset.equals(transaction.getBaseAsset())
 							&& transaction.getTransactionType() != null
 							&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
 									|| transaction.getTransactionType().equals(TransactionType.DEPOSIT)))) {
@@ -104,6 +106,10 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 	private boolean isWithdraw(int row, int item) {
 		return withdrawPoints.stream()
 				.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
+	}
+
+	private boolean isStableCoin(String asset) {
+		return STABLECOIN_RATE.keySet().stream().anyMatch((stableCoin) -> stableCoin.equals(asset));
 	}
 
 	@Data

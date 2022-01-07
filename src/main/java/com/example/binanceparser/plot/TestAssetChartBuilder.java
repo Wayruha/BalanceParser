@@ -1,5 +1,6 @@
 package com.example.binanceparser.plot;
 
+import static com.example.binanceparser.Constants.*;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.time.LocalDateTime;
@@ -17,12 +18,10 @@ import org.jfree.chart.util.ShapeUtils;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.TransactionType;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -78,7 +77,8 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		for (int n = 0; n < incomeStates.size(); n++) {
 			SpotIncomeState incomeState = incomeStates.get(n);
 			if (incomeState.getTransactions().stream()
-					.anyMatch((transaction) -> transaction.getBaseAsset().equals(trackedAsset)
+					.anyMatch((transaction) -> isStableCoin(transaction.getBaseAsset())
+							&& transaction.getBaseAsset().equals(trackedAsset)
 							&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
 									|| transaction.getTransactionType().equals(TransactionType.DEPOSIT)))) {
 				withdrawPoints.add(new WithdrawPoint(row, n));
@@ -93,6 +93,10 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 	private boolean isWithdraw(int row, int item) {
 		return withdrawPoints.stream()
 				.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
+	}
+
+	private boolean isStableCoin(String asset) {
+		return STABLECOIN_RATE.keySet().stream().anyMatch((stableCoin) -> stableCoin.equals(asset));
 	}
 
 	private List<String> updateAssetsToTrack(SpotIncomeState lastIncomeState) {

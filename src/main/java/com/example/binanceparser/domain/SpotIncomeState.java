@@ -24,16 +24,16 @@ public class SpotIncomeState extends BalanceState {
 
 	public SpotIncomeState(LocalDateTime dateTime) {
 		super(BigDecimal.ZERO, dateTime);
-		currentAssets = new HashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
-		lockedAssetStates = new HashSet<>();
+		currentAssets = new LinkedHashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
+		lockedAssetStates = new LinkedHashSet<>();
 		transactions = new ArrayList<>();
 	}
 
 
 	public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
 		super(incomeState.getBalanceState(), dateTime);
-		currentAssets = new HashSet<>(incomeState.getCurrentAssets());
-		lockedAssetStates = new HashSet<>(incomeState.getLockedAssetStates());
+		currentAssets = new LinkedHashSet<>(incomeState.getCurrentAssets());
+		lockedAssetStates = new LinkedHashSet<>(incomeState.getLockedAssetStates());
 		transactions = new ArrayList<>();
 	}
 
@@ -107,16 +107,13 @@ public class SpotIncomeState extends BalanceState {
 			currentAssets.add(updatedAsset);
 		});
 
-		//TODO повторити це для всіх стейблкоінів (повинен десь глобально бути список стейблкоінів і їхні $-ціни.
 		// copying current stableCoins to AssetStates set
-		addLockedAssetIfNotExist(USDT);
-		addAssetIfNotExist(USDT);
-		findLockedAsset(USDT).setBalance(findAsset(USDT).getBalance());
-		findLockedAsset(USDT).setAveragePrice(BigDecimal.ONE);
-		addLockedAssetIfNotExist(BUSD);
-		addAssetIfNotExist(BUSD);
-		findLockedAsset(BUSD).setBalance(findAsset(BUSD).getBalance());
-		findLockedAsset(BUSD).setAveragePrice(BigDecimal.ONE);
+		STABLECOIN_RATE.keySet().stream().forEach((stableCoin)->{
+			addLockedAssetIfNotExist(stableCoin);
+			addAssetIfNotExist(stableCoin);
+			findLockedAsset(stableCoin).setBalance(findAsset(stableCoin).getBalance());
+			findLockedAsset(stableCoin).setAveragePrice(STABLECOIN_RATE.get(stableCoin));
+		});
 	}
 
 	public TransactionType getLastTransactionType() {
