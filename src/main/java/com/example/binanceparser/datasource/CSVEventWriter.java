@@ -31,7 +31,7 @@ public class CSVEventWriter implements EventWriter<AbstractEvent> {
 					e.printStackTrace();
 				}
 				pw.println(sb.toString());
-			});	
+			});
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}

@@ -38,4 +38,4 @@ build/
 */.mvn
 
 logs/
-hs_err_pid14400.log
+*.log

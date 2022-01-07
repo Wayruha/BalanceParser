@@ -29,9 +29,10 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
 	public List<AbstractEvent> getData() {
 		List<AbstractEvent> events = new ArrayList<>();
 		try (BufferedReader br = new BufferedReader(new FileReader(csvDir))) {
-			String line;
+			String line = br.readLine();
 			while ((line = br.readLine()) != null) {
 				Matcher m = Pattern.compile("(\\w+),([\\d\\-\\s:]+),(.+)").matcher(line);
+				m.find();
 				AbstractEvent event = objectMapper.readValue(m.group(3), AbstractEvent.class);
 				event.setEventType(EventType.valueOf(m.group(1)));
 				event.setDateTime(LocalDateTime.parse(m.group(2), dateFormat));
