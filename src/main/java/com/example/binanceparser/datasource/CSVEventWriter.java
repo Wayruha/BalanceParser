@@ -2,12 +2,14 @@ package com.example.binanceparser.datasource;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-
+import java.util.stream.Collectors;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.example.binanceparser.domain.events.AbstractEvent;
 
 public class CSVEventWriter implements EventWriter<AbstractEvent> {
@@ -19,21 +21,32 @@ public class CSVEventWriter implements EventWriter<AbstractEvent> {
 
 	@Override
 	public void writeEvents(List<AbstractEvent> events) {
-		try (PrintWriter pw = new PrintWriter(outputDir)) {
-			events.stream().forEach((event) -> {
-				StringBuilder sb = new StringBuilder();
-				try {
-					ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-					String json = ow.writeValueAsString(event);
-					sb.append(event.getEventType()).append(",").append(event.getDateTime().toString()).append(",")
-							.append(json);
-				} catch (JsonProcessingException e) {
-					e.printStackTrace();
-				}
-				pw.println(sb.toString());
-			});
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		List<CSVModel> models = events.stream().map((event) -> {
+			CSVModel model = null;
+			try {
+				model = new CSVModel(event.getEventType().toString(),
+						event.getDateTime().format(dateFormat).toString(),
+						new ObjectMapper().writer().writeValueAsString(event));
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}	
+			return model;
+		}).collect(Collectors.toList());
+		
+		try {
+			CsvSchema schema = CsvSchema.builder()
+					.setUseHeader(true)
+					.addColumn("event_type")
+					.addColumn("event_ts")
+					.addColumn("json")
+					.build();
+			CsvMapper mapper = new CsvMapper();
+			mapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
+			//here is some problem
+			mapper.writerFor(CSVModel.class).with(schema).writeValues(outputDir).writeAll(models);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }
