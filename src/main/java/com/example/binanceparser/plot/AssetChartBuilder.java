@@ -1,6 +1,9 @@
 package com.example.binanceparser.plot;
 
 import static com.example.binanceparser.Constants.*;
+import static com.example.binanceparser.domain.TransactionType.DEPOSIT;
+import static com.example.binanceparser.domain.TransactionType.WITHDRAW;
+
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
@@ -29,18 +32,18 @@ import java.util.stream.Collectors;
 public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 	private List<String> assetsToTrack;
 	private List<WithdrawPoint> withdrawPoints;
-	private ChartBuilderConfig config;
+	private ChartBuilderConfig chartConfig;
 
 	public AssetChartBuilder(List<String> assetsToTrack) {
-		withdrawPoints = new ArrayList<>();
+		this.withdrawPoints = new ArrayList<>();
 		this.assetsToTrack = assetsToTrack;
-		config = ChartBuilderConfig.getDefaultConfig();
+		this.chartConfig = ChartBuilderConfig.getDefaultConfig();
 	}
 
-	public AssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
-		withdrawPoints = new ArrayList<>();
+	public AssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig chartConfig) {
+		this.withdrawPoints = new ArrayList<>();
 		this.assetsToTrack = assetsToTrack;
-		this.config = config;
+		this.chartConfig = chartConfig;
 	}
 
 	@Override
@@ -48,7 +51,7 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 		final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
 		getTimeSeriesForEveryAsset(eventBalanceStates).forEach(dataSeries::addSeries);
 		JFreeChart chart = ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", dataSeries);
-		if (config.isDrawPoints()) {
+		if (chartConfig.isDrawPoints()) {
 			chart.getXYPlot().setRenderer(getRenderer());
 		}
 		return chart;
@@ -57,7 +60,7 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 	private List<TimeSeries> getTimeSeriesForEveryAsset(List<EventBalanceState> incomeStates) {
 		List<TimeSeries> timeSeriesList = new ArrayList<>();
 		if (incomeStates.size() != 0) {
-			assetsToTrack = updateAssetsToTrack(incomeStates.get(incomeStates.size() - 1));
+			final List<String> assetsToTrack = listAssetsInvolved(incomeStates.get(incomeStates.size() - 1));
 			for (int n = 0; n < assetsToTrack.size(); n++) {
 				timeSeriesList.add(createTimeSeries(incomeStates, assetsToTrack.get(n), n));
 			}
@@ -70,12 +73,8 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 		for (int n = 0; n < eventStates.size(); n++) {
 			EventBalanceState eventBalanceState = eventStates.get(n);
 			Asset asset = eventBalanceState.findAsset(trackedAsset);
-			if (eventBalanceState.getTransactions().stream().anyMatch((
-					transaction) -> isStableCoin(transaction.getBaseAsset())
-							&& trackedAsset.equals(transaction.getBaseAsset())
-							&& transaction.getTransactionType() != null
-							&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
-									|| transaction.getTransactionType().equals(TransactionType.DEPOSIT)))) {
+			if(asset == null) continue;
+			if (eventBalanceState.getTransactions().stream().anyMatch(transaction -> isTransfer(trackedAsset, transaction))) {
 				withdrawPoints.add(new WithdrawPoint(row, n));
 				withdrawPoints.add(new WithdrawPoint(0, n));
 			}
@@ -84,28 +83,28 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 		return series;
 	}
 
+	private boolean isTransfer(String trackedAsset, com.example.binanceparser.domain.Transaction transaction) {
+		return isStableCoin(transaction.getBaseAsset())
+//				&& trackedAsset.equals(transaction.getBaseAsset()) //TODO тимчасово закоментив. розкоментити
+				&& (WITHDRAW == transaction.getTransactionType() || DEPOSIT == transaction.getTransactionType());
+	}
+
 	private Second dateTimeToSecond(LocalDateTime dateTime) {
 		return new Second(Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant()));
 	}
 
-	private List<String> updateAssetsToTrack(EventBalanceState lastIncomeState) {
+	private List<String> listAssetsInvolved(EventBalanceState lastIncomeState) {
 		return assetsToTrack.isEmpty()
-				? new ArrayList<String>(
-						lastIncomeState.getAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
+				? new ArrayList<>(lastIncomeState.getAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
 				: assetsToTrack;
 	}
 
 	private XYItemRenderer getRenderer() {
 		Renderer renderer = new Renderer();
 		for (int i = 0; i < assetsToTrack.size(); i++) {
-			renderer.setSeriesShape(i, new Rectangle(config.getPointSize(), config.getPointSize()));
+			renderer.setSeriesShape(i, new Rectangle(chartConfig.getPointSize(), chartConfig.getPointSize()));
 		}
 		return renderer;
-	}
-
-	private boolean isWithdraw(int row, int item) {
-		return withdrawPoints.stream()
-				.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
 	}
 
 	private boolean isStableCoin(String asset) {
@@ -126,17 +125,22 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 		@Override
 		public Paint getItemPaint(int row, int item) {
 			if (isWithdraw(row, item)) {
-				return config.getWithdrawColor();
+				return chartConfig.getWithdrawColor();
 			}
 			return super.getItemPaint(row, item);
 		}
 
 		@Override
 		public Shape getItemShape(int row, int item) {
-			if (isWithdraw(row, item) && config.isDrawCross()) {
-				return ShapeUtils.createDiagonalCross(config.getCrossLength(), config.getCrossWidth());
+			if (isWithdraw(row, item) && chartConfig.isDrawCross()) {
+				return ShapeUtils.createDiagonalCross(chartConfig.getCrossLength(), chartConfig.getCrossWidth());
 			}
 			return super.getItemShape(row, item);
+		}
+
+		private boolean isWithdraw(int row, int item) {
+			return withdrawPoints.stream()
+					.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
 		}
 	}
 }

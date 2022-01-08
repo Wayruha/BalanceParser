@@ -3,7 +3,6 @@ package com.example.binanceparser.report;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
-import com.example.binanceparser.plot.AssetChartBuilder;
 import com.example.binanceparser.plot.ChartBuilder;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
@@ -16,14 +15,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import static com.example.binanceparser.Constants.USD;
+import static java.util.Objects.isNull;
 
 public class BalanceReportGenerator extends AbstractBalanceReportGenerator<EventBalanceState, BalanceVisualizerConfig> {
+	private static final String DEFAULT_CHART_NAME = "chart";
+	private static final String CHART_FILE_EXT = ".jpg";
+
 	private ChartBuilder<EventBalanceState> chartBuilder;
-	
-	public BalanceReportGenerator(BalanceVisualizerConfig config) {
+
+	public BalanceReportGenerator(BalanceVisualizerConfig config, ChartBuilder<EventBalanceState> chartBuilder) {
 		super(config);
-		List<String> assetsToTrack = config.getAssetsToTrack();
-		chartBuilder = new AssetChartBuilder(assetsToTrack);
+		this.chartBuilder = chartBuilder;
 	}
 
 	@Override
@@ -31,13 +33,13 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 		Collections.sort(balanceStates, Comparator.comparing(EventBalanceState::getDateTime));
 		final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
 
-		final List<Asset> assetList = balanceStates.stream().flatMap(bal -> bal.getAssets().stream())
+		final List<Asset> assetDataList = balanceStates.stream().flatMap(bal -> bal.getAssets().stream())
 				.collect(Collectors.toList());
 
-		final String chartPath = new StringBuilder().append(config.getOutputDir()).append("/")
-				.append(config.getSubject().get(0)).append(".jpg").toString();
+		final String subject = !isNull(config.getSubject()) ? config.getSubject().get(0) : DEFAULT_CHART_NAME;
+		final String chartPath = config.getOutputDir() + "/" + subject + CHART_FILE_EXT;
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
-		final BigDecimal delta = calculateBalanceDelta(assetList);
+		final BigDecimal delta = calculateBalanceDelta(assetDataList);
 		final BigDecimal balanceUpdateDelta = findBalanceUpdateDelta(balanceStates);
 		System.out.println(balanceUpdateDelta);
 		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
@@ -46,7 +48,7 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 				.balanceAtEnd(
 						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getAssetBalance(USD)
 								: BigDecimal.ZERO)
-				.min(findMinBalance(assetList)).max(findMaxBalance(assetList)).outputPath(generatedPlotPath)
+				.min(findMinBalance(assetDataList)).max(findMaxBalance(assetDataList)).outputPath(generatedPlotPath)
 				.balanceDifference(delta).build();
 	}
 

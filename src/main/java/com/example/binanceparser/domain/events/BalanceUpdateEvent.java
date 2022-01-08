@@ -19,6 +19,13 @@ public class BalanceUpdateEvent extends AbstractEvent{
 
     private String balances;
 
+    private String asset;
+
     private BigDecimal balanceDelta;
+
+    public void setAsset(String asset){
+        this.asset = asset;
+        this.balances = asset;
+    }
 
 }

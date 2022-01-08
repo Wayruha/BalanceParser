@@ -1,7 +1,6 @@
 package com.example.binanceparser.datasource;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
+import com.opencsv.bean.CsvBindByPosition;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,9 +8,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonPropertyOrder({ "event_type", "event_ts", "json" })
 public class CSVModel {
-	private String event_type;
-	private String event_ts;
-	private String json;
+    @CsvBindByPosition(position = 0)
+    private String event_type;
+    @CsvBindByPosition(position = 1)
+    private String event_ts;
+    @CsvBindByPosition(position = 2)
+    private String json;
 }

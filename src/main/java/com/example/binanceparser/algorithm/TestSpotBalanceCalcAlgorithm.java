@@ -12,6 +12,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.example.binanceparser.Constants.EXCHANGE_INFO;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncomeState> {
@@ -54,7 +56,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 				final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
 				final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 
-				logBalanceUpdate(balanceEvent);
+//				logBalanceUpdate(balanceEvent);
 				// update asset balances
 				final AssetMetadata assetMetadata = AssetMetadata.builder()
 						.dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
@@ -73,7 +75,8 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 				continue;
 			}
 
-			logTrade(orderEvent);
+			logTrade(orderEvent, incomeState);
+
 			final AssetMetadata assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
 					.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 					.build();
@@ -107,20 +110,27 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 
 	private void logBalanceUpdate(BalanceUpdateEvent balanceEvent) {
 		TransactionType transactionType = balanceEvent.getBalanceDelta().compareTo(BigDecimal.ZERO) > 0
-				? TransactionType.DEPOSIT
-				: TransactionType.WITHDRAW;
+				? TransactionType.DEPOSIT : TransactionType.WITHDRAW;
 		final String str = String.format("%s %s %s %s", balanceEvent.getDateTime().format(ISO_DATE_TIME),
 				transactionType, balanceEvent.getBalances(), balanceEvent.getBalanceDelta().abs());
 		System.out.println(str);
 	}
 
-	private void logTrade(OrderTradeUpdateEvent orderEvent) {
+	private void logTrade(OrderTradeUpdateEvent orderEvent, SpotIncomeState prevState) {
 		final BigDecimal quoteAssetQty = orderEvent.getOriginalQuantity()
 				.multiply(orderEvent.getPriceOfLastFilledTrade());
-		final String str = String.format("%s %s %s %s for total of %s quoteAsset",
+		String str = String.format("%s %s %s %s for total of %s quoteAsset",
 				orderEvent.getDateTime().format(ISO_DATE_TIME), orderEvent.getSide(),
 				orderEvent.getOriginalQuantity().toPlainString(), orderEvent.getSymbol(),
 				quoteAssetQty.toPlainString());
+
+		if(orderEvent.getSide().equals("SELL")){
+			final String baseAsset = EXCHANGE_INFO.getSymbolInfo(orderEvent.getSymbol()).getBaseAsset();
+			final SpotIncomeState.LockedAsset lockedState = prevState.findLockedAsset(baseAsset);
+			if(lockedState != null){
+				str += ". Profit:" + quoteAssetQty.subtract(lockedState.totalQuoteAssetValue()).toPlainString();
+			}
+		}
 		System.out.println(str);
 	}
 }

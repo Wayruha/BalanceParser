@@ -19,13 +19,14 @@ import static com.example.binanceparser.Constants.*;
 @AllArgsConstructor
 public class SpotIncomeState extends BalanceState {
 	private Set<Asset> currentAssets;
-	private Set<AssetState> lockedAssetStates;
+	//TODO якщо в lockedAssetState лежить ціна 0 - що це означає? мабуть ми не хочемо щоб такі асети лежали у нас
+	private Set<LockedAsset> lockedLockedAssets;
 	private List<Transaction> transactions;
 
 	public SpotIncomeState(LocalDateTime dateTime) {
 		super(BigDecimal.ZERO, dateTime);
 		currentAssets = new LinkedHashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
-		lockedAssetStates = new LinkedHashSet<>();
+		lockedLockedAssets = new LinkedHashSet<>();
 		transactions = new ArrayList<>();
 	}
 
@@ -33,16 +34,16 @@ public class SpotIncomeState extends BalanceState {
 	public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
 		super(incomeState.getBalanceState(), dateTime);
 		currentAssets = new LinkedHashSet<>(incomeState.getCurrentAssets());
-		lockedAssetStates = new LinkedHashSet<>(incomeState.getLockedAssetStates());
+		lockedLockedAssets = new LinkedHashSet<>(incomeState.getLockedLockedAssets());
 		transactions = new ArrayList<>();
 	}
 
 	public BigDecimal calculateVirtualUSDBalance() {
 		BigDecimal virtualBalance = BigDecimal.ZERO;
 		// works for quoteAsset = USD
-		for (AssetState assetState : lockedAssetStates) {
+		for (LockedAsset lockedAsset : lockedLockedAssets) {
 			virtualBalance = virtualBalance
-					.add(assetState.getBalance().multiply(assetState.getAveragePrice()));
+					.add(lockedAsset.getBalance().multiply(lockedAsset.getAveragePrice()));
 		}
 		return virtualBalance;
 	}
@@ -52,31 +53,31 @@ public class SpotIncomeState extends BalanceState {
 			return calculateVirtualUSDBalance();
 		}
 		// works for quoteAsset = USD
-		AssetState assetState = findLockedAsset(asset);
-		return assetState == null ? BigDecimal.ZERO
-				: assetState.getBalance().multiply(assetState.getAveragePrice());
+		LockedAsset lockedAsset = findLockedAsset(asset);
+		return lockedAsset == null ? BigDecimal.ZERO
+				: lockedAsset.getBalance().multiply(lockedAsset.getAveragePrice());
 	}
 
 	public BigDecimal totalBalanceToRelativeAsset() {
 		BigDecimal sum = BigDecimal.ZERO;
 
-		for (AssetState assetState : lockedAssetStates) {
-			sum = sum.add(assetState.getBalance().multiply(assetState.getAveragePrice()));
+		for (LockedAsset lockedAsset : lockedLockedAssets) {
+			sum = sum.add(lockedAsset.getBalance().multiply(lockedAsset.getAveragePrice()));
 		}
 		return sum;
 	}
 
-	public AssetState findLockedAsset(String assetName) {
-		return lockedAssetStates.stream().filter(a -> a.getAsset().equals(assetName)).findFirst().orElse(null);
+	public LockedAsset findLockedAsset(String assetName) {
+		return lockedLockedAssets.stream().filter(a -> a.getAsset().equals(assetName)).findFirst().orElse(null);
 	}
 
-	public AssetState addLockedAssetIfNotExist(String assetName) {
-		final AssetState assetState = findLockedAsset(assetName);
-		if (assetState != null)
-			return assetState;
+	public LockedAsset addLockedAssetIfNotExist(String assetName) {
+		final LockedAsset lockedAsset = findLockedAsset(assetName);
+		if (lockedAsset != null)
+			return lockedAsset;
 
-		final AssetState newAsset = new AssetState(assetName, BigDecimal.ZERO, BigDecimal.ZERO);
-		lockedAssetStates.add(newAsset);
+		final LockedAsset newAsset = new LockedAsset(assetName, BigDecimal.ZERO, BigDecimal.ZERO);
+		lockedLockedAssets.add(newAsset);
 		return newAsset;
 	}
 
@@ -95,9 +96,9 @@ public class SpotIncomeState extends BalanceState {
 	}
 
 	public void removeAssetStateIfEmpty(String assetName) {
-		AssetState assetState = findLockedAsset(assetName);
-		if (assetState != null && assetState.getBalance().compareTo(BigDecimal.ZERO) == 0) {
-			lockedAssetStates.remove(assetState);
+		LockedAsset lockedAsset = findLockedAsset(assetName);
+		if (lockedAsset != null && lockedAsset.getBalance().compareTo(BigDecimal.ZERO) == 0) {
+			lockedLockedAssets.remove(lockedAsset);
 		}
 	}
 
@@ -122,35 +123,35 @@ public class SpotIncomeState extends BalanceState {
 
 	// TODO refactor
 	public void processOrderDetails(String assetName, BigDecimal assetDelta, BigDecimal transactionPrice) {
-		final AssetState assetState = addLockedAssetIfNotExist(assetName);
+		final LockedAsset lockedAsset = addLockedAssetIfNotExist(assetName);
 
 		if (assetDelta.compareTo(BigDecimal.ZERO) <= 0) {
 			if (transactionPrice != null) {
 				Transaction transaction;
 				if (!TransactionType.WITHDRAW_IN_PROCESS.equals(getLastTransactionType())) {
-					transaction = new Transaction(TransactionType.SELL, assetName, assetState.getQuoteAsset(),
+					transaction = new Transaction(TransactionType.SELL, assetName, lockedAsset.getQuoteAsset(),
 							assetDelta, transactionPrice, null);
 					transactions.add(transaction);
 				} else {
 					transaction = transactions.get(transactions.size() - 1);
 				}
 
-				BigDecimal maxAssetTrackedAmount = assetState.getBalance().compareTo(assetDelta.abs()) >= 0
+				BigDecimal maxAssetTrackedAmount = lockedAsset.getBalance().compareTo(assetDelta.abs()) >= 0
 						? assetDelta
-						: assetState.getBalance().negate();
+						: lockedAsset.getBalance().negate();
 				BigDecimal transactionIncome = maxAssetTrackedAmount.abs().multiply(transactionPrice)// what we got when
 																										// sold asset
-						.subtract(maxAssetTrackedAmount.abs().multiply(assetState.getAveragePrice()));// what we spent
+						.subtract(maxAssetTrackedAmount.abs().multiply(lockedAsset.getAveragePrice()));// what we spent
 																										// when bought
 																										// asset
 				transaction.setIncome(transactionIncome);
 				setBalanceState(getBalanceState().add(transactionIncome));
-				assetState.setBalance(assetState.getBalance().subtract(maxAssetTrackedAmount.abs()));// unlock
+				lockedAsset.setBalance(lockedAsset.getBalance().subtract(maxAssetTrackedAmount.abs()));// unlock
 																														// asset
 			} else {
 				transactions.add(new Transaction(TransactionType.WITHDRAW_IN_PROCESS, assetName, "", assetDelta,
 						transactionPrice, null));
-				processOrderDetails(assetName, assetDelta, assetState.getAveragePrice());
+				processOrderDetails(assetName, assetDelta, lockedAsset.getAveragePrice());
 				transactions.set(transactions.size() - 1, new Transaction(TransactionType.WITHDRAW, assetName, "",
 						assetDelta, transactionPrice, transactions.get(transactions.size() - 1).getIncome()));
 			}
@@ -158,14 +159,14 @@ public class SpotIncomeState extends BalanceState {
 			removeAssetStateIfEmpty(assetName);
 		} else {
 			if (transactionPrice != null) {
-				transactions.add(new Transaction(TransactionType.BUY, assetName, assetState.getQuoteAsset(), assetDelta,
+				transactions.add(new Transaction(TransactionType.BUY, assetName, lockedAsset.getQuoteAsset(), assetDelta,
 						transactionPrice, BigDecimal.ZERO));
 				final BigDecimal transactionQuoteQty = assetDelta.multiply(transactionPrice);
-				final BigDecimal newAssetQty = assetState.getBalance().add(assetDelta);
-				final BigDecimal newCalculatedPrice = assetState.totalQuoteAssetValue().add(transactionQuoteQty)
+				final BigDecimal newAssetQty = lockedAsset.getBalance().add(assetDelta);
+				final BigDecimal newCalculatedPrice = lockedAsset.totalQuoteAssetValue().add(transactionQuoteQty)
 						.divide(newAssetQty, Constants.MATH_CONTEXT);
-				assetState.setAveragePrice(newCalculatedPrice);
-				assetState.setBalance(newAssetQty);
+				lockedAsset.setAveragePrice(newCalculatedPrice);
+				lockedAsset.setBalance(newAssetQty);
 				return;
 			}
 			// else DEPOSIT operation (we do not add deposit to locked assets)
@@ -177,12 +178,12 @@ public class SpotIncomeState extends BalanceState {
 	}
 
 	@Data
-	public static class AssetState extends Asset {
+	public static class LockedAsset extends Asset {
 		private String quoteAsset;
 		// price of asset relative to relativeAsset. E.g., relativeAsset = USD
 		private BigDecimal averagePrice;
 
-		public AssetState(String asset, BigDecimal availableBalance, BigDecimal averagePrice) {
+		public LockedAsset(String asset, BigDecimal availableBalance, BigDecimal averagePrice) {
 			super(asset, availableBalance);
 			this.averagePrice = averagePrice;
 			this.quoteAsset = USD;
@@ -197,10 +198,10 @@ public class SpotIncomeState extends BalanceState {
 			if (o == this) {
 				return true;
 			}
-			if (!(o instanceof AssetState)) {
+			if (!(o instanceof LockedAsset)) {
 				return false;
 			}
-			AssetState as = (AssetState) o;
+			LockedAsset as = (LockedAsset) o;
 			return this.getAsset().equals(as.getAsset());
 		}
 

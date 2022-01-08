@@ -2,7 +2,7 @@ package com.example.binanceparser.domain;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import com.example.binanceparser.domain.SpotIncomeState.AssetState;
+import com.example.binanceparser.domain.SpotIncomeState.LockedAsset;
 import static com.example.binanceparser.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigDecimal;
@@ -15,8 +15,8 @@ public class SpotIncomeStateTest {
 	
 	@BeforeAll
 	public static void init() {
-		state1 = new SpotIncomeState(null, new LinkedHashSet<AssetState>(List.of(new AssetState(USDT, new BigDecimal("10"), new BigDecimal("1")), new AssetState(ETH, new BigDecimal("1"), new BigDecimal("4000")))), null);
-		state2 = new SpotIncomeState(null, new LinkedHashSet<AssetState>(List.of(new AssetState(USDT, new BigDecimal("100"), new BigDecimal("1")), new AssetState(BTC, new BigDecimal("0.1"), new BigDecimal("50000")))), null);
+		state1 = new SpotIncomeState(null, new LinkedHashSet<>(List.of(new LockedAsset(USDT, new BigDecimal("10"), new BigDecimal("1")), new LockedAsset(ETH, new BigDecimal("1"), new BigDecimal("4000")))), null);
+		state2 = new SpotIncomeState(null, new LinkedHashSet<>(List.of(new LockedAsset(USDT, new BigDecimal("100"), new BigDecimal("1")), new LockedAsset(BTC, new BigDecimal("0.1"), new BigDecimal("50000")))), null);
 	}
 	
 	@Test

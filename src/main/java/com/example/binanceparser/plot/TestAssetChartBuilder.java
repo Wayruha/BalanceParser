@@ -64,7 +64,7 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 	private List<TimeSeries> getTimeSeriesForEveryAsset(List<SpotIncomeState> incomeStates) {
 		List<TimeSeries> timeSeriesList = new ArrayList<>();
 		if (incomeStates.size() != 0) {
-			assetsToTrack = updateAssetsToTrack(incomeStates.get(incomeStates.size() - 1));
+			final List<String> assetsToTrack = listAssetsInvolved(incomeStates.get(incomeStates.size() - 1));
 			for (int n = 0; n < assetsToTrack.size(); n++) {
 				timeSeriesList.add(createTimeSeries(incomeStates, assetsToTrack.get(n), n));
 			}
@@ -77,10 +77,7 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		for (int n = 0; n < incomeStates.size(); n++) {
 			SpotIncomeState incomeState = incomeStates.get(n);
 			if (incomeState.getTransactions().stream()
-					.anyMatch((transaction) -> isStableCoin(transaction.getBaseAsset())
-							&& transaction.getBaseAsset().equals(trackedAsset)
-							&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
-									|| transaction.getTransactionType().equals(TransactionType.DEPOSIT)))) {
+					.anyMatch(transaction -> isTransfer(trackedAsset, transaction))) {
 				withdrawPoints.add(new WithdrawPoint(row, n));
 				withdrawPoints.add(new WithdrawPoint(0, n));
 			}
@@ -90,20 +87,21 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		return series;
 	}
 
-	private boolean isWithdraw(int row, int item) {
-		return withdrawPoints.stream()
-				.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
+	private boolean isTransfer(String trackedAsset, com.example.binanceparser.domain.Transaction transaction) {
+		return isStableCoin(transaction.getBaseAsset())
+				&& transaction.getBaseAsset().equals(trackedAsset) //TODO ця стрічка скоріш за все не має багато сенсу
+				&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
+				|| transaction.getTransactionType().equals(TransactionType.DEPOSIT));
+	}
+
+	private List<String> listAssetsInvolved(SpotIncomeState lastIncomeState) {
+		return assetsToTrack.isEmpty()
+				? new ArrayList<>(lastIncomeState.getCurrentAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
+				: assetsToTrack;
 	}
 
 	private boolean isStableCoin(String asset) {
 		return STABLECOIN_RATE.keySet().stream().anyMatch((stableCoin) -> stableCoin.equals(asset));
-	}
-
-	private List<String> updateAssetsToTrack(SpotIncomeState lastIncomeState) {
-		return assetsToTrack.isEmpty()
-				? new ArrayList<String>(
-						lastIncomeState.getCurrentAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
-				: assetsToTrack;
 	}
 
 	private Second dateTimeToSecond(LocalDateTime dateTime) {
@@ -135,6 +133,11 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 				return ShapeUtils.createDiagonalCross(config.getCrossLength(), config.getCrossWidth());
 			}
 			return super.getItemShape(row, item);
+		}
+
+		private boolean isWithdraw(int row, int item) {
+			return withdrawPoints.stream()
+					.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
 		}
 	}
 }

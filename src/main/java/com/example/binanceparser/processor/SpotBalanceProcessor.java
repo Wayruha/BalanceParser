@@ -6,6 +6,8 @@ import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.domain.EventBalanceState;
 import com.example.binanceparser.domain.events.AbstractEvent;
+import com.example.binanceparser.plot.AssetChartBuilder;
+import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.BalanceReportGenerator;
 import java.io.IOException;
@@ -23,7 +25,8 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
     public SpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
         super(config);
         this.eventSource = eventSource;
-        this.balanceReportGenerator = new BalanceReportGenerator(config);
+        final ChartBuilder<EventBalanceState> chartBuilder = new AssetChartBuilder(config.getAssetsToTrack());
+        this.balanceReportGenerator = new BalanceReportGenerator(config, chartBuilder);
         this.algorithm = new SpotBalanceCalcAlgorithm(config);
     }
 

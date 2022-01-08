@@ -28,8 +28,8 @@ public class FuturesIncomeVisualizerApp {
 
     private static IncomeConfig configure() {
         IncomeConfig config = new IncomeConfig();
-        LocalDateTime start = parse("2021-08-30 06:17:56", dateFormat);
-        LocalDateTime finish = parse("2021-11-30 13:15:50", dateFormat);
+        LocalDateTime start = parse("2021-11-30 00:00:00", dateFormat);
+        LocalDateTime finish = parse("2021-12-31 23:50:50", dateFormat);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
         config.setOutputDir("С:/users/yarik/Desktop");

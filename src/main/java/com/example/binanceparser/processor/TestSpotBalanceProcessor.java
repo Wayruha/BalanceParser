@@ -8,6 +8,7 @@ import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.events.AbstractEvent;
+import com.example.binanceparser.plot.TestAssetChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.TestBalanceReportGenerator;
 
@@ -18,7 +19,8 @@ public class TestSpotBalanceProcessor extends SpotBalanceProcessor {
 
 	public TestSpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
 		super(eventSource, config);
-		this.balanceReportGenerator = new TestBalanceReportGenerator(config);
+		final TestAssetChartBuilder chartBuilder = new TestAssetChartBuilder(config.getAssetsToTrack());
+		this.balanceReportGenerator = new TestBalanceReportGenerator(config, chartBuilder);
 		this.algorithm = new TestSpotBalanceCalcAlgorithm(config);
 	}
 

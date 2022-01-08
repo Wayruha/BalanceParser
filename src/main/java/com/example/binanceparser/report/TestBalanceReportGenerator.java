@@ -2,6 +2,8 @@ package com.example.binanceparser.report;
 
 import static com.example.binanceparser.report.BalanceReportGenerator.saveChartToFile;
 import static com.example.binanceparser.Constants.VIRTUAL_USD;
+import static java.util.Objects.isNull;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -15,14 +17,14 @@ import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.plot.TestAssetChartBuilder;
 
-public class TestBalanceReportGenerator
-		extends AbstractBalanceReportGenerator<SpotIncomeState, BalanceVisualizerConfig> {
+public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<SpotIncomeState, BalanceVisualizerConfig> {
+	private static final String DEFAULT_CHART_NAME = "chart";
+	private static final String CHART_FILE_EXT = ".jpg";
 	private final ChartBuilder<SpotIncomeState> chartBuilder;
 
-	public TestBalanceReportGenerator(BalanceVisualizerConfig config) {
+	public TestBalanceReportGenerator(BalanceVisualizerConfig config, ChartBuilder<SpotIncomeState> chartBuilder) {
 		super(config);
-		List<String> assetsToTrack = config.getAssetsToTrack();
-		chartBuilder = new TestAssetChartBuilder(assetsToTrack);
+		this.chartBuilder = chartBuilder;
 	}
 
 	@Override
@@ -30,10 +32,11 @@ public class TestBalanceReportGenerator
 		balanceStates.sort(Comparator.comparing(SpotIncomeState::getDateTime));
 		final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
 
-		final String chartPath = config.getOutputDir() + "/" + "TEST_" + config.getSubject().get(0) + ".jpg";
+		final String subject = !isNull(config.getSubject()) ? config.getSubject().get(0) : DEFAULT_CHART_NAME;
+		final String chartPath = config.getOutputDir() + "/" + "TEST_" + subject + CHART_FILE_EXT;
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
-		List<BigDecimal> values = balanceStates.stream().map(BalanceState::getBalanceState)
+		List<BigDecimal> values = balanceStates.stream().map(state -> state.findAsset(VIRTUAL_USD).getBalance())
 				.collect(Collectors.toList());
 
 		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())

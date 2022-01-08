@@ -27,13 +27,11 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<E
 	public List<EventBalanceState> processEvents(List<AbstractEvent> allEvents, List<String> assetsToTrack) {
 		List<FuturesAccountUpdateEvent> events = allEvents.stream().filter(e -> e instanceof FuturesAccountUpdateEvent)
 				.map(e -> (FuturesAccountUpdateEvent) e)
-				.filter(state -> state.getBalances().stream()
-						.anyMatch(bal -> assetsToTrack.isEmpty() || assetsToTrack.contains(bal.getAsset())))
 				.collect(Collectors.toList());
 
 		List<EventBalanceState> states = new ArrayList<>();
 
-		events.stream().forEach((e) -> {
+		events.forEach(e -> {
 			final List<Asset> assets = e.getBalances().stream()
 					.map(asset -> new Asset(asset.getAsset(), BigDecimal.valueOf(asset.getWalletBalance())))
 					.collect(Collectors.toList());

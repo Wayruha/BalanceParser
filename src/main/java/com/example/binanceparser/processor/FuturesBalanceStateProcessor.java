@@ -11,6 +11,8 @@ import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
+import com.example.binanceparser.plot.AssetChartBuilder;
+import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.BalanceReportGenerator;
 
@@ -33,7 +35,8 @@ public class FuturesBalanceStateProcessor extends Processor<BalanceVisualizerCon
     public FuturesBalanceStateProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
         super(config);
         this.eventSource = eventSource;
-        this.balanceReportGenerator = new BalanceReportGenerator(config);
+        final ChartBuilder<EventBalanceState> chartBuilder = new AssetChartBuilder(config.getAssetsToTrack());
+        this.balanceReportGenerator = new BalanceReportGenerator(config, chartBuilder);
         this.algorithm = new FuturesWalletBalanceCalcAlgorithm(config, STABLECOIN_RATE);
     }
 
