@@ -7,7 +7,6 @@ import static com.example.binanceparser.domain.TransactionType.WITHDRAW;
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
-import com.example.binanceparser.domain.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -85,7 +84,7 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 
 	private boolean isTransfer(String trackedAsset, com.example.binanceparser.domain.Transaction transaction) {
 		return isStableCoin(transaction.getBaseAsset())
-//				&& trackedAsset.equals(transaction.getBaseAsset()) //TODO тимчасово закоментив. розкоментити
+				&& trackedAsset.equals(transaction.getBaseAsset())
 				&& (WITHDRAW == transaction.getTransactionType() || DEPOSIT == transaction.getTransactionType());
 	}
 

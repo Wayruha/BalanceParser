@@ -5,6 +5,9 @@ import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
+import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent.Position;
+
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -32,6 +35,7 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<E
 		List<EventBalanceState> states = new ArrayList<>();
 
 		events.forEach(e -> {
+			logBalanceUpdate(e);
 			final List<Asset> assets = e.getBalances().stream()
 					.map(asset -> new Asset(asset.getAsset(), BigDecimal.valueOf(asset.getWalletBalance())))
 					.collect(Collectors.toList());
@@ -50,6 +54,25 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<E
 			calculateUSDCosts(states);
 		}
 		return states;
+	}
+	
+	private void logBalanceUpdate(FuturesAccountUpdateEvent event) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(event.getDateTime().format(ISO_DATE_TIME)).append(" ")
+		.append(event.getReasonType()).append(" balances:{");
+		for(FuturesAccountUpdateEvent.Asset asset : event.getBalances()) {
+			sb.append("asset: ").append(asset.getAsset())
+			.append(", wallet balance:").append(asset.getWalletBalance())
+			.append(", balance change:").append(asset.getBalanceChange());
+		}
+		sb.append("} positions:{");
+		for(Position pos : event.getPositions()) {
+			sb.append("symbol: ").append(pos.getSymbol())
+			.append(", position amount:").append(pos.getPositionAmount())
+			.append(", entry price:").append(pos.getEntryPrice());
+		}
+		sb.append("}");
+		System.out.println(sb.toString());
 	}
 
 	/**

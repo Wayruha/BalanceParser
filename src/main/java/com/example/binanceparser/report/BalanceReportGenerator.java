@@ -12,9 +12,8 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import static com.example.binanceparser.Constants.USD;
+import static com.example.binanceparser.Constants.*;
 import static java.util.Objects.isNull;
 
 public class BalanceReportGenerator extends AbstractBalanceReportGenerator<EventBalanceState, BalanceVisualizerConfig> {
@@ -44,18 +43,19 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 		System.out.println(balanceUpdateDelta);
 		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
 				.finishTrackDate(config.getFinishTrackDate())
-				.balanceAtStart(balanceStates.size() != 0 ? balanceStates.get(0).getAssetBalance(USD) : BigDecimal.ZERO)
+				.balanceAtStart(balanceStates.size() != 0 ? balanceStates.get(0).getAssetBalance(USDT) : BigDecimal.ZERO)
 				.balanceAtEnd(
-						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getAssetBalance(USD)
+						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getAssetBalance(USDT)
 								: BigDecimal.ZERO)
 				.min(findMinBalance(assetDataList)).max(findMaxBalance(assetDataList)).outputPath(generatedPlotPath)
 				.balanceDifference(delta).build();
 	}
 
 	private BigDecimal findBalanceUpdateDelta(List<EventBalanceState> balanceStates) {
-		BigDecimal delta = balanceStates.stream().map(EventBalanceState::getBalanceState).filter(Objects::nonNull)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-		return delta;
+		return balanceStates.size() != 0
+				? balanceStates.get(balanceStates.size() - 1).findAsset(USDT).getBalance()
+				.subtract(balanceStates.get(0).findAsset(USDT).getBalance())
+				: BigDecimal.ZERO;
 	}
 
 	private BigDecimal calculateBalanceDelta(List<Asset> assetList) {

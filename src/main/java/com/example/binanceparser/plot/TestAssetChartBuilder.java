@@ -89,9 +89,9 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 
 	private boolean isTransfer(String trackedAsset, com.example.binanceparser.domain.Transaction transaction) {
 		return isStableCoin(transaction.getBaseAsset())
-				&& transaction.getBaseAsset().equals(trackedAsset) //TODO ця стрічка скоріш за все не має багато сенсу
+				&& transaction.getBaseAsset().equals(trackedAsset) // TODO ця стрічка скоріш за все не має багато сенсу
 				&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
-				|| transaction.getTransactionType().equals(TransactionType.DEPOSIT));
+						|| transaction.getTransactionType().equals(TransactionType.DEPOSIT));
 	}
 
 	private List<String> listAssetsInvolved(SpotIncomeState lastIncomeState) {

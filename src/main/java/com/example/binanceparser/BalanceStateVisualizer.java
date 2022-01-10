@@ -13,14 +13,11 @@ import com.example.binanceparser.report.BalanceReport;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.example.binanceparser.Constants.USD;
-import static com.example.binanceparser.Constants.VIRTUAL_USD;
+import static com.example.binanceparser.Constants.*;
 
 public class BalanceStateVisualizer {
-    public static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static void main(String[] args) throws IOException {
         BalanceStateVisualizer app = new BalanceStateVisualizer();
@@ -32,7 +29,7 @@ public class BalanceStateVisualizer {
     public void futuresStateChangeFromLogs(String person) throws IOException {
         final BalanceVisualizerConfig config = configure();
         config.setSubject(List.of(person));
-        config.setAssetsToTrack(List.of(USD));
+        config.setAssetsToTrack(List.of());
 //        addSubject(config, person, "FUTURES_PRODUCER");
 
         final File logsDir = new File(config.getInputFilepath());
@@ -64,12 +61,12 @@ public class BalanceStateVisualizer {
 
     private static BalanceVisualizerConfig configure() {
         final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
-        LocalDateTime start = LocalDateTime.parse("2021-08-16 00:00:00", dateFormat);
-        LocalDateTime finish = LocalDateTime.parse("2021-12-30 00:00:00", dateFormat);
+        LocalDateTime start = LocalDateTime.parse("2021-08-16 00:00:00", DATE_FORMAT);
+        LocalDateTime finish = LocalDateTime.parse("2021-12-30 00:00:00", DATE_FORMAT);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
-        config.setInputFilepath("/Users/roman/Desktop/trader_events.csv");
-        config.setOutputDir("/Users/roman/Desktop/");
+        config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/trader_events.csv");
+        config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
         //config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
         config.setAssetsToTrack(Collections.emptyList());
         config.setConvertToUSD(false);

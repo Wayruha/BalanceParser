@@ -56,7 +56,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 				final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
 				final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 
-//				logBalanceUpdate(balanceEvent);
+				logBalanceUpdate(balanceEvent);
 				// update asset balances
 				final AssetMetadata assetMetadata = AssetMetadata.builder()
 						.dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
