@@ -38,7 +38,8 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 		final String subject = !isNull(config.getSubject()) ? config.getSubject().get(0) : DEFAULT_CHART_NAME;
 		final String chartPath = config.getOutputDir() + "/" + subject + CHART_FILE_EXT;
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
-		final BigDecimal delta = calculateBalanceDelta(assetDataList);
+		
+		//final BigDecimal delta = calculateBalanceDelta(assetDataList);
 		final BigDecimal balanceUpdateDelta = findBalanceUpdateDelta(balanceStates);
 		System.out.println(balanceUpdateDelta);
 		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
@@ -48,13 +49,13 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getAssetBalance(VIRTUAL_USD)
 								: BigDecimal.ZERO)
 				.min(findMinBalance(assetDataList)).max(findMaxBalance(assetDataList)).outputPath(generatedPlotPath)
-				.balanceDifference(delta).build();
+				.balanceDifference(balanceUpdateDelta).build();
 	}
 
 	private BigDecimal findBalanceUpdateDelta(List<EventBalanceState> balanceStates) {
 		return balanceStates.size() != 0
-				? balanceStates.get(balanceStates.size() - 1).findAsset(USDT).getBalance()
-				.subtract(balanceStates.get(0).findAsset(USDT).getBalance())
+				? balanceStates.get(balanceStates.size() - 1).getAssetBalance(VIRTUAL_USD)
+				.subtract(balanceStates.get(0).getAssetBalance(VIRTUAL_USD))
 				: BigDecimal.ZERO;
 	}
 
