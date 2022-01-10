@@ -43,9 +43,9 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 		System.out.println(balanceUpdateDelta);
 		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
 				.finishTrackDate(config.getFinishTrackDate())
-				.balanceAtStart(balanceStates.size() != 0 ? balanceStates.get(0).getAssetBalance(USDT) : BigDecimal.ZERO)
+				.balanceAtStart(balanceStates.size() != 0 ? balanceStates.get(0).getAssetBalance(VIRTUAL_USD) : BigDecimal.ZERO)
 				.balanceAtEnd(
-						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getAssetBalance(USDT)
+						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getAssetBalance(VIRTUAL_USD)
 								: BigDecimal.ZERO)
 				.min(findMinBalance(assetDataList)).max(findMaxBalance(assetDataList)).outputPath(generatedPlotPath)
 				.balanceDifference(delta).build();

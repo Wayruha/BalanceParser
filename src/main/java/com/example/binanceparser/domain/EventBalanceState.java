@@ -12,6 +12,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.example.binanceparser.Constants.*;
+
 @Data
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
@@ -58,12 +60,29 @@ public class EventBalanceState extends BalanceState {
 			transactions.add(new Transaction());
 		}
 	}
+	
+	//will be rewrited entirely 
+	public BigDecimal calculateVirtualUSDBalance() {
+		BigDecimal virtualBalance = BigDecimal.ZERO;
+		// works for quoteAsset = USD
+		for (Asset asset : assets) {
+			if(STABLECOIN_RATE.containsKey(asset.getAsset())) {
+				virtualBalance = virtualBalance.add(STABLECOIN_RATE.get(asset.getAsset()).multiply(asset.getBalance()));
+			}
+		}
+		return virtualBalance;
+	}
 
 	public Asset findAsset(String assetName) {
 		return assets.stream().filter(a -> a.getAsset().equals(assetName)).findFirst().orElse(null);
 	}
 
 	public BigDecimal getAssetBalance(String assetName) {
+		//this will be removed later
+		if(assetName.equals(VIRTUAL_USD)) {
+			return calculateVirtualUSDBalance();
+		}
+		
 		final Asset asset = findAsset(assetName);
 		return asset == null ? BigDecimal.ZERO : asset.getBalance();
 	}
