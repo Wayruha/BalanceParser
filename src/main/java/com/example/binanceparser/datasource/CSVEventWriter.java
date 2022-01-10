@@ -36,11 +36,10 @@ public class CSVEventWriter implements EventWriter<AbstractEvent> {
 		
 		try {
 			CsvSchema schema = CsvSchema.builder()
-					.setUseHeader(true)
 					.addColumn("event_type")
 					.addColumn("event_ts")
 					.addColumn("json")
-					.build();
+					.build().withHeader();
 			CsvMapper mapper = new CsvMapper();
 			mapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
 			//here is some problem

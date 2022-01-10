@@ -61,6 +61,8 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
 			}
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		event.setDateTime(LocalDateTime.parse(model.getEvent_ts(), dateFormat));
 		event.setEventType(EventType.valueOf(model.getEvent_type()));
