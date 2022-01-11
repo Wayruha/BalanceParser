@@ -81,11 +81,6 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 					.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 					.build();
 
-			//TODO orderEvent.getBaseAsset() - це один ассет, напр. BTC
-			// ми декларуємо  СПИСОК assetsInvolved, в який покладемо лише один Asset для BTC (їх не може бути кілька, правда?
-			// бо для кожної монети буде один обєкт Asset, так?)
-			// чого задекларували список а кладемо гарантовано один об'єкт? обманули читача виходить...
-			// після цього, ми юзаємо метод updateAssetBalance()
 			final List<Asset> assetsInvolved = extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent,
 					assetMetadata);
 			incomeState.updateAssetBalance(assetsInvolved);

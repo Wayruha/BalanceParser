@@ -38,7 +38,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         List<EventBalanceState> balanceStates = algorithm
         	.processEvents(events)
         	.stream()
-        	.filter(state -> inRange(state, config.getStartTrackDate(), config.getFinishTrackDate()))
+        	.filter(state -> inRange(state.getDateTime(), config.getStartTrackDate(), config.getFinishTrackDate()))
         	.collect(Collectors.toList());
 
         final BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
@@ -47,8 +47,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         return balanceReport;
     }
 
-    protected boolean inRange(BalanceState state, LocalDateTime rangeStart, LocalDateTime rangeEnd){
-        return state.getDateTime().compareTo(rangeStart) >= 0
-                && state.getDateTime().compareTo(rangeEnd) <= 0;
+    protected boolean inRange(LocalDateTime date, LocalDateTime rangeStart, LocalDateTime rangeEnd){
+        return date.compareTo(rangeStart) >= 0 && date.compareTo(rangeEnd) <= 0;
     }
 }

@@ -2,7 +2,6 @@ package com.example.binanceparser;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.CSVEventSource;
-import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.datasource.filters.SourceFilter;

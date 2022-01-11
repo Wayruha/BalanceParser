@@ -19,7 +19,7 @@ public class IncomeChartBuilder implements ChartBuilder<IncomeBalanceState> {
     @Override
     public JFreeChart buildLineChart(List<IncomeBalanceState> incomeBalanceStates) {
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Account balance", "Date", "Balance", null);
+                "Account profit", "Date", "Balance", null);
 
 
         XYPlot plot = (XYPlot) chart.getPlot();

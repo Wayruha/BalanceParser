@@ -2,14 +2,12 @@ package com.example.binanceparser.domain;
 
 import com.example.binanceparser.Constants;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.*;
 
@@ -33,9 +31,9 @@ public class SpotIncomeState extends BalanceState {
 
 	public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
 		super(incomeState.getBalanceState(), dateTime);
-		currentAssets = new LinkedHashSet<>(incomeState.getCurrentAssets());
-		lockedLockedAssets = new LinkedHashSet<>(incomeState.getLockedLockedAssets());
-		transactions = new ArrayList<>();
+		this.currentAssets = incomeState.getCurrentAssets().stream().map(Asset::clone).collect(Collectors.toCollection(LinkedHashSet::new));
+		this.lockedLockedAssets = incomeState.getLockedLockedAssets().stream().map(LockedAsset::clone).collect(Collectors.toCollection(LinkedHashSet::new));
+		this.transactions = new ArrayList<>();
 	}
 
 	public BigDecimal calculateVirtualUSDBalance() {
@@ -45,7 +43,7 @@ public class SpotIncomeState extends BalanceState {
 			virtualBalance = virtualBalance
 					.add(lockedAsset.getBalance().multiply(lockedAsset.getAveragePrice()));
 		}
-		return virtualBalance;
+		return virtualBalance.round(Constants.MATH_CONTEXT);
 	}
 
 	public BigDecimal calculateVirtualUSDBalance(String asset) {
@@ -55,16 +53,7 @@ public class SpotIncomeState extends BalanceState {
 		// works for quoteAsset = USD
 		LockedAsset lockedAsset = findLockedAsset(asset);
 		return lockedAsset == null ? BigDecimal.ZERO
-				: lockedAsset.getBalance().multiply(lockedAsset.getAveragePrice());
-	}
-
-	public BigDecimal totalBalanceToRelativeAsset() {
-		BigDecimal sum = BigDecimal.ZERO;
-
-		for (LockedAsset lockedAsset : lockedLockedAssets) {
-			sum = sum.add(lockedAsset.getBalance().multiply(lockedAsset.getAveragePrice()));
-		}
-		return sum;
+				: lockedAsset.getBalance().multiply(lockedAsset.getAveragePrice()).round(Constants.MATH_CONTEXT);
 	}
 
 	public LockedAsset findLockedAsset(String assetName) {
@@ -109,7 +98,7 @@ public class SpotIncomeState extends BalanceState {
 		});
 
 		// copying current stableCoins to AssetStates set
-		STABLECOIN_RATE.keySet().stream().forEach((stableCoin)->{
+		STABLECOIN_RATE.keySet().forEach(stableCoin -> {
 			addLockedAssetIfNotExist(stableCoin);
 			addAssetIfNotExist(stableCoin);
 			findLockedAsset(stableCoin).setBalance(findAsset(stableCoin).getBalance());
@@ -169,6 +158,7 @@ public class SpotIncomeState extends BalanceState {
 				lockedAsset.setBalance(newAssetQty);
 				return;
 			}
+			//TODO чи значить це, що стан монети (напр. ЮСДТ) в ассетах зміниться, а в локедАссетах ні? В асетах буде 500 USDT а в локед = 400
 			// else DEPOSIT operation (we do not add deposit to locked assets)
 			transactions.add(new Transaction(TransactionType.DEPOSIT, assetName, "", assetDelta, transactionPrice,
 					BigDecimal.ZERO));
@@ -178,6 +168,7 @@ public class SpotIncomeState extends BalanceState {
 	}
 
 	@Data
+	@ToString(callSuper = true)
 	public static class LockedAsset extends Asset {
 		private String quoteAsset;
 		// price of asset relative to relativeAsset. E.g., relativeAsset = USD
@@ -187,6 +178,12 @@ public class SpotIncomeState extends BalanceState {
 			super(asset, availableBalance);
 			this.averagePrice = averagePrice;
 			this.quoteAsset = USD;
+		}
+
+		public LockedAsset clone() {
+			LockedAsset asset = new LockedAsset(super.asset, super.balance, averagePrice);
+			asset.setQuoteAsset(quoteAsset);
+			return asset;
 		}
 
 		public BigDecimal totalQuoteAssetValue() {

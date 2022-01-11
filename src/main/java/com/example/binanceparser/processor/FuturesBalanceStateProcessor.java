@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import static com.example.binanceparser.Constants.STABLECOIN_RATE;
 import static com.example.binanceparser.domain.AccountUpdateReasonType.DEPOSIT;
 import static com.example.binanceparser.domain.AccountUpdateReasonType.WITHDRAW;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class FuturesBalanceStateProcessor extends Processor<BalanceVisualizerConfig> {
     final EventSource<AbstractEvent> eventSource;
@@ -56,7 +57,7 @@ public class FuturesBalanceStateProcessor extends Processor<BalanceVisualizerCon
         return balanceReport;
     }
 
-    private BigDecimal calculateDepositDelta(List<AbstractEvent> events){
+    public static BigDecimal calculateDepositDelta(List<AbstractEvent> events){
         final List<FuturesAccountUpdateEvent> relevantEvents = events.stream()
                 .filter(e -> e instanceof FuturesAccountUpdateEvent)
                 .map(e -> (FuturesAccountUpdateEvent) e)
@@ -64,7 +65,12 @@ public class FuturesBalanceStateProcessor extends Processor<BalanceVisualizerCon
                 .collect(Collectors.toList());
 
         System.out.println("Logging all Futures DEPOSITs and WITHDRAWs");
-        relevantEvents.forEach(System.out::println);
+
+        relevantEvents.forEach(e->{
+            final String str = String.format("%s Futures %s %s", e.getDateTime().format(ISO_DATE_TIME),
+                    e.getReasonType(), e.getBalances().get(0).getBalanceChange());
+            System.out.println(str);
+        });
 
         return relevantEvents.stream()
                 .map(e -> totalBalanceChange(e.getBalances()))
@@ -74,11 +80,11 @@ public class FuturesBalanceStateProcessor extends Processor<BalanceVisualizerCon
 
     //TODO refactor. 1. it should not rely on balanceReportGenerator here.
     // 2- cast to different Asset does not look good
-    public BigDecimal totalBalanceChange(List<FuturesAccountUpdateEvent.Asset> balances){
+    public static BigDecimal totalBalanceChange(List<FuturesAccountUpdateEvent.Asset> balances){
         final Set<Asset> assets = balances.stream()
                 .map(asset -> new Asset(asset.getAsset(), BigDecimal.valueOf(asset.getBalanceChange())))
                 .collect(Collectors.toSet());
-        return algorithm.totalBalance(assets).orElse(BigDecimal.ZERO);
+        return FuturesWalletBalanceCalcAlgorithm.totalBalance(assets).orElse(BigDecimal.ZERO);
     }
 
     //TODO 1st: one filter can be applied at eventSource level

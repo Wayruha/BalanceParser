@@ -23,6 +23,12 @@ public class Asset {
 		this.balance = balance;
 	}
 
+	public Asset clone() {
+		final Asset asset = new Asset(this.asset, balance);
+		asset.setAssetMetadata(assetMetadata);
+		return asset;
+	}
+
 	//TODO чого це змінює результати тесту? цей баг з тестом потрібно пофіксити обовязково, хоч і не дуже критично по часі
 	/*@Override
 	public boolean equals(Object o) {

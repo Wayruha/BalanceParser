@@ -44,9 +44,8 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<E
 					: new EventBalanceState(e.getDateTime(), states.get(states.size() - 1), null);
 
 			state.updateAssets(assets);
-			e.getBalances().stream().forEach((bal)->{
-				state.processOrderDetails(e.getReasonType(), bal.getAsset(), "", new BigDecimal(bal.getBalanceChange()), null);
-			});
+			e.getBalances().forEach(bal ->
+				state.processOrderDetails(e.getReasonType(), bal.getAsset(), "", new BigDecimal(bal.getBalanceChange()), null));
 			states.add(state);
 		});
 
@@ -85,14 +84,14 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<E
 		}
 	}
 
-	public Optional<BigDecimal> totalBalance(Set<Asset> assets) {
-		return assets.stream().map(this::assetToUSD).filter(Objects::nonNull).reduce(BigDecimal::add);
+	public static Optional<BigDecimal> totalBalance(Set<Asset> assets) {
+		return assets.stream().map(FuturesWalletBalanceCalcAlgorithm::assetToUSD).filter(Objects::nonNull).reduce(BigDecimal::add);
 	}
 
-	public BigDecimal assetToUSD(Asset asset) {
-		if (!currencyRate.containsKey(asset.getAsset()))
+	public static BigDecimal assetToUSD(Asset asset) {
+		if (!STABLECOIN_RATE.containsKey(asset.getAsset()))
 			return null;
-		return asset.getBalance().multiply(currencyRate.get(asset.getAsset()));
+		return asset.getBalance().multiply(STABLECOIN_RATE.get(asset.getAsset()));
 	}
 
 	@Override
