@@ -18,14 +18,14 @@ public class OrderTradeUpdateEventTest {
                 .commission(new BigDecimal("1"))
                 .commissionAsset(USDT)
                 .build();
-        assertEquals(new BigDecimal("0.001"), orderEvent.getAcquiredQuantity());
+        assertEquals(new BigDecimal("0.001"), orderEvent.getActualQty());
         orderEvent = OrderTradeUpdateEvent.builder()
                 .symbol(BTC + USDT)
                 .originalQuantity(new BigDecimal("0.0011"))
                 .commission(new BigDecimal("0.0001"))
                 .commissionAsset(BTC)
                 .build();
-        assertEquals(new BigDecimal("0.0010"), orderEvent.getAcquiredQuantity());
+        assertEquals(new BigDecimal("0.0010"), orderEvent.getActualQty());
     }
 
     @Test

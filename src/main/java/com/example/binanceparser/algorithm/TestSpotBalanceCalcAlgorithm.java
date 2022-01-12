@@ -54,7 +54,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 							spotIncomeStates.get(spotIncomeStates.size() - 1));
 
 			if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
-				handleBalanceUpdate(spotIncomeStates, (BalanceUpdateEvent) currentEvent, (AccountPositionUpdateEvent) nextEvent, incomeState);
+				incomeState.processBalanceUpdate((BalanceUpdateEvent) currentEvent, (AccountPositionUpdateEvent) nextEvent);
 				continue;
 			}
 
@@ -74,8 +74,8 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 			final List<Asset> assetsInvolved = extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent,
 					assetMetadata);
 			incomeState.updateAssetBalance(assetsInvolved);
-			incomeState.processOrderDetails(orderEvent.getBaseAsset(), orderEvent.getTradeDelta(),
-					orderEvent.getPriceIncludingCommission());
+			incomeState.processOrder(orderEvent);
+//			incomeState.processOrderDetails(orderEvent.getBaseAsset(), orderEvent.getTradeDelta(), orderEvent.getPriceIncludingCommission());
 
 			spotIncomeStates.add(incomeState);
 		}

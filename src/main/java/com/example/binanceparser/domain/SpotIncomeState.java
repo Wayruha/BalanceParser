@@ -1,6 +1,9 @@
 package com.example.binanceparser.domain;
 
 import com.example.binanceparser.Constants;
+import com.example.binanceparser.domain.events.AccountPositionUpdateEvent;
+import com.example.binanceparser.domain.events.BalanceUpdateEvent;
+import com.example.binanceparser.domain.events.OrderTradeUpdateEvent;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -9,6 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.*;
+import static com.example.binanceparser.domain.TransactionType.*;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -17,27 +21,27 @@ import static com.example.binanceparser.Constants.*;
 public class SpotIncomeState extends BalanceState {
     private Set<Asset> currentAssets;
     //TODO якщо в lockedAssetState лежить ціна 0 - що це означає? мабуть ми не хочемо щоб такі асети лежали у нас
-    private Set<LockedAsset> lockedLockedAssets;
+    private Set<LockedAsset> lockedAssets;
     private List<Transaction> transactions;
 
     public SpotIncomeState(LocalDateTime dateTime) {
         super(BigDecimal.ZERO, dateTime);
         currentAssets = new LinkedHashSet<>(List.of(new Asset(VIRTUAL_USD, BigDecimal.ZERO)));
-        lockedLockedAssets = new LinkedHashSet<>();
+        lockedAssets = new LinkedHashSet<>();
         transactions = new ArrayList<>();
     }
 
     public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
         super(incomeState.getBalanceState(), dateTime);
         this.currentAssets = incomeState.getCurrentAssets().stream().map(Asset::clone).collect(Collectors.toCollection(LinkedHashSet::new));
-        this.lockedLockedAssets = incomeState.getLockedLockedAssets().stream().map(LockedAsset::clone).collect(Collectors.toCollection(LinkedHashSet::new));
+        this.lockedAssets = incomeState.getLockedAssets().stream().map(LockedAsset::clone).collect(Collectors.toCollection(LinkedHashSet::new));
         this.transactions = new ArrayList<>();
     }
 
     public BigDecimal calculateVirtualUSDBalance() {
         BigDecimal virtualBalance = BigDecimal.ZERO;
         // works for quoteAsset = USD
-        for (LockedAsset lockedAsset : lockedLockedAssets) {
+        for (LockedAsset lockedAsset : lockedAssets) {
             virtualBalance = virtualBalance
                     .add(lockedAsset.getBalance().multiply(lockedAsset.getAverageQuotePrice()));
         }
@@ -60,7 +64,7 @@ public class SpotIncomeState extends BalanceState {
     }*/
 
     public Optional<LockedAsset> findLockedAsset(String assetName) {
-        return lockedLockedAssets.stream().filter(a -> a.getAsset().equals(assetName)).findFirst();
+        return lockedAssets.stream().filter(a -> a.getAsset().equals(assetName)).findFirst();
     }
 
     public LockedAsset addLockedAssetIfNotExist(String assetName) {
@@ -68,8 +72,8 @@ public class SpotIncomeState extends BalanceState {
         if (lockedAsset.isPresent())
             return lockedAsset.get();
 
-        final LockedAsset newAsset = new LockedAsset(assetName, BigDecimal.ZERO, null, null);
-        lockedLockedAssets.add(newAsset);
+        final LockedAsset newAsset = new LockedAsset(assetName, BigDecimal.ZERO, null, BigDecimal.ZERO);
+        lockedAssets.add(newAsset);
         return newAsset;
     }
 
@@ -92,7 +96,7 @@ public class SpotIncomeState extends BalanceState {
         if (opt.isEmpty()) return;
         final LockedAsset lockedAsset = opt.get();
         if (lockedAsset.getBalance().signum() == 0) {
-            lockedLockedAssets.remove(opt.get());
+            lockedAssets.remove(opt.get());
         }
     }
 
@@ -112,18 +116,40 @@ public class SpotIncomeState extends BalanceState {
                 });
     }
 
-    public TransactionType getLastTransactionType() {
+   /* public TransactionType getLastTransactionType() {
         return transactions.size() != 0 ? transactions.get(transactions.size() - 1).getTransactionType() : null;
+    }*/
+
+    public void processBalanceUpdate(BalanceUpdateEvent balanceEvent, AccountPositionUpdateEvent accEvent) {
+        final String baseAsset = balanceEvent.getBalances();
+        final BigDecimal balanceDelta = balanceEvent.getBalanceDelta();
+
+        if(balanceDelta.signum() <= 0){
+            handleWithdraw(baseAsset, balanceDelta);
+        }else {
+            handleDeposit(baseAsset, balanceDelta);
+        }
+
+        // can be compacted
+        final AssetMetadata assetMetadata = AssetMetadata.builder()
+                .dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
+                .priceOfLastTrade(BigDecimal.ZERO).build();
+        final List<Asset> assetsInvolved = accEvent.getBalances().stream().map(asset ->
+                Asset.builder()
+                        .asset(asset.getAsset())
+                        .balance(asset.getFree().add(asset.getLocked()))
+                        .assetMetadata(asset.getAsset().equals(baseAsset) ? assetMetadata : null)
+                        .build()
+        ).collect(Collectors.toList());
+        updateAssetBalance(assetsInvolved);
+
+        findAsset(VIRTUAL_USD).setBalance(calculateVirtualUSDBalance());
     }
 
-    public void processBalanceUpdate(String assetName, BigDecimal assetDelta, TransactionType transaction) {
-
-    }
-
-    // TODO refactor
+    // TODO remove!
     public void processOrderDetails(String assetName, BigDecimal assetDelta, BigDecimal transactionPrice) {
-        final LockedAsset lockedAsset = addLockedAssetIfNotExist(assetName);
-        if (assetDelta.compareTo(BigDecimal.ZERO) <= 0) {
+//        final LockedAsset lockedAsset = addLockedAssetIfNotExist(assetName);
+       /* if (assetDelta.compareTo(BigDecimal.ZERO) <= 0) {
             if (transactionPrice != null) {
                 handleSell(assetName, assetDelta, transactionPrice, lockedAsset);
             } else {
@@ -136,70 +162,134 @@ public class SpotIncomeState extends BalanceState {
                 findAsset(VIRTUAL_USD).setBalance(calculateVirtualUSDBalance());
                 return;
             }
-            //TODO чи значить це, що стан монети (напр. ЮСДТ) в ассетах зміниться, а в локедАссетах ні? В асетах буде 500 USDT а в локед = 400
-            // else DEPOSIT operation (we do not add deposit to locked assets)
             handleDeposit(assetName, assetDelta, transactionPrice);
         }
+        findAsset(VIRTUAL_USD).setBalance(calculateVirtualUSDBalance());*/
+    }
 
+    public void processOrder(OrderTradeUpdateEvent orderEvent) {
+        final String baseAsset = orderEvent.getBaseAsset();
+        final String quoteAssetName = orderEvent.getQuoteAsset();
+        final LockedAsset lockedAsset = addLockedAssetIfNotExist(baseAsset);
+
+        if (orderEvent.getSide().equals("BUY")) {
+//            handleBuySaveWholeQuoteAssetBalance(orderEvent, baseAsset, quoteAssetName, lockedAsset);
+            handleBuySaveOnlyKnownProportionally(orderEvent, baseAsset, quoteAssetName, lockedAsset);
+        } else {
+            handleSell(baseAsset, orderEvent.getTradeDelta(), orderEvent.getPriceIncludingCommission(), lockedAsset);
+        }
         findAsset(VIRTUAL_USD).setBalance(calculateVirtualUSDBalance());
     }
 
-    private void handleDeposit(String assetName, BigDecimal assetDelta, BigDecimal transactionPrice) {
-        transactions.add(new Transaction(TransactionType.DEPOSIT, assetName, "", assetDelta, transactionPrice,
+    /**
+     * Цей метод враховує тільки "легальну" частину ассета за який ми щось купляємо.
+     * Віповідно, ми додаємо в lockAssets тільки ту частину купляємої монети (baseAsset), яку можемо оплатити "легальними" коштами.
+     * Решта монети не враховується
+     * <p>
+     * Протестувати зробивши ордер на більше коштів ніж у нас є в "легальному" балансі
+     */
+    private void handleBuySaveOnlyKnownProportionally(OrderTradeUpdateEvent orderEvent, String baseAsset, String quoteAssetName, LockedAsset lockedAsset) {
+        final Optional<LockedAsset> optLockedQuoteAsset = findLockedAsset(quoteAssetName);
+        if (optLockedQuoteAsset.isEmpty()) return; // нічого не оновлюємо
+
+        final BigDecimal orderQty = orderEvent.getActualQty();
+        final BigDecimal orderPrice = orderEvent.getPriceIncludingCommission();
+        final BigDecimal quoteOrderQty = orderEvent.getQuoteAssetQty();
+        final LockedAsset lockedQuoteAsset = optLockedQuoteAsset.get();
+
+        // ми не можемо додати "легальну" частину більшу ніж ми можемо покрити "легальними" коштами
+        final BigDecimal cappedQuoteAssetQty = quoteOrderQty.min(lockedQuoteAsset.getBalance());
+
+        final BigDecimal proportionOfAvailableQuoteAssetUsed = cappedQuoteAssetQty.divide(lockedQuoteAsset.getBalance(), MATH_CONTEXT);
+        final BigDecimal baseAssetStableValue = proportionOfAvailableQuoteAssetUsed.multiply(lockedQuoteAsset.getStableValue());
+        lockedAsset.setStableValue(lockedAsset.getStableValue().add(baseAssetStableValue));
+
+        //додаємо до залоченого стану ЧАСТИНУ купленої монети, якщо ми використали більше ресурсу ніж маємо "легально"
+        // qty = min(lockedQuoteQty/orderQuoteQty, 1) * baseOrderQty
+        final BigDecimal proportionalBaseQty = cappedQuoteAssetQty.divide(quoteOrderQty, MATH_CONTEXT).multiply(orderQty);
+        final BigDecimal newAssetQty = lockedAsset.getBalance().add(proportionalBaseQty);
+        lockedAsset.setBalance(newAssetQty);
+        lockedAsset.setQuoteAsset(quoteAssetName);
+        lockedAsset.setAverageQuotePrice(orderQty.divide(quoteOrderQty, MATH_CONTEXT));
+
+        transactions.add(new Transaction(BUY, baseAsset, quoteAssetName, orderEvent.getTradeDelta(),
+                orderPrice, BigDecimal.ZERO));
+    }
+
+    /**
+     * Якщо купили base монету (XRP) за іншу quote монету (BTC), то додаємо всю кількість baseQty в lockAsset
+     * stableCoinValue встановлюємо пропорційно до кількості використаного quoteAsset.
+     * new stableCoinValue = existing stableCoinValue + orderQuoteAssetQty/lockedQuoteAssetQty * quoteAssetStableCoinValue
+     * Побічні ефекти:
+     * - якщо ми маємо "легальний" BTC і "нелегальний" BTC, то ми фактично оперуємо "легальним" і "нелегальним" по ціні легального.
+     * ПРОТЕ ми не хочемо встановлювати ніякої ціни на "нелегальний" BTC
+     */
+    private void handleBuySaveWholeQuoteAssetBalance(OrderTradeUpdateEvent orderEvent, String baseAsset, String quoteAssetName, LockedAsset lockedAsset) {
+        final Optional<LockedAsset> quoteAssetLockedState = findLockedAsset(quoteAssetName);
+        if (quoteAssetLockedState.isEmpty()) return; // не оновлюємо нічого. краще навіть видалити те що додавали
+
+        final BigDecimal orderQty = orderEvent.getActualQty();
+        final BigDecimal orderPrice = orderEvent.getPriceIncludingCommission();
+        final BigDecimal quoteOrderQty = orderEvent.getQuoteAssetQty();
+
+        //update locked asset's price and qty
+        final BigDecimal newAssetQty = lockedAsset.getBalance().add(orderEvent.getTradeDelta());
+        lockedAsset.setQuoteAsset(quoteAssetName);
+        lockedAsset.setBalance(newAssetQty);
+        lockedAsset.setAverageQuotePrice(orderQty.divide(quoteOrderQty, MATH_CONTEXT));
+
+        final LockedAsset lockedQuoteAsset = quoteAssetLockedState.get();
+
+        final BigDecimal proportionOfQuoteAssetUsed = quoteOrderQty.divide(lockedQuoteAsset.getBalance(), MATH_CONTEXT);
+        final BigDecimal quoteAssetStableCoinValue = proportionOfQuoteAssetUsed.multiply(lockedQuoteAsset.getStableValue());
+        //все заради чого ми оце робимо - ДОДАТИ монеті stablecoinValue
+        lockedAsset.setStableValue(lockedAsset.getStableValue().add(quoteAssetStableCoinValue));
+        transactions.add(new Transaction(BUY, baseAsset, quoteAssetName, orderEvent.getTradeDelta(),
+                orderPrice, BigDecimal.ZERO));
+    }
+
+    private void handleDeposit(String assetName, BigDecimal assetDelta) {
+        transactions.add(new Transaction(DEPOSIT, assetName, "", assetDelta, null,
                 BigDecimal.ZERO));
     }
 
-    private void handleBuy(String assetName, BigDecimal assetDelta, BigDecimal transactionPrice, LockedAsset lockedAsset) {
-        transactions.add(new Transaction(TransactionType.BUY, assetName, lockedAsset.getQuoteAsset(), assetDelta,
-                transactionPrice, BigDecimal.ZERO));
-        final BigDecimal transactionQuoteQty = assetDelta.multiply(transactionPrice);
-        final BigDecimal newAssetQty = lockedAsset.getBalance().add(assetDelta);
-        final BigDecimal newCalculatedPrice = lockedAsset.totalQuoteAssetValue().add(transactionQuoteQty)
-                .divide(newAssetQty, Constants.MATH_CONTEXT);
-        lockedAsset.setAverageQuotePrice(newCalculatedPrice);
-        lockedAsset.setBalance(newAssetQty);
-    }
-
-    private void handleWithdraw(String assetName, BigDecimal assetDelta, BigDecimal transactionPrice, LockedAsset lockedAsset) {
-        transactions.add(new Transaction(TransactionType.WITHDRAW_IN_PROCESS, assetName, "", assetDelta,
-                transactionPrice, null));
-        processOrderDetails(assetName, assetDelta, lockedAsset.getAverageQuotePrice());
-        transactions.set(transactions.size() - 1, new Transaction(TransactionType.WITHDRAW, assetName, "",
-                assetDelta, transactionPrice, transactions.get(transactions.size() - 1).getIncome()));
+    //we can avoid using LockedAsset
+    private void handleWithdraw(String assetName, BigDecimal assetDelta) {
+        final Optional<LockedAsset> optLocked = findLockedAsset(assetName);
+        if(optLocked.isEmpty()) {
+            transactions.add(new Transaction(WITHDRAW, assetName, "", assetDelta, null, null));
+            return;
+        }
+        final LockedAsset lockedAsset = optLocked.get();
+        final BigDecimal absAssetDeltaCapped = lockedAsset.getBalance().min(assetDelta.abs());
+        final BigDecimal usedAssetFraction = absAssetDeltaCapped.divide(lockedAsset.getBalance(), MATH_CONTEXT);
+        final BigDecimal stableValueLost = usedAssetFraction.multiply(lockedAsset.getStableValue());
+        lockedAsset.setStableValue(lockedAsset.getStableValue().subtract(stableValueLost));
+        lockedAsset.setBalance(lockedAsset.getBalance().subtract(absAssetDeltaCapped));// unlock
+//        setBalanceState(getBalanceState().add(transactionIncome));
     }
 
     private void handleSell(String assetName, BigDecimal assetDelta, BigDecimal transactionPrice, LockedAsset lockedAsset) {
-        Transaction transaction;
-        if (!TransactionType.WITHDRAW_IN_PROCESS.equals(getLastTransactionType())) {
-            transaction = new Transaction(TransactionType.SELL, assetName, lockedAsset.getQuoteAsset(),
-                    assetDelta, transactionPrice, null);
-            transactions.add(transaction);
-        } else {
-            transaction = transactions.get(transactions.size() - 1);
-        }
-
         BigDecimal maxAssetTrackedAmount = lockedAsset.getBalance().compareTo(assetDelta.abs()) >= 0
                 ? assetDelta
                 : lockedAsset.getBalance().negate();
-        BigDecimal transactionIncome = maxAssetTrackedAmount.abs().multiply(transactionPrice)// what we got when
-                // sold asset
+        BigDecimal transactionIncome = maxAssetTrackedAmount.abs().multiply(transactionPrice)// what we got when sold asset
                 .subtract(maxAssetTrackedAmount.abs().multiply(lockedAsset.getAverageQuotePrice()));// what we spent
-        // when bought
-        // asset
-        transaction.setIncome(transactionIncome);
+        // when bought  asset
         setBalanceState(getBalanceState().add(transactionIncome));
-        lockedAsset.setBalance(lockedAsset.getBalance().subtract(maxAssetTrackedAmount.abs()));// unlock
-        // asset
+        lockedAsset.setBalance(lockedAsset.getBalance().subtract(maxAssetTrackedAmount.abs()));// unlock asset
+        transactions.add(new Transaction(SELL, assetName, lockedAsset.getQuoteAsset(),
+                assetDelta, transactionPrice, transactionIncome));
     }
 
     @Data
     @ToString(callSuper = true)
+    @NoArgsConstructor
     public static class LockedAsset extends Asset {
         private String quoteAsset;
         // price of this asset relative to quoteAsset. E.g., relativeAsset = USD
         private BigDecimal averageQuotePrice;
-        private BigDecimal stableCoinValue;
-
+        private BigDecimal stableValue;
 
         public LockedAsset(String asset, BigDecimal availableBalance, String quoteAsset, BigDecimal averageQuotePrice) {
             super(asset, availableBalance);

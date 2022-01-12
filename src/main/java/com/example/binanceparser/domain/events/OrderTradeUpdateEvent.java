@@ -37,7 +37,7 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
 	private Long orderId;
 
-	public BigDecimal getAcquiredQuantity() {
+	public BigDecimal getActualQty() {
 		return commissionAsset != null && commissionAsset.equals(getBaseAsset()) ? originalQuantity.subtract(commission)
 				: originalQuantity;
 	}
@@ -46,17 +46,17 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 		if (orderStatus.equals("FILLED")) {
 			if (side.equals("BUY")) {
 				if (commissionAsset.equals(getQuoteAsset())) {
-					return priceOfLastFilledTrade.add(commission.divide(getAcquiredQuantity(), MATH_CONTEXT));
+					return priceOfLastFilledTrade.add(commission.divide(getActualQty(), MATH_CONTEXT));
 				} else if (commissionAsset.equals(getBaseAsset())) {
-					return priceOfLastFilledTrade.multiply(originalQuantity).divide(getAcquiredQuantity(), MATH_CONTEXT);
+					return priceOfLastFilledTrade.multiply(originalQuantity).divide(getActualQty(), MATH_CONTEXT);
 				} else {
 					return priceOfLastFilledTrade;
 				}
 			} else if (side.equals("SELL")) {
 				if (commissionAsset.equals(getQuoteAsset())) {
-					return priceOfLastFilledTrade.subtract(commission.divide(getAcquiredQuantity(), MATH_CONTEXT));
+					return priceOfLastFilledTrade.subtract(commission.divide(getActualQty(), MATH_CONTEXT));
 				} else if (commissionAsset.equals(getBaseAsset())) {
-					return priceOfLastFilledTrade.multiply(getAcquiredQuantity()).divide(originalQuantity, MATH_CONTEXT);
+					return priceOfLastFilledTrade.multiply(getActualQty()).divide(originalQuantity, MATH_CONTEXT);
 				} else {
 					return priceOfLastFilledTrade;
 				}
@@ -70,12 +70,16 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
 	public BigDecimal getTradeDelta() {
 		if (side.equals("BUY")) {
-			return getAcquiredQuantity();
+			return getActualQty();
 		} else if (side.equals("SELL")) {
-			return getAcquiredQuantity().negate();
+			return getActualQty().negate();
 		} else {
 			throw new IllegalArgumentException("Unrecognized order.Side");
 		}
+	}
+
+	public BigDecimal getQuoteAssetQty() {
+		return getActualQty().multiply(priceOfLastFilledTrade);
 	}
 
 	public String getBaseAsset() {
