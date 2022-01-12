@@ -39,12 +39,12 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
                 .collect(Collectors.toList());
 
         return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
-                .finishTrackDate(config.getFinishTrackDate()).balanceAtStart(BigDecimal.ZERO)
+                .finishTrackDate(config.getFinishTrackDate())
                 .balanceAtStart(balanceStates.get(0).calculateVirtualUSDBalance())
                 .balanceAtEnd(getLastBalance(balanceStates))
                 .min(values.stream().reduce(BigDecimal::min).orElse(BigDecimal.ZERO))
-                .max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO)).outputPath(
-                        generatedPlotPath)
+                .max(values.stream().reduce(BigDecimal::max).orElse(BigDecimal.ZERO))
+                .outputPath(generatedPlotPath)
                 .balanceDifference(calcBalanceDelta(balanceStates))
                 .build();
     }

@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.EXCHANGE_INFO;
@@ -53,18 +54,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 							spotIncomeStates.get(spotIncomeStates.size() - 1));
 
 			if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
-				final BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
-				final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
-
-				logBalanceUpdate(balanceEvent);
-				// update asset balances
-				final AssetMetadata assetMetadata = AssetMetadata.builder()
-						.dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
-						.priceOfLastTrade(BigDecimal.ZERO).build();
-				final List<Asset> assetsInvolved = extractAssetsFromEvent(balanceEvent.getBalances(), accEvent, assetMetadata);
-				incomeState.updateAssetBalance(assetsInvolved);
-				incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
-				spotIncomeStates.add(incomeState);
+				handleBalanceUpdate(spotIncomeStates, (BalanceUpdateEvent) currentEvent, (AccountPositionUpdateEvent) nextEvent, incomeState);
 				continue;
 			}
 
@@ -90,6 +80,22 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 			spotIncomeStates.add(incomeState);
 		}
 		return spotIncomeStates;
+	}
+
+	private void handleBalanceUpdate(List<SpotIncomeState> spotIncomeStates, BalanceUpdateEvent currentEvent,
+									 AccountPositionUpdateEvent nextEvent, SpotIncomeState incomeState) {
+		final BalanceUpdateEvent balanceEvent = currentEvent;
+		final AccountPositionUpdateEvent accEvent = nextEvent;
+
+		logBalanceUpdate(balanceEvent);
+		// update asset balances
+		final AssetMetadata assetMetadata = AssetMetadata.builder()
+				.dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
+				.priceOfLastTrade(BigDecimal.ZERO).build();
+		final List<Asset> assetsInvolved = extractAssetsFromEvent(balanceEvent.getBalances(), accEvent, assetMetadata);
+		incomeState.updateAssetBalance(assetsInvolved);
+		incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
+		spotIncomeStates.add(incomeState);
 	}
 
 	private List<Asset> extractAssetsFromEvent(String baseAsset, AccountPositionUpdateEvent event,
@@ -121,9 +127,9 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 
 		if(orderEvent.getSide().equals("SELL")){
 			final String baseAsset = EXCHANGE_INFO.getSymbolInfo(orderEvent.getSymbol()).getBaseAsset();
-			final SpotIncomeState.LockedAsset lockedState = prevState.findLockedAsset(baseAsset);
-			if(lockedState != null){
-				str += ". Profit:" + quoteAssetQty.subtract(lockedState.totalQuoteAssetValue()).toPlainString();
+			final Optional<SpotIncomeState.LockedAsset> lockedState = prevState.findLockedAsset(baseAsset);
+			if(lockedState.isPresent()){
+				str += ". Profit:" + quoteAssetQty.subtract(lockedState.get().totalQuoteAssetValue()).toPlainString();
 			}
 		}
 		System.out.println(str);

@@ -20,7 +20,7 @@ public class BalanceStateVisualizer {
 
     public static void main(String[] args) throws IOException {
         BalanceStateVisualizer app = new BalanceStateVisualizer();
-        final String person = "nefedov";
+        final String person = "nizhnik";
 //        app.futuresStateChangeFromLogs(person);
 		app.spotStateChangeFromLogs(person);
     }
@@ -60,12 +60,12 @@ public class BalanceStateVisualizer {
 
     private static BalanceVisualizerConfig configure() {
         final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
-        LocalDateTime start = LocalDateTime.parse("2021-08-16 00:00:00", DATE_FORMAT);
-        LocalDateTime finish = LocalDateTime.parse("2021-12-30 00:00:00", DATE_FORMAT);
+        LocalDateTime start = LocalDateTime.parse("2021-12-01 00:00:00", DATE_FORMAT);
+        LocalDateTime finish = LocalDateTime.parse("2022-01-01 00:00:00", DATE_FORMAT);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
-        config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/trader_events.csv");
-        config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
+        config.setInputFilepath("/Users/roman/Desktop/report data/nizhnik.csv");
+        config.setOutputDir("/Users/roman/Desktop/");
         //config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
         config.setAssetsToTrack(Collections.emptyList());
         config.setConvertToUSD(false);
