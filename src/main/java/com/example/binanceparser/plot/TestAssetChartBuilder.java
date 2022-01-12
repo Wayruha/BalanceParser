@@ -1,45 +1,23 @@
 package com.example.binanceparser.plot;
 
-import static com.example.binanceparser.Constants.*;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.awt.Paint;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.util.ShapeUtils;
-import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.SpotIncomeState;
-import com.example.binanceparser.domain.TransactionType;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
-	private List<String> assetsToTrack;
-	private List<WithdrawPoint> withdrawPoints;
-	private ChartBuilderConfig config;
-
+public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 	public TestAssetChartBuilder(List<String> assetsToTrack) {
-		this.assetsToTrack = assetsToTrack;
-		withdrawPoints = new ArrayList<>();
-		config = ChartBuilderConfig.getDefaultConfig();
+		super(assetsToTrack);
 	}
 
 	public TestAssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
-		this.assetsToTrack = assetsToTrack;
-		this.config = config;
+		super(assetsToTrack, config);
 	}
 
 	@Override
@@ -51,14 +29,6 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 			chart.getXYPlot().setRenderer(getRenderer());
 		}
 		return chart;
-	}
-
-	private XYItemRenderer getRenderer() {
-		Renderer renderer = new Renderer();
-		for (int i = 0; i < assetsToTrack.size(); i++) {
-			renderer.setSeriesShape(i, new Rectangle(config.getPointSize(), config.getPointSize()));
-		}
-		return renderer;
 	}
 
 	private List<TimeSeries> getTimeSeriesForEveryAsset(List<SpotIncomeState> incomeStates) {
@@ -87,57 +57,9 @@ public class TestAssetChartBuilder implements ChartBuilder<SpotIncomeState> {
 		return series;
 	}
 
-	private boolean isTransfer(String trackedAsset, com.example.binanceparser.domain.Transaction transaction) {
-		return isStableCoin(transaction.getBaseAsset())
-				&& transaction.getBaseAsset().equals(trackedAsset) // TODO ця стрічка скоріш за все не має багато сенсу
-				&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
-						|| transaction.getTransactionType().equals(TransactionType.DEPOSIT));
-	}
-
 	private List<String> listAssetsInvolved(SpotIncomeState lastIncomeState) {
 		return assetsToTrack.isEmpty()
 				? new ArrayList<>(lastIncomeState.getCurrentAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
 				: assetsToTrack;
-	}
-
-	private boolean isStableCoin(String asset) {
-		return STABLECOIN_RATE.keySet().stream().anyMatch((stableCoin) -> stableCoin.equals(asset));
-	}
-
-	private Second dateTimeToSecond(LocalDateTime dateTime) {
-		return new Second(Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant()));
-	}
-
-	@Data
-	@NoArgsConstructor
-	@AllArgsConstructor
-	private class WithdrawPoint {
-		private int row;
-		private int item;
-	}
-
-	private class Renderer extends XYLineAndShapeRenderer {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public Paint getItemPaint(int row, int item) {
-			if (isWithdraw(row, item)) {
-				return config.getWithdrawColor();
-			}
-			return super.getItemPaint(row, item);
-		}
-
-		@Override
-		public Shape getItemShape(int row, int item) {
-			if (isWithdraw(row, item) && config.isDrawCross()) {
-				return ShapeUtils.createDiagonalCross(config.getCrossLength(), config.getCrossWidth());
-			}
-			return super.getItemShape(row, item);
-		}
-
-		private boolean isWithdraw(int row, int item) {
-			return withdrawPoints.stream()
-					.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
-		}
 	}
 }

@@ -1,48 +1,23 @@
 package com.example.binanceparser.plot;
 
-import static com.example.binanceparser.Constants.*;
-import static com.example.binanceparser.domain.TransactionType.DEPOSIT;
-import static com.example.binanceparser.domain.TransactionType.WITHDRAW;
-
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.util.ShapeUtils;
-import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import java.awt.Paint;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
-	private List<String> assetsToTrack;
-	private List<WithdrawPoint> withdrawPoints;
-	private ChartBuilderConfig chartConfig;
-
+public class AssetChartBuilder extends ChartBuilder<EventBalanceState> {
 	public AssetChartBuilder(List<String> assetsToTrack) {
-		this.withdrawPoints = new ArrayList<>();
-		this.assetsToTrack = assetsToTrack;
-		this.chartConfig = ChartBuilderConfig.getDefaultConfig();
+		super(assetsToTrack);
 	}
 
-	public AssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig chartConfig) {
-		this.withdrawPoints = new ArrayList<>();
-		this.assetsToTrack = assetsToTrack;
-		this.chartConfig = chartConfig;
+	public AssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
+		super(assetsToTrack, config);
 	}
 
 	@Override
@@ -50,7 +25,7 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 		final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
 		getTimeSeriesForEveryAsset(eventBalanceStates).forEach(dataSeries::addSeries);
 		JFreeChart chart = ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", dataSeries);
-		if (chartConfig.isDrawPoints()) {
+		if (config.isDrawPoints()) {
 			chart.getXYPlot().setRenderer(getRenderer());
 		}
 		return chart;
@@ -82,64 +57,9 @@ public class AssetChartBuilder implements ChartBuilder<EventBalanceState> {
 		return series;
 	}
 
-	private boolean isTransfer(String trackedAsset, com.example.binanceparser.domain.Transaction transaction) {
-		return isStableCoin(transaction.getBaseAsset())
-				&& trackedAsset.equals(transaction.getBaseAsset())
-				&& (WITHDRAW == transaction.getTransactionType() || DEPOSIT == transaction.getTransactionType());
-	}
-
-	private Second dateTimeToSecond(LocalDateTime dateTime) {
-		return new Second(Date.from(dateTime.atZone(ZoneId.systemDefault()).toInstant()));
-	}
-
 	private List<String> listAssetsInvolved(EventBalanceState lastIncomeState) {
 		return assetsToTrack.isEmpty()
 				? new ArrayList<>(lastIncomeState.getAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
 				: assetsToTrack;
-	}
-
-	private XYItemRenderer getRenderer() {
-		Renderer renderer = new Renderer();
-		for (int i = 0; i < assetsToTrack.size(); i++) {
-			renderer.setSeriesShape(i, new Rectangle(chartConfig.getPointSize(), chartConfig.getPointSize()));
-		}
-		return renderer;
-	}
-
-	private boolean isStableCoin(String asset) {
-		return STABLECOIN_RATE.keySet().stream().anyMatch((stableCoin) -> stableCoin.equals(asset));
-	}
-
-	@Data
-	@NoArgsConstructor
-	@AllArgsConstructor
-	private class WithdrawPoint {
-		private int row;
-		private int item;
-	}
-
-	private class Renderer extends XYLineAndShapeRenderer {
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public Paint getItemPaint(int row, int item) {
-			if (isWithdraw(row, item)) {
-				return chartConfig.getWithdrawColor();
-			}
-			return super.getItemPaint(row, item);
-		}
-
-		@Override
-		public Shape getItemShape(int row, int item) {
-			if (isWithdraw(row, item) && chartConfig.isDrawCross()) {
-				return ShapeUtils.createDiagonalCross(chartConfig.getCrossLength(), chartConfig.getCrossWidth());
-			}
-			return super.getItemShape(row, item);
-		}
-
-		private boolean isWithdraw(int row, int item) {
-			return withdrawPoints.stream()
-					.anyMatch((withdrawPoint) -> withdrawPoint.row == row && withdrawPoint.item == item);
-		}
 	}
 }

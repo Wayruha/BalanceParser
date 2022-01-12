@@ -28,7 +28,6 @@ public class SpotIncomeState extends BalanceState {
 		transactions = new ArrayList<>();
 	}
 
-
 	public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
 		super(incomeState.getBalanceState(), dateTime);
 		this.currentAssets = incomeState.getCurrentAssets().stream().map(Asset::clone).collect(Collectors.toCollection(LinkedHashSet::new));
