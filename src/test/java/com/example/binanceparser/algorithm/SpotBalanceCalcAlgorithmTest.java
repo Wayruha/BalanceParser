@@ -70,7 +70,7 @@ public class SpotBalanceCalcAlgorithmTest {
 		assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
 				.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 				.build();
-		incomeState.updateAssetBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, assetMetadata));
+		incomeState.updateAssetsBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, assetMetadata));
 		incomeState.processOrderDetails(orderEvent.getBaseAsset(), orderEvent.getTradeDelta(),
 				orderEvent.getPriceIncludingCommission());
 		bsList.add(incomeState);
@@ -88,7 +88,7 @@ public class SpotBalanceCalcAlgorithmTest {
 		incomeState = new SpotIncomeState(dateTime, incomeState);
 		assetMetadata = AssetMetadata.builder().dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
 				.priceOfLastTrade(new BigDecimal("0")).build();
-		incomeState.updateAssetBalance(extractAssetsFromEvent(balanceEvent.getBalances(), accEvent, assetMetadata));
+		incomeState.updateAssetsBalance(extractAssetsFromEvent(balanceEvent.getBalances(), accEvent, assetMetadata));
 		incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
 		bsList.add(incomeState);
 		aelist.add(balanceEvent);
@@ -106,7 +106,7 @@ public class SpotBalanceCalcAlgorithmTest {
 		assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
 				.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 				.build();
-		incomeState.updateAssetBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, assetMetadata));
+		incomeState.updateAssetsBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, assetMetadata));
 		incomeState.processOrderDetails(orderEvent.getBaseAsset(), orderEvent.getTradeDelta(),
 				orderEvent.getPriceIncludingCommission());
 		bsList.add(incomeState);
@@ -126,7 +126,7 @@ public class SpotBalanceCalcAlgorithmTest {
 		assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
 				.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 				.build();
-		incomeState.updateAssetBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, assetMetadata));
+		incomeState.updateAssetsBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, assetMetadata));
 		incomeState.processOrderDetails(orderEvent.getBaseAsset(), orderEvent.getTradeDelta(),
 				orderEvent.getPriceIncludingCommission());
 		bsList.add(incomeState);
@@ -146,7 +146,7 @@ public class SpotBalanceCalcAlgorithmTest {
 		assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
 				.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
 				.build();
-		incomeState.updateAssetBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, assetMetadata));
+		incomeState.updateAssetsBalance(extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent, assetMetadata));
 		incomeState.processOrderDetails(orderEvent.getBaseAsset(), orderEvent.getTradeDelta(),
 				orderEvent.getPriceIncludingCommission());
 		bsList.add(incomeState);

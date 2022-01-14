@@ -67,14 +67,8 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 
 			logTrade(orderEvent, incomeState);
 
-			final AssetMetadata assetMetadata = AssetMetadata.builder().dateOfLastTransaction(orderEvent.getDateTime())
-					.quoteAsset(orderEvent.getQuoteAsset()).priceOfLastTrade(orderEvent.getPriceOfLastFilledTrade())
-					.build();
-
-			final List<Asset> assetsInvolved = extractAssetsFromEvent(orderEvent.getBaseAsset(), accEvent,
-					assetMetadata);
-			incomeState.updateAssetBalance(assetsInvolved);
-			incomeState.processOrder(orderEvent);
+//			incomeState.updateAssetsBalance(assetsInvolved);
+			incomeState.processOrder(orderEvent, accEvent);
 //			incomeState.processOrderDetails(orderEvent.getBaseAsset(), orderEvent.getTradeDelta(), orderEvent.getPriceIncludingCommission());
 
 			spotIncomeStates.add(incomeState);
@@ -82,7 +76,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 		return spotIncomeStates;
 	}
 
-	private void handleBalanceUpdate(List<SpotIncomeState> spotIncomeStates, BalanceUpdateEvent currentEvent,
+/*	private void handleBalanceUpdate(List<SpotIncomeState> spotIncomeStates, BalanceUpdateEvent currentEvent,
 									 AccountPositionUpdateEvent nextEvent, SpotIncomeState incomeState) {
 		final BalanceUpdateEvent balanceEvent = currentEvent;
 		final AccountPositionUpdateEvent accEvent = nextEvent;
@@ -93,10 +87,10 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 				.dateOfLastTransaction(balanceEvent.getDateTime()).quoteAsset("")
 				.priceOfLastTrade(BigDecimal.ZERO).build();
 		final List<Asset> assetsInvolved = extractAssetsFromEvent(balanceEvent.getBalances(), accEvent, assetMetadata);
-		incomeState.updateAssetBalance(assetsInvolved);
+		incomeState.updateAssetsBalance(assetsInvolved);
 		incomeState.processOrderDetails(balanceEvent.getBalances(), balanceEvent.getBalanceDelta(), null);
 		spotIncomeStates.add(incomeState);
-	}
+	}*/
 
 	private List<Asset> extractAssetsFromEvent(String baseAsset, AccountPositionUpdateEvent event,
 			AssetMetadata assetMetadata) {
@@ -129,7 +123,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
 			final String baseAsset = EXCHANGE_INFO.getSymbolInfo(orderEvent.getSymbol()).getBaseAsset();
 			final Optional<SpotIncomeState.LockedAsset> lockedState = prevState.findLockedAsset(baseAsset);
 			if(lockedState.isPresent()){
-				str += ". Profit:" + quoteAssetQty.subtract(lockedState.get().totalQuoteAssetValue()).toPlainString();
+				str += ". Profit:" + quoteAssetQty.subtract(lockedState.get().getStableValue()).toPlainString();
 			}
 		}
 		System.out.println(str);

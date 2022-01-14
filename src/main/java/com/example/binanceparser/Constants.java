@@ -35,4 +35,7 @@ public class Constants {
         STABLECOIN_RATE.put(BUSD, BigDecimal.ONE);
     }
 
+    public static boolean isStableCoin(String asset){
+        return STABLECOIN_RATE.containsKey(asset);
+    }
 }
