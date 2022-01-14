@@ -155,6 +155,7 @@ public class SpotIncomeState extends BalanceState {
 						.divide(newAssetQty, Constants.MATH_CONTEXT);
 				lockedAsset.setAveragePrice(newCalculatedPrice);
 				lockedAsset.setBalance(newAssetQty);
+				findAsset(VIRTUAL_USD).setBalance(calculateVirtualUSDBalance());
 				return;
 			}
 			//TODO чи значить це, що стан монети (напр. ЮСДТ) в ассетах зміниться, а в локедАссетах ні? В асетах буде 500 USDT а в локед = 400
