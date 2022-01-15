@@ -126,7 +126,7 @@ public class SpotIncomeState extends BalanceState {
     public void processOrder(OrderTradeUpdateEvent orderEvent, AccountPositionUpdateEvent accEvent) {
         if (orderEvent.getSide().equals("BUY") && isStableCoin(orderEvent.getQuoteAsset())) {
             handleBuy(orderEvent, accEvent);
-        } else if (orderEvent.getSide().equals("BUY") && isStableCoin(orderEvent.getQuoteAsset())) {
+        } else if (orderEvent.getSide().equals("SELL") && isStableCoin(orderEvent.getQuoteAsset())) {
             handleSell(orderEvent, accEvent);
         } else {
             handleConvertOperation(orderEvent, accEvent);
