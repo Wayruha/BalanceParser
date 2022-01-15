@@ -98,7 +98,7 @@ public class SpotIncomeState extends BalanceState {
         return newAsset;
     }
 
-    public void removeAssetStateIfEmpty(String... assetNames) {
+    public void removeLockedStateIfEmpty(String... assetNames) {
         for (String assetName : assetNames) {
             final Optional<LockedAsset> opt = findLockedAsset(assetName);
             if (opt.isEmpty()) continue;
@@ -522,7 +522,7 @@ public class SpotIncomeState extends BalanceState {
             final Optional<Asset> assetOpt = findAssetOpt(updatedAsset.getAsset());
             assetOpt.ifPresentOrElse(asset -> asset.setBalance(updatedAsset.getBalance()),
                     () -> currentAssets.add(updatedAsset));
-            removeAssetStateIfEmpty(updatedAsset.getAsset());
+            removeLockedStateIfEmpty(updatedAsset.getAsset());
         });
         // copying current stableCoins to AssetStates set
         this.currentAssets.stream()

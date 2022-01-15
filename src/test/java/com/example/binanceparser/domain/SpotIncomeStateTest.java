@@ -251,7 +251,7 @@ public class SpotIncomeStateTest {
         assertEquals(ethBalBefore, state.findLockedAsset(ETH).get().getBalance());
         assertEquals(num("800"), state.findLockedAsset(ETH).get().getStableValue());
         assertEquals(ethBalAfter, state.findAssetOpt(ETH).get().getBalance());
-        assertEquals(num("900"), state.findAsset(VIRTUAL_USD).getBalance());
+        assertEquals(num("900"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
 
         //depositing 0.1 BTC
 		final BigDecimal btcBefore = num("0.1");
