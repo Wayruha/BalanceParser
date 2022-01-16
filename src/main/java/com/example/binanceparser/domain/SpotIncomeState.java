@@ -10,42 +10,59 @@ import org.apache.commons.lang3.NotImplementedException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.*;
-import static com.example.binanceparser.domain.TransactionType.*;
+import static com.example.binanceparser.domain.TransactionType.BUY;
 import static java.math.BigDecimal.ZERO;
+import static java.util.Optional.ofNullable;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
 public class SpotIncomeState extends BalanceState {
-    private Set<Asset> currentAssets;
-    private Set<LockedAsset> lockedAssets;
+    private Map<String, Asset> currentAssets;
+    private Map<String, LockedAsset> lockedAssets;
     private List<Transaction> transactions;
     private List<TransactionX> TXs;
 
     public SpotIncomeState(LocalDateTime dateTime) {
         super(ZERO, dateTime);
-        currentAssets = new LinkedHashSet<>(List.of(new Asset(VIRTUAL_USD, ZERO)));
-        lockedAssets = new LinkedHashSet<>();
+        currentAssets = List.of(new Asset(VIRTUAL_USD, ZERO)).stream().collect(Collectors.toMap(Asset::getAsset, Function.identity()));
+        lockedAssets = new HashMap<>();
         transactions = new ArrayList<>();
         TXs = new ArrayList<>();
     }
 
+    public SpotIncomeState(Set<Asset> currentAssets, Set<LockedAsset> lockedAssets, List<Transaction> transactions, List<TransactionX> TXs) {
+        this.currentAssets = currentAssets.stream().collect(Collectors.toMap(Asset::getAsset, Function.identity()));
+        this.lockedAssets = lockedAssets.stream().collect(Collectors.toMap(Asset::getAsset, Function.identity()));
+        this.transactions = transactions;
+        this.TXs = TXs;
+    }
+
     public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
-        super(incomeState.getBalanceState(), dateTime);
-        this.currentAssets = incomeState.getCurrentAssets().stream().map(Asset::clone).collect(Collectors.toCollection(LinkedHashSet::new));
-        this.lockedAssets = incomeState.getLockedAssets().stream().map(LockedAsset::clone).collect(Collectors.toCollection(LinkedHashSet::new));
+        super(null, dateTime);
+        this.currentAssets = incomeState.getCurrentAssets().stream().map(Asset::clone).collect(Collectors.toMap(Asset::getAsset, Function.identity()));
+        this.lockedAssets = incomeState.getLockedAssets().stream().map(LockedAsset::clone).collect(Collectors.toMap(Asset::getAsset, Function.identity()));
         this.transactions = new ArrayList<>();
         TXs = new ArrayList<>();
+    }
+
+    public void setBalanceState(BigDecimal v) {
+        throw new RuntimeException("Do not use balanceState at all!");
+    }
+
+    public BigDecimal getBalanceState() {
+        throw new RuntimeException("Do not use balanceState at all!");
     }
 
     public BigDecimal calculateVirtualUSDBalance() {
         BigDecimal virtualBalance = ZERO;
         // works for quoteAsset = USD
-        for (LockedAsset lockedAsset : lockedAssets) {
+        for (LockedAsset lockedAsset : lockedAssets.values()) {
             virtualBalance = virtualBalance.add(lockedAsset.getStableValue());
         }
         return virtualBalance.round(Constants.MATH_CONTEXT);
@@ -65,17 +82,18 @@ public class SpotIncomeState extends BalanceState {
     }*/
 
     public Optional<LockedAsset> findLockedAsset(String assetName) {
-        return lockedAssets.stream().filter(a -> a.getAsset().equals(assetName)).findFirst();
+        return ofNullable(lockedAssets.get(assetName));
     }
 
     public LockedAsset addLockedAssetIfNotExist(String assetName) {
-        final Optional<LockedAsset> lockedAsset = findLockedAsset(assetName);
-        if (lockedAsset.isPresent())
-            return lockedAsset.get();
+        lockedAssets.putIfAbsent(assetName, LockedAsset.empty(assetName));
+        return lockedAssets.get(assetName);
+    }
 
-        final LockedAsset newAsset = LockedAsset.empty(assetName);
-        lockedAssets.add(newAsset);
-        return newAsset;
+    public List<Asset> getExistingStablecoins() {
+        return currentAssets.values().stream()
+                .filter(a -> STABLECOIN_RATE.containsKey(a.getAsset()))
+                .collect(Collectors.toList());
     }
 
     //TODO remove and use optional-style instead
@@ -85,27 +103,46 @@ public class SpotIncomeState extends BalanceState {
     }
 
     public Optional<Asset> findAssetOpt(String assetName) {
-        return currentAssets.stream().filter(a -> a.getAsset().equals(assetName)).findFirst();
+        return ofNullable(currentAssets.get(assetName));
     }
 
-    public Asset addAssetIfNotExist(String assetName) {
+   /* public Asset addAssetIfNotExist(String assetName) {
         final Asset asset = findAsset(assetName);
         if (asset != null)
             return asset;
 
         final Asset newAsset = new Asset(assetName, ZERO);
-        currentAssets.add(newAsset);
+        currentAssets.put(assetName, newAsset);
         return newAsset;
-    }
+    }*/
 
     public void removeLockedStateIfEmpty(String... assetNames) {
         for (String assetName : assetNames) {
-            final Optional<LockedAsset> opt = findLockedAsset(assetName);
-            if (opt.isEmpty()) continue;
-            if (opt.get().getBalance().signum() == 0) {
-                lockedAssets.remove(opt.get());
+            final Optional<LockedAsset> optionalLockedAsset = findLockedAsset(assetName);
+            if (optionalLockedAsset.isPresent() && optionalLockedAsset.get().getBalance().signum() == 0) {
+                lockedAssets.remove(assetName);
             }
         }
+    }
+
+    public void addAsset(Asset asset) {
+        currentAssets.put(asset.getAsset(), asset);
+    }
+
+    public void addLockedAsset(LockedAsset asset) {
+        lockedAssets.put(asset.getAsset(), asset);
+    }
+
+    public Set<Asset> getCurrentAssets() {
+        return Set.copyOf(currentAssets.values());
+    }
+
+    public Set<LockedAsset> getLockedAssets() {
+        return Set.copyOf(lockedAssets.values());
+    }
+
+    public boolean removeAsset(Asset asset) {
+        return currentAssets.remove(asset.getAsset()) != null;
     }
 
    /* public TransactionType getLastTransactionType() {
@@ -120,7 +157,7 @@ public class SpotIncomeState extends BalanceState {
         } else {
             handleDeposit(balanceEvent, accEvent);
         }
-        findAsset(VIRTUAL_USD).setBalance(calculateVirtualUSDBalance());
+        findAssetOpt(VIRTUAL_USD).get().setBalance(calculateVirtualUSDBalance());
     }
 
     public void processOrder(OrderTradeUpdateEvent orderEvent, AccountPositionUpdateEvent accEvent) {
@@ -131,7 +168,7 @@ public class SpotIncomeState extends BalanceState {
         } else {
             handleConvertOperation(orderEvent, accEvent);
         }
-        findAsset(VIRTUAL_USD).setBalance(calculateVirtualUSDBalance());
+        findAssetOpt(VIRTUAL_USD).get().setBalance(calculateVirtualUSDBalance());
     }
 
     // TODO remove!
@@ -177,12 +214,12 @@ public class SpotIncomeState extends BalanceState {
         final BigDecimal cappedQuoteAssetQty = quoteOrderQty.min(lockedQuoteAsset.getBalance());
 
         final BigDecimal proportionOfAvailableQuoteAssetUsed = cappedQuoteAssetQty.divide(lockedQuoteAsset.getBalance(), MATH_CONTEXT);
-        final BigDecimal baseAssetStableValue = proportionOfAvailableQuoteAssetUsed.multiply(lockedQuoteAsset.getStableValue());
+        final BigDecimal baseAssetStableValue = proportionOfAvailableQuoteAssetUsed.multiply(lockedQuoteAsset.getStableValue(), MATH_CONTEXT);
         lockedAsset.setStableValue(lockedAsset.getStableValue().add(baseAssetStableValue));
 
         //додаємо до залоченого стану ЧАСТИНУ купленої монети, якщо ми використали більше ресурсу ніж маємо "легально"
         // qty = min(lockedQuoteQty/orderQuoteQty, 1) * baseOrderQty
-        final BigDecimal proportionalBaseQty = cappedQuoteAssetQty.divide(quoteOrderQty, MATH_CONTEXT).multiply(orderQty);
+        final BigDecimal proportionalBaseQty = cappedQuoteAssetQty.divide(quoteOrderQty, MATH_CONTEXT).multiply(orderQty, MATH_CONTEXT);
         final BigDecimal newAssetQty = lockedAsset.getBalance().add(proportionalBaseQty);
         lockedAsset.setBalance(newAssetQty);
         lockedAsset.setQuoteAsset(quoteAssetName);
@@ -217,6 +254,7 @@ public class SpotIncomeState extends BalanceState {
     }
 
     //TODO ми платимо комісію за операцію, мабуть потрібно тут її вказувати в income
+
     /**
      * просто збільшуємо баланс/stableValue LockedAsset'у якщо він вже існує.
      */
@@ -368,32 +406,32 @@ public class SpotIncomeState extends BalanceState {
 
     public void handleWithdraw(BalanceUpdateEvent balanceEvent, AccountPositionUpdateEvent accEvent) {
         final String assetName = balanceEvent.getBalances();
-        final BigDecimal assetDelta = balanceEvent.getBalanceDelta();
+        final BigDecimal qty = balanceEvent.getBalanceDelta().abs();
         final Asset existingAsset = findAssetOpt(assetName).get(); //not null because we CAN withdraw it
         final Optional<LockedAsset> optLocked = findLockedAsset(assetName);
 
         final BigDecimal valuableAssetBalance = optLocked.map(Asset::getBalance).orElse(ZERO);
         final BigDecimal nonValuableAssetBalance = existingAsset.getBalance().subtract(valuableAssetBalance);
-        final BigDecimal withdrawValuableQty = assetDelta.subtract(nonValuableAssetBalance).max(ZERO);
+        final BigDecimal withdrawValuableQty = qty.subtract(nonValuableAssetBalance).max(ZERO);
 
-        BigDecimal stableValueLost = ZERO;
+        BigDecimal stableValueDiff = ZERO;
         if (optLocked.isPresent()) {
             final BigDecimal stableValueBefore = optLocked.map(LockedAsset::getStableValue).orElse(ZERO);
             final LockedAsset locked = optLocked.get();
             locked.deductBalance(withdrawValuableQty);
-            stableValueLost = stableValueBefore.subtract(locked.getStableValue());
+            stableValueDiff = locked.getStableValue().subtract(stableValueBefore);
         }
 
         updateAssetsBalance(balanceEvent, accEvent);
 
         Asset2 txAsset = Asset2.builder()
                 .assetName(assetName)
-                .txQty(assetDelta)
+                .txQty(qty)
                 .fullBalance(existingAsset.getBalance())
                 .valuableBalance(optLocked.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(optLocked.map(LockedAsset::getStableValue).orElse(ZERO))
                 .build();
-        TXs.add(UpdateTX.withdrawTx(txAsset, stableValueLost));
+        TXs.add(UpdateTX.withdrawTx(txAsset, stableValueDiff));
     }
 
     //    private void handleSell(OrderTradeUpdateEvent event, String baseAssetName, BigDecimal assetDelta, BigDecimal transactionPrice, LockedAsset lockedAsset) {
@@ -457,7 +495,7 @@ public class SpotIncomeState extends BalanceState {
         BigDecimal stableValueUnlocked = ZERO;
         BigDecimal quoteAssetEarnedWithValuableFunds = quoteAssetQty;
         if (baseQty.compareTo(lockedQty) > 0) {
-            quoteAssetEarnedWithValuableFunds = quoteAssetQty.multiply(lockedQty.divide(baseQty, MATH_CONTEXT));
+            quoteAssetEarnedWithValuableFunds = quoteAssetQty.multiply(lockedQty.divide(baseQty, MATH_CONTEXT), MATH_CONTEXT);
         }
 
         //if there is no locked (or 'valuable') qty then user does not profit from such operation
@@ -521,23 +559,21 @@ public class SpotIncomeState extends BalanceState {
         updatedAssets.forEach(updatedAsset -> {
             final Optional<Asset> assetOpt = findAssetOpt(updatedAsset.getAsset());
             assetOpt.ifPresentOrElse(asset -> asset.setBalance(updatedAsset.getBalance()),
-                    () -> currentAssets.add(updatedAsset));
+                    () -> addAsset(updatedAsset));
             removeLockedStateIfEmpty(updatedAsset.getAsset());
         });
         // copying current stableCoins to AssetStates set
-        this.currentAssets.stream()
-                .filter(asset -> STABLECOIN_RATE.containsKey(asset.getAsset()))
-                .forEach(stableCoin -> {
-                    final LockedAsset lockedAsset = addLockedAssetIfNotExist(stableCoin.getAsset());
-                    lockedAsset.setBalance(stableCoin.getBalance());
-                    lockedAsset.setStableValue(stableCoin.getBalance().multiply(STABLECOIN_RATE.get(stableCoin.getAsset())));
-                });
+        getExistingStablecoins().forEach(stableCoin -> {
+            final LockedAsset lockedAsset = addLockedAssetIfNotExist(stableCoin.getAsset());
+            lockedAsset.setBalance(stableCoin.getBalance());
+            lockedAsset.setStableValue(stableCoin.getBalance().multiply(STABLECOIN_RATE.get(stableCoin.getAsset())));
+        });
     }
 
-    @Data
+    @Getter
+    @Setter
     @ToString(callSuper = true)
     @NoArgsConstructor
-    @EqualsAndHashCode(callSuper = true)
     public static class LockedAsset extends Asset {
         private String quoteAsset;
         // price of this asset relative to quoteAsset. E.g., relativeAsset = USD
@@ -550,12 +586,12 @@ public class SpotIncomeState extends BalanceState {
             this.stableValue = stableValue;
         }
 
-		public LockedAsset(String asset, BigDecimal availableBalance, BigDecimal stableValue) {
-			super(asset, availableBalance);
-			this.quoteAsset = null;
-			this.averageQuotePrice = null;
-			this.stableValue = stableValue;
-		}
+        public LockedAsset(String asset, BigDecimal availableBalance, BigDecimal stableValue) {
+            super(asset, availableBalance);
+            this.quoteAsset = null;
+            this.averageQuotePrice = null;
+            this.stableValue = stableValue;
+        }
 
         public static LockedAsset empty(String assetName) {
             return new LockedAsset(assetName, ZERO, null, ZERO);
@@ -577,7 +613,7 @@ public class SpotIncomeState extends BalanceState {
                 System.out.println("Deducting more than exists. qty=" + qty.toPlainString() + ". " + toString());
             final BigDecimal qtyToBalanceFraction = qty.divide(balance, MATH_CONTEXT);
             balance = balance.subtract(qty);
-            stableValue = stableValue.subtract(stableValue.multiply(qtyToBalanceFraction));
+            stableValue = stableValue.subtract(stableValue.multiply(qtyToBalanceFraction, MATH_CONTEXT));
         }
 
         public void addBalance(BigDecimal qty, BigDecimal stableValue) {
