@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 public class Asset {
     protected String asset;
     //now transient because test somehow fails
-    protected transient BigDecimal balance;
+    protected BigDecimal balance;
     private AssetMetadata assetMetadata;
 
     public Asset(String asset, BigDecimal balance) {

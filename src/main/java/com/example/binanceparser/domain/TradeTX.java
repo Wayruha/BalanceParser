@@ -10,7 +10,7 @@ import static com.example.binanceparser.domain.TransactionType.SELL;
 
 @Getter
 @Setter
-class TradeTX extends TransactionX {
+public class TradeTX extends TransactionX {
     Asset2 baseAsset;
     Asset2 quoteAsset;
 

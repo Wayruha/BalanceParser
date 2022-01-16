@@ -1,5 +1,6 @@
 package com.example.binanceparser.domain;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,15 @@ public abstract class TransactionX {
     public TransactionX(TransactionType type, BigDecimal valueIncome) {
         this.type = type;
         this.valueIncome = valueIncome;
+    }
+
+    @Builder
+    public static class Asset2 {
+        String assetName;
+        BigDecimal txQty;
+        BigDecimal fullBalance;
+        BigDecimal valuableBalance;
+        BigDecimal stableValue;
     }
 }
 

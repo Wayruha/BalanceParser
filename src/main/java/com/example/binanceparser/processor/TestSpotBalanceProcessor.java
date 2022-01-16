@@ -22,7 +22,7 @@ public class TestSpotBalanceProcessor extends SpotBalanceProcessor {
         super(eventSource, config);
         final TestAssetChartBuilder chartBuilder = new TestAssetChartBuilder(config.getAssetsToTrack());
         this.balanceReportGenerator = new TestBalanceReportGenerator(config, chartBuilder);
-        this.algorithm = new TestSpotBalanceCalcAlgorithm(config);
+        this.algorithm = new TestSpotBalanceCalcAlgorithm();
     }
 
     @Override
