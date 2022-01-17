@@ -1,7 +1,10 @@
 package com.example.binanceparser.domain;
 
 import com.example.binanceparser.Constants;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,7 +12,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.example.binanceparser.Constants.*;
+import static com.example.binanceparser.Constants.STABLECOIN_RATE;
+import static com.example.binanceparser.Constants.VIRTUAL_USD;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Optional.ofNullable;
 
@@ -20,29 +24,25 @@ import static java.util.Optional.ofNullable;
 public class SpotIncomeState extends BalanceState {
     private Map<String, Asset> currentAssets;
     private Map<String, LockedAsset> lockedAssets;
-    private List<Transaction> transactions;
     private List<TransactionX> TXs;
 
     public SpotIncomeState(LocalDateTime dateTime) {
-        super(ZERO, dateTime);
+        super(dateTime);
         currentAssets = List.of(new Asset(VIRTUAL_USD, ZERO)).stream().collect(Collectors.toMap(Asset::getAsset, Function.identity()));
         lockedAssets = new HashMap<>();
-        transactions = new ArrayList<>();
         TXs = new ArrayList<>();
     }
 
     public SpotIncomeState(Set<Asset> currentAssets, Set<LockedAsset> lockedAssets, List<Transaction> transactions, List<TransactionX> TXs) {
         this.currentAssets = currentAssets.stream().collect(Collectors.toMap(Asset::getAsset, Function.identity()));
         this.lockedAssets = lockedAssets.stream().collect(Collectors.toMap(Asset::getAsset, Function.identity()));
-        this.transactions = transactions;
         this.TXs = TXs;
     }
 
     public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
-        super(null, dateTime);
+        super(dateTime);
         this.currentAssets = incomeState.getCurrentAssets().stream().map(Asset::clone).collect(Collectors.toMap(Asset::getAsset, Function.identity()));
         this.lockedAssets = incomeState.getLockedAssets().stream().map(LockedAsset::clone).collect(Collectors.toMap(Asset::getAsset, Function.identity()));
-        this.transactions = new ArrayList<>();
         TXs = new ArrayList<>();
     }
 

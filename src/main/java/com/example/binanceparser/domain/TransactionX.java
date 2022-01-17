@@ -18,6 +18,7 @@ public abstract class TransactionX {
     }
 
     @Builder
+    @Getter
     public static class Asset2 {
         String assetName;
         BigDecimal txQty;

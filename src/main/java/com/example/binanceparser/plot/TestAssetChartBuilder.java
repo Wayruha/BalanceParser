@@ -46,7 +46,7 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 		final TimeSeries series = new TimeSeries(trackedAsset + " balance (USD)");
 		for (int n = 0; n < incomeStates.size(); n++) {
 			SpotIncomeState incomeState = incomeStates.get(n);
-			if (incomeState.getTransactions().stream()
+			if (incomeState.getTXs().stream()
 					.anyMatch(transaction -> isTransfer(trackedAsset, transaction))) {
 				withdrawPoints.add(new WithdrawPoint(row, n));
 				withdrawPoints.add(new WithdrawPoint(0, n));

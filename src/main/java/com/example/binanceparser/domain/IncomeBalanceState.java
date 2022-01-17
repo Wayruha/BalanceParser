@@ -17,7 +17,7 @@ public class IncomeBalanceState extends BalanceState {
     private FuturesIncomeType incomeType;
 
     public IncomeBalanceState(LocalDateTime dateTime, BigDecimal availableBalance, FuturesIncomeType incomeType) {
-        super(availableBalance, dateTime);
+        super(dateTime);
         this.incomeType = incomeType;
     }
 

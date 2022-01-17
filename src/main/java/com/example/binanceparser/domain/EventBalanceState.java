@@ -23,21 +23,21 @@ public class EventBalanceState extends BalanceState {
 	private List<Transaction> transactions;
 
 	public EventBalanceState(LocalDateTime dateTime, BigDecimal balanceUpdateDelta) {
-		super(balanceUpdateDelta, dateTime);
+		super(dateTime);
 		// TODO add virtual usd
 		assets = new LinkedHashSet<>();
 		transactions = new ArrayList<>();
 	}
 
 	public EventBalanceState(LocalDateTime dateTime, List<Asset> assets, BigDecimal balanceUpdateDelta) {
-		super(balanceUpdateDelta, dateTime);
+		super(dateTime);
 		// TODO add virtual usd
 		this.assets = new LinkedHashSet<>(assets);
 		transactions = new ArrayList<>();
 	}
 	
 	public EventBalanceState(LocalDateTime dateTime, EventBalanceState balanceState, BigDecimal balanceUpdateDelta) {
-		super(balanceUpdateDelta, dateTime);
+		super(dateTime);
 		assets = new LinkedHashSet<>(balanceState.getAssets());
 		transactions = new ArrayList<>();
 	}
