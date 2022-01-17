@@ -1,7 +1,6 @@
 package com.example.binanceparser.domain;
 
 import com.example.binanceparser.algorithm.TestSpotBalanceCalcAlgorithm;
-import com.example.binanceparser.domain.SpotIncomeState.LockedAsset;
 import com.example.binanceparser.domain.events.AccountPositionUpdateEvent;
 import com.example.binanceparser.domain.events.BalanceUpdateEvent;
 import com.example.binanceparser.domain.events.EventType;
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -58,7 +58,7 @@ public class SpotIncomeStateTest {
         // buying 0.1 ETH for USDT. price: 5000 usdt
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(ETH + USDT).orderStatus("FILLED").side("BUY").price(num("5000"))
-                .priceOfLastFilledTrade(num("5000")).originalQuantity(num("0.1")).commission(num("0.0"))
+                .priceOfLastFilledTrade(num("5000")).originalQuantity(num("0.1")).commission(num("1"))
                 .commissionAsset(USDT).build();
         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.2"), num("0")), eventAsset(USDT, num("20100"), num("0")));
         state = new SpotIncomeState(
@@ -69,45 +69,43 @@ public class SpotIncomeStateTest {
         assertEquals(num("0.2"), state.findLockedAsset(ETH).get().getBalance());
         assertEquals(num("900.0"), state.findLockedAsset(ETH).get().getStableValue());
         assertEquals(num("21000.0"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());// virtual balance
-        assertEquals(num("0"), state.getTXs().get(0).getValueIncome());// virtual balance
+        assertEquals(num("-1.0"), state.getTXs().get(0).getValueIncome());// virtual balance
 
         // buying 0.1 ETH for USDT. price: 6000 usdt
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(ETH + USDT).orderStatus("FILLED").side("BUY").price(num("6000"))
-                .priceOfLastFilledTrade(num("6000")).originalQuantity(num("0.1")).commission(num("0.0"))
+                .priceOfLastFilledTrade(num("6000")).originalQuantity(num("0.1")).commission(num("5"))
                 .commissionAsset(USDT).build();
         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.3"), num("0")), eventAsset(USDT, num("19500"), num("0")));
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertEquals(num("0.3"), state.findLockedAsset(ETH).get().getBalance());
         assertEquals(num("1500.0"), state.findLockedAsset(ETH).get().getStableValue());
         assertEquals(num("21000.0"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());// virtual balance
-        assertEquals(num("0"), state.getTXs().get(1).getValueIncome());// todo include commision
-
+        assertEquals(num("-5.0"), state.getTXs().get(1).getValueIncome());
 
         // buying 0.1 BTC for 45000 per 1
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(BTC + USDT).orderStatus("FILLED").side("BUY").price(num("45000"))
-                .priceOfLastFilledTrade(num("45000")).originalQuantity(num("0.1")).commission(num("0.0"))
+                .priceOfLastFilledTrade(num("45000")).originalQuantity(num("0.1")).commission(num("10"))
                 .commissionAsset(USDT).build();
         accEvent = accountUpdateEvent(eventAsset(BTC, num("0.1"), num("0")), eventAsset(USDT, num("15000"), num("0")));
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertEquals(num("0.1"), state.findLockedAsset("BTC").get().getBalance());
         assertEquals(num("4500.0"), state.findLockedAsset(BTC).get().getStableValue());
         assertEquals(num("21000.0"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());// virtual balance
-        assertEquals(num("0"), state.getTXs().get(2).getValueIncome());// todo include commision
-
+        assertEquals(num("-10.0"), state.getTXs().get(2).getValueIncome());
 
         // buying 0.3 BTC for 50000 per 1
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(BTC + USDT).orderStatus("FILLED").side("BUY").price(num("50000"))
-                .priceOfLastFilledTrade(num("50000")).originalQuantity(num("0.3")).commission(num("0.0"))
+                .priceOfLastFilledTrade(num("50000")).originalQuantity(num("0.3")).commission(num("3"))
                 .commissionAsset(USDT).build();
         accEvent = accountUpdateEvent(eventAsset(BTC, num("0.4"), num("0")), eventAsset(USDT, num("0"), num("0")));
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertEquals(num("0.4"), state.findLockedAsset(BTC).get().getBalance());
         assertEquals(num("19500.0"), state.findLockedAsset(BTC).get().getStableValue());
         assertEquals(num("21000.0"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());// virtual balance
-        assertEquals(num("0"), state.getTXs().get(3).getValueIncome());// todo include commision
+        assertEquals(num("-3.0"), state.getTXs().get(3).getValueIncome());
     }
 
     @Test
@@ -127,7 +125,7 @@ public class SpotIncomeStateTest {
         // selling 0.2 ETH for 3500 per 1
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(ETH + USDT).orderStatus("FILLED").side("SELL").price(num("3500"))
-                .priceOfLastFilledTrade(num("3500")).originalQuantity(num("0.2")).commission(num("0.0"))
+                .priceOfLastFilledTrade(num("3500")).originalQuantity(num("0.2")).commission(num("10"))
                 .commissionAsset(USDT).build();
         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.2"), num("0")), eventAsset(USDT, num("700"), num("0")));
         state = new SpotIncomeState(
@@ -135,20 +133,20 @@ public class SpotIncomeStateTest {
                 setOf(locked(ETH, num("0.3"), num("1500")), locked(BTC, num("0.4"), num("19500"))), emptyList(), emptyList());
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertEquals(num("0.1"), state.findLockedAsset(ETH).get().getBalance());// asset balance
-        assertEquals(num("500.0000"), state.findLockedAsset(ETH).get().getStableValue());
-        assertEquals(num("20700.000"), state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO));// virtual balance
-        assertEquals(num("-300"), state.getTXs().get(0).getValueIncome().setScale(0));
+        assertEquals(num("500"), state.findLockedAsset(ETH).get().getStableValue());
+        assertEquals(num("20700"), state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO));
+        assertEquals(num("-310"), state.getTXs().get(0).getValueIncome().setScale(0)); // includes commission
 
         // selling 0.4 BTC for 40000 per 1
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(BTC + USDT).orderStatus("FILLED").side("SELL").price(num("40000"))
-                .priceOfLastFilledTrade(num("40000")).originalQuantity(num("0.4")).commission(num("0.0"))
+                .priceOfLastFilledTrade(num("40000")).originalQuantity(num("0.4")).commission(num("20"))
                 .commissionAsset(USDT).build();
         accEvent = accountUpdateEvent(eventAsset(BTC, num("0.0"), num("0")), eventAsset(USDT, num("16700"), num("0")));
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertTrue(state.findLockedAsset(BTC).isEmpty());// asset balance, null because it was deleted
-        assertEquals(num("17200"), state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO).setScale(0));// virtual balance
-        assertEquals(num("-3500"), state.getTXs().get(1).getValueIncome().setScale(0));
+        assertEquals(num("17200"), state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO).setScale(0));
+        assertEquals(num("-3520"), state.getTXs().get(1).getValueIncome().setScale(0)); // includes commission
 
         //TODO не побачив проблеми
         /*
@@ -164,7 +162,7 @@ public class SpotIncomeStateTest {
                 setOf(locked(ETH, num("0.1"), num("500")), locked(USDT, num("16700"), num("16700"))), emptyList(), emptyList());
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(ETH + USDT).orderStatus("FILLED").side("SELL").price(num("3600"))
-                .priceOfLastFilledTrade(num("3000")).originalQuantity(num("0.15")).commission(num("0.0"))
+                .priceOfLastFilledTrade(num("3000")).originalQuantity(num("0.15")).commission(num("5"))
                 .commissionAsset(USDT).build();
         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.05"), num("0")), eventAsset(USDT, num("17000"), num("0")));
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
@@ -172,8 +170,7 @@ public class SpotIncomeStateTest {
         assertEquals(num("0.05"), state.findAssetOpt(ETH).map(Asset::getBalance).orElse(BigDecimal.ZERO));// virtual balance
         assertEquals(num("17000"), state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO));// virtual balance
         assertEquals(num("17000"), state.findAssetOpt(USDT).map(Asset::getBalance).orElse(BigDecimal.ZERO));// virtual balance
-        assertEquals(num("-200"), state.getTXs().get(0).getValueIncome().setScale(0));
-
+        assertEquals(num("-205"), state.getTXs().get(0).getValueIncome().setScale(0, RoundingMode.HALF_UP)); // includes commission
     }
 
     @Test

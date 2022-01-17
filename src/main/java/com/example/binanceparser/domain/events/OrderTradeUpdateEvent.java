@@ -82,6 +82,10 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 		return getActualQty().multiply(priceOfLastFilledTrade);
 	}
 
+	public BigDecimal getQuoteAssetCommission(){
+		return getPriceIncludingCommission().subtract(getPriceOfLastFilledTrade()).multiply(originalQuantity).abs();
+	}
+
 	public String getBaseAsset() {
 		return EXCHANGE_INFO.getSymbolInfo(symbol).getBaseAsset();
 	}

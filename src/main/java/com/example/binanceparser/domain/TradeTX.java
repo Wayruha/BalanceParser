@@ -5,8 +5,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-import static com.example.binanceparser.domain.TransactionType.BUY;
-import static com.example.binanceparser.domain.TransactionType.SELL;
+import static com.example.binanceparser.domain.TransactionType.*;
 
 @Getter
 @Setter
@@ -20,11 +19,15 @@ public class TradeTX extends TransactionX {
         this.quoteAsset = quoteAsset;
     }
 
-    public static TradeTX buyTx(Asset2 baseAsset, Asset2 quoteAsset) {
-        return new TradeTX(BUY, baseAsset, quoteAsset, BigDecimal.ZERO);
+    public static TradeTX buyTx(Asset2 baseAsset, Asset2 quoteAsset, BigDecimal income) {
+        return new TradeTX(BUY, baseAsset, quoteAsset, income);
     }
 
     public static TradeTX sellTx(Asset2 baseAsset, Asset2 quoteAsset, BigDecimal income) {
         return new TradeTX(SELL, baseAsset, quoteAsset, income);
+    }
+
+    public static TradeTX convertTx(Asset2 baseAsset, Asset2 quoteAsset){
+        return new TradeTX(CONVERT, baseAsset, quoteAsset, BigDecimal.ZERO);
     }
 }
