@@ -4,7 +4,6 @@ import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.domain.TransactionType;
 import com.example.binanceparser.domain.TransactionX;
-import com.example.binanceparser.domain.UpdateTX;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -74,7 +73,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	//TODO повністю переробити - я зробив цей метод як копію існуючого тільки щоб не поломати код
 	protected boolean isTransfer(String trackedAsset, TransactionX transaction) {
 		if(transaction.getType() == TransactionType.WITHDRAW || transaction.getType() == TransactionType.DEPOSIT){
-			final UpdateTX tx = (UpdateTX) transaction;
+			final TransactionX.Update tx = (TransactionX.Update) transaction;
 			final TransactionX.Asset2 asset = tx.getAsset();
 			return isStableCoin(asset.getAssetName()) && asset.getAssetName().equals(trackedAsset);
 		}

@@ -34,13 +34,11 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
         for (int i = 0; i < events.size() - 1; i++) {
             final AbstractEvent currentEvent = events.get(i);
             final AbstractEvent nextEvent = events.get(i + 1);
-
             if ((currentEvent.getEventType() != EventType.ORDER_TRADE_UPDATE
                     && currentEvent.getEventType() != EventType.BALANCE_UPDATE)
                     || nextEvent.getEventType() != EventType.ACCOUNT_POSITION_UPDATE) {
                 continue;
             }
-
             if (ChronoUnit.SECONDS.between(currentEvent.getDateTime(),
                     nextEvent.getDateTime()) > MAX_SECONDS_DELAY_FOR_VALID_EVENTS) {
                 continue;
@@ -62,11 +60,8 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
             if (!orderEvent.getOrderStatus().equals("FILLED")) {
                 continue;
             }
-
             logTrade(orderEvent, incomeState);
-
             processOrder(incomeState, orderEvent, accEvent);
-
             spotIncomeStates.add(incomeState);
         }
         return spotIncomeStates;
@@ -141,7 +136,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
                 .valuableBalance(lockedQuote.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(lockedQuote.map(LockedAsset::getStableValue).orElse(ZERO))
                 .build();
-        state.getTXs().add(TradeTX.convertTx(base, quote));
+        state.getTXs().add(TransactionX.convertTx(base, quote));
     }
 
     //TODO ми платимо комісію за операцію, мабуть потрібно тут її вказувати в income
@@ -177,7 +172,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
                 .stableValue(quoteLocked.map(LockedAsset::getStableValue).orElse(ZERO))
                 .build();
 
-        state.getTXs().add(TradeTX.buyTx(base, quote, orderEvent.getQuoteAssetCommission().negate()));
+        state.getTXs().add(TransactionX.buyTx(base, quote, orderEvent.getQuoteAssetCommission().negate()));
     }
 
     /**
@@ -233,8 +228,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
                 .stableValue(quoteAssetBalance)
                 .build();
 
-
-        state.getTXs().add(TradeTX.sellTx(base, quote, income.subtract(orderEvent.getQuoteAssetCommission())));
+        state.getTXs().add(TransactionX.sellTx(base, quote, income.subtract(orderEvent.getQuoteAssetCommission())));
     }
 
     private void handleDeposit(SpotIncomeState state, BalanceUpdateEvent balanceEvent, AccountPositionUpdateEvent accEvent) {
@@ -254,7 +248,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
                 .build();
 
         final BigDecimal transactionStableValue = STABLECOIN_RATE.getOrDefault(assetName, ZERO).multiply(assetQty);
-        state.getTXs().add(UpdateTX.depositTx(txAsset, transactionStableValue));
+        state.getTXs().add(TransactionX.depositTx(txAsset, transactionStableValue));
     }
 
     public void handleWithdraw(SpotIncomeState state, BalanceUpdateEvent balanceEvent, AccountPositionUpdateEvent accEvent) {
@@ -284,7 +278,7 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
                 .valuableBalance(optLocked.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(optLocked.map(LockedAsset::getStableValue).orElse(ZERO))
                 .build();
-        state.getTXs().add(UpdateTX.withdrawTx(txAsset, stableValueDiff));
+        state.getTXs().add(TransactionX.withdrawTx(txAsset, stableValueDiff));
     }
 
     private void updateAssetsBalance(SpotIncomeState state, BalanceUpdateEvent balanceEvent, AccountPositionUpdateEvent accEvent) {
