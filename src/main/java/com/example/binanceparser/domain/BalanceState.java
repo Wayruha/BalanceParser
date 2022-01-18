@@ -13,8 +13,13 @@ import java.time.LocalDateTime;
 @Data
 public abstract class BalanceState {
     private LocalDateTime dateTime;
-
+    
     public LocalDate getDate(){
         return dateTime != null ? dateTime.toLocalDate() : null;
+    }
+    
+    //TODO delete after refactor
+    public BigDecimal getBalanceState() {
+    	throw new UnsupportedOperationException("should not use this method");
     }
 }

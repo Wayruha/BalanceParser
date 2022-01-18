@@ -50,7 +50,9 @@ public class TestSpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIn
                     spotIncomeStates.get(spotIncomeStates.size() - 1));
 
             if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
-                processBalanceUpdate(incomeState, (BalanceUpdateEvent) currentEvent, (AccountPositionUpdateEvent) nextEvent);
+            	BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
+            	logBalanceUpdate(balanceEvent);
+                processBalanceUpdate(incomeState, balanceEvent, (AccountPositionUpdateEvent) nextEvent);
                 continue;
             }
 
