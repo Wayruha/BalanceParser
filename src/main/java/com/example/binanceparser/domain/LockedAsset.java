@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import static com.example.binanceparser.Constants.MATH_CONTEXT;
 import static java.math.BigDecimal.ZERO;
@@ -47,7 +48,8 @@ public class LockedAsset extends Asset {
         if (qty.signum() == 0) return;
         if (balance.compareTo(qty) < 0)
             System.out.println("Deducting more than exists. qty=" + qty.toPlainString() + ". " + toString());
-        final BigDecimal balanceBefore = balance;
+        //no new instance of big decimal was created before
+        final BigDecimal balanceBefore = new BigDecimal(balance.toPlainString());
         balance = balance.subtract(qty);
         //value -= value * (qty/balance)
         stableValue = stableValue.subtract(stableValue.multiply(qty).divide(balanceBefore, MATH_CONTEXT));
