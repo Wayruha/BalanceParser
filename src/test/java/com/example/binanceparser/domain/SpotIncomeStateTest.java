@@ -141,7 +141,7 @@ public class SpotIncomeStateTest {
         assertEquals(num("17200"), state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO).setScale(0));
         assertEquals(num("-3520"), state.getTXs().get(1).getValueIncome().setScale(0)); // includes commission
 
-        // selling 0.2 ETH for 3600 per 1
+        // selling 0.15 ETH for 3000 per 1
         state = new SpotIncomeState(
                 setOf(asset(VIRTUAL_USD, num("17200")), asset(ETH, num("0.2")), asset(USDT, num("16700"))),
                 setOf(locked(ETH, num("0.1"), num("500")), locked(USDT, num("16700"), num("16700"))), emptyList(), emptyList());

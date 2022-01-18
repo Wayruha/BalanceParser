@@ -18,6 +18,7 @@ import static com.example.binanceparser.Constants.STABLECOIN_RATE;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -75,7 +76,9 @@ public abstract class ChartBuilder<T extends BalanceState> {
 		if(transaction.getType() == TransactionType.WITHDRAW || transaction.getType() == TransactionType.DEPOSIT){
 			final TransactionX.Update tx = (TransactionX.Update) transaction;
 			final TransactionX.Asset2 asset = tx.getAsset();
-			return isStableCoin(asset.getAssetName()) && asset.getAssetName().equals(trackedAsset);
+			return isStableCoin(asset.getAssetName()) 
+					&& asset.getAssetName().equals(trackedAsset)
+					&& transaction.getValueIncome().compareTo(BigDecimal.ZERO) != 0;
 		}
 		return false;
 	}
