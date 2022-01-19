@@ -49,8 +49,8 @@ public class AssetChartBuilder extends ChartBuilder<EventBalanceState> {
 			Asset asset = eventBalanceState.findAsset(trackedAsset);
 			if(asset == null) continue;
 			if (eventBalanceState.getTransactions().stream().anyMatch(transaction -> isTransfer(trackedAsset, transaction))) {
-				withdrawPoints.add(new WithdrawPoint(row, n));
-				withdrawPoints.add(new WithdrawPoint(0, n));
+				withdrawPoints.add(new Point(row, n));
+				withdrawPoints.add(new Point(0, n));
 			}
 			series.addOrUpdate(dateTimeToSecond(eventBalanceState.getDateTime()), asset.getBalance());
 		}
