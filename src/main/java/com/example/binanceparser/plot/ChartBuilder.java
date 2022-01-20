@@ -1,6 +1,7 @@
 package com.example.binanceparser.plot;
 
 import com.example.binanceparser.config.ChartBuilderConfig;
+import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.domain.TransactionType;
 import com.example.binanceparser.domain.TransactionX;
@@ -134,7 +135,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 				milsToLocaldateLime(finish.getLastMillisecond()));
 	}
 
-	protected BigDecimal getUnlockedAmount(String trackedAsset, List<TransactionX> transactions) {
+	protected Asset getAssetToProcess(String trackedAsset, List<TransactionX> transactions) {
 		// overall unlocked amount
 		BigDecimal val = BigDecimal.ZERO;
 		for (TransactionX transaction : getTransactionsToProcess(trackedAsset, transactions)) {
@@ -142,7 +143,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 			final TransactionX.Asset2 asset = tx.getQuoteAsset();
 			val = val.add(asset.getTxQty()).subtract(transaction.getValueIncome());
 		}
-		return val;
+		return new Asset(VIRTUAL_USD, val);
 	}
 
 	private LocalDateTime milsToLocaldateLime(long val) {
