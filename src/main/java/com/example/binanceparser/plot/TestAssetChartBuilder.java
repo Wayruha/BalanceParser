@@ -57,12 +57,10 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 			Second currentSecValue = dateTimeToSecond(currentDateTime);
 			BigDecimal unlockedAmount = getUnlockedAmount(trackedAsset, incomeState.getTXs());
 			// if withdraw or deposit
-			if (incomeState.getTXs().stream().anyMatch(transaction -> isTransfer(trackedAsset, transaction))
-					|| (trackedAsset.equals(VIRTUAL_USD) && anyTransfer(incomeState.getTXs()))) {
+			if (isWithdrawOrDeposit(trackedAsset, incomeState)) {
 				withdrawPoints.add(new Point(row, pointsNumber));
-			}
-			// if sell contains unlocked asset
-			else if (unlockedAmount.compareTo(BigDecimal.ZERO) > 0) {
+			} else if (unlockedAmount.compareTo(BigDecimal.ZERO) > 0) {
+				// if sell contains unlocked asset
 				// creating point counting only locked part
 				BigDecimal wholeAmount = incomeState.calculateVirtualUSDBalance(trackedAsset);
 				BigDecimal lockedAmount = wholeAmount.subtract(unlockedAmount);
@@ -83,6 +81,11 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 			previousSecValue = dateTimeToSecond(incomeState.getDateTime());
 		}
 		return series;
+	}
+
+	private boolean isWithdrawOrDeposit(String trackedAsset, SpotIncomeState incomeState) {
+		return incomeState.getTXs().stream().anyMatch(transaction -> isTransfer(trackedAsset, transaction))
+				|| (trackedAsset.equals(VIRTUAL_USD) && anyTransfer(incomeState.getTXs()));
 	}
 
 	private List<String> listAssetsInvolved(SpotIncomeState lastIncomeState) {
