@@ -2,11 +2,12 @@ package com.example.binanceparser;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.CSVEventSource;
+import com.example.binanceparser.datasource.LogsEventSource;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.datasource.filters.SourceFilter;
 import com.example.binanceparser.processor.FuturesBalanceStateProcessor;
-import com.example.binanceparser.processor.TestSpotBalanceProcessor;
+import com.example.binanceparser.processor.SpotBalanceProcessor;
 import com.example.binanceparser.report.BalanceReport;
 
 import java.io.File;
@@ -20,8 +21,8 @@ public class BalanceStateVisualizer {
 
     public static void main(String[] args) throws IOException {
         BalanceStateVisualizer app = new BalanceStateVisualizer();
-        final String person = "nizhnik";
-        app.futuresStateChangeFromLogs(person);
+        final String person = "nefedov";
+        //app.futuresStateChangeFromLogs(person);
 		app.spotStateChangeFromLogs(person);
     }
 
@@ -42,29 +43,25 @@ public class BalanceStateVisualizer {
     public void spotStateChangeFromLogs(String person) throws IOException {
         final BalanceVisualizerConfig config = configure();
         config.setSubject(List.of(person));
-        config.setAssetsToTrack(List.of(VIRTUAL_USD));
-
-//        addSubject(config, person, "SPOT_PRODUCER");
+        config.setAssetsToTrack(List.of());
+//      addSubject(config, person, "SPOT_PRODUCER");
 
         final File logsDir = new File(config.getInputFilepath());
-        final CSVEventSource logsEventSource = new CSVEventSource(logsDir, person);
-//		SpotBalanceProcessor processor = new SpotBalanceProcessor(logsEventSource, config);
-        TestSpotBalanceProcessor testProcessor = new TestSpotBalanceProcessor(logsEventSource, config);
-//		final BalanceReport report = processor.process();
+        //final CSVEventSource logsEventSource = new CSVEventSource(logsDir, person);
+        final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
+        SpotBalanceProcessor testProcessor = new SpotBalanceProcessor(logsEventSource, config);
         final BalanceReport testReport = testProcessor.process();
-//		System.out.println("Report....");
-//		System.out.println(report.toPrettyString());
         System.out.println("Test report....");
         System.out.println(testReport.toPrettyString());
     }
 
     private static BalanceVisualizerConfig configure() {
         final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
-        LocalDateTime start = LocalDateTime.parse("2021-12-01 00:00:00", DATE_FORMAT);
-        LocalDateTime finish = LocalDateTime.parse("2022-01-01 00:00:00", DATE_FORMAT);
+        LocalDateTime start = LocalDateTime.parse("2021-08-29 00:00:00", DATE_FORMAT);
+        LocalDateTime finish = LocalDateTime.parse("2022-12-19 00:00:00", DATE_FORMAT);
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
-        config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/nizhnik.csv");
+        config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/events");
         config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
         //config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
         config.setAssetsToTrack(Collections.emptyList());

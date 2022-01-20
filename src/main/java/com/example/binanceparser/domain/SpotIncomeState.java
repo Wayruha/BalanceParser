@@ -168,5 +168,4 @@ public class SpotIncomeState extends BalanceState {
             lockedAsset.setStableValue(stableCoin.getBalance().multiply(STABLECOIN_RATE.get(stableCoin.getAsset())));
         });
     }
-
 }

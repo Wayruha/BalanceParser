@@ -25,7 +25,7 @@ public class SpotBalanceCalcAlgorithmTest {
 	private static List<AbstractEvent> aelist = new ArrayList<>();
 	private static List<SpotIncomeState> bsList = new ArrayList<>();
 	private static BalanceVisualizerConfig config = new BalanceVisualizerConfig();
-	private static TestSpotBalanceCalcAlgorithm calcAlgorithm = new TestSpotBalanceCalcAlgorithm();
+	private static SpotBalanceCalcAlgorithm calcAlgorithm = new SpotBalanceCalcAlgorithm();
 
 	@BeforeAll
 	public static void init() {
@@ -130,7 +130,7 @@ public class SpotBalanceCalcAlgorithmTest {
 
 	@Test
 	public void shouldReturnCorrectBalanceStatesForAllAssets() throws SecurityException, IllegalArgumentException {
-		TestSpotBalanceCalcAlgorithm alg = new TestSpotBalanceCalcAlgorithm();
+		SpotBalanceCalcAlgorithm alg = new SpotBalanceCalcAlgorithm();
 		List<SpotIncomeState> acceptedBSlist = alg.processEvents(aelist);
 		assertIterableEquals(bsList, acceptedBSlist);
 	}

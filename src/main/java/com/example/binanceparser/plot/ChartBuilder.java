@@ -111,7 +111,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	private List<TransactionX> getAllTransactionsToProcess(List<TransactionX> transactions) {
 		return transactions.stream().filter((transaction) -> {
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
-			final TransactionX.Asset2 asset = tx.getBaseAsset();
+			final TransactionX.Asset2 asset = tx.getQuoteAsset();
 
 			return transaction.getType().equals(TransactionType.SELL)
 					&& transaction.getValueIncome().compareTo(asset.getTxQty()) < 0;
@@ -139,7 +139,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 		BigDecimal val = BigDecimal.ZERO;
 		for (TransactionX transaction : getTransactionsToProcess(trackedAsset, transactions)) {
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
-			final TransactionX.Asset2 asset = tx.getBaseAsset();
+			final TransactionX.Asset2 asset = tx.getQuoteAsset();
 			val = val.add(asset.getTxQty()).subtract(transaction.getValueIncome());
 		}
 		return val;

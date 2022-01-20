@@ -59,24 +59,27 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 			// if withdraw or deposit
 			if (incomeState.getTXs().stream().anyMatch(transaction -> isTransfer(trackedAsset, transaction))
 					|| (trackedAsset.equals(VIRTUAL_USD) && anyTransfer(incomeState.getTXs()))) {
-				withdrawPoints.add(new Point(row, pointsNumber++));
+				withdrawPoints.add(new Point(row, pointsNumber));
 			}
 			// if sell contains unlocked asset
 			else if (unlockedAmount.compareTo(BigDecimal.ZERO) > 0) {
 				// creating point counting only locked part
-				intermediatePoints.add(new Point(row, pointsNumber++));
-				series.addOrUpdate(
-						dateTimeToSecond(
-								currentDateTime.minusSeconds(secondsBetween(previousSecValue, currentSecValue))),
-						incomeState.calculateVirtualUSDBalance(trackedAsset).subtract(unlockedAmount));
+				BigDecimal wholeAmount = incomeState.calculateVirtualUSDBalance(trackedAsset);
+				BigDecimal lockedAmount = wholeAmount.subtract(unlockedAmount);
+				//this throws ArithmeticException /0, wholeAmount should not be 0
+				BigDecimal coeff = unlockedAmount.divide(wholeAmount, MATH_CONTEXT);
+				intermediatePoints.add(new Point(row, pointsNumber));
+				LocalDateTime intermTime = currentDateTime.minusSeconds(
+						secondsBetween(previousSecValue == null ? currentSecValue : previousSecValue, currentSecValue)
+								* coeff.intValue());
+				series.addOrUpdate(dateTimeToSecond(intermTime), lockedAmount);
 				// creating point counting unlocked part
-				specialPoints.add(new Point(row, pointsNumber++));
-				series.addOrUpdate(currentSecValue, incomeState.calculateVirtualUSDBalance(trackedAsset));
+				specialPoints.add(new Point(row, pointsNumber + 1));
 			}
-			// all other situations
-			else {
-				series.addOrUpdate(currentSecValue, incomeState.calculateVirtualUSDBalance(trackedAsset));
-			}
+
+			pointsNumber++;
+			series.addOrUpdate(currentSecValue, incomeState.calculateVirtualUSDBalance(trackedAsset));
+
 			previousSecValue = dateTimeToSecond(incomeState.getDateTime());
 		}
 		return series;

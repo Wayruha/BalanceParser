@@ -1,6 +1,6 @@
 package com.example.binanceparser.domain;
 
-import com.example.binanceparser.algorithm.TestSpotBalanceCalcAlgorithm;
+import com.example.binanceparser.algorithm.SpotBalanceCalcAlgorithm;
 import com.example.binanceparser.domain.events.AccountPositionUpdateEvent;
 import com.example.binanceparser.domain.events.BalanceUpdateEvent;
 import com.example.binanceparser.domain.events.EventType;
@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SpotIncomeStateTest {
     private static SpotIncomeState state1;
     private static SpotIncomeState state2;
-    private static TestSpotBalanceCalcAlgorithm calcAlgorithm;
+    private static SpotBalanceCalcAlgorithm calcAlgorithm;
 
     @BeforeAll
     public static void init() {
@@ -34,7 +34,7 @@ public class SpotIncomeStateTest {
         final LockedAsset eth2 = new LockedAsset(BTC, num("0.1"), null, num("5000"));
         state1 = new SpotIncomeState(Set.of(), setOf(usdt1, eth1), emptyList(), emptyList());
         state2 = new SpotIncomeState(Set.of(), setOf(usdt2, eth2), emptyList(), emptyList());
-        calcAlgorithm = new TestSpotBalanceCalcAlgorithm();
+        calcAlgorithm = new SpotBalanceCalcAlgorithm();
     }
 
     @Test

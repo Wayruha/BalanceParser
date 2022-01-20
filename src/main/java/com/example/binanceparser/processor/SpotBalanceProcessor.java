@@ -1,6 +1,6 @@
 package com.example.binanceparser.processor;
 
-import com.example.binanceparser.algorithm.TestSpotBalanceCalcAlgorithm;
+import com.example.binanceparser.algorithm.SpotBalanceCalcAlgorithm;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.domain.SpotIncomeState;
@@ -10,19 +10,21 @@ import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.TestBalanceReportGenerator;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TestSpotBalanceProcessor extends SpotBalanceProcessor {
-
+public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
+	private final EventSource<AbstractEvent> eventSource;
     private final TestBalanceReportGenerator balanceReportGenerator;
-    private final TestSpotBalanceCalcAlgorithm algorithm;
+    private final SpotBalanceCalcAlgorithm algorithm;
 
-    public TestSpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
-        super(eventSource, config);
+    public SpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
+        super(config);
+        this.eventSource = eventSource;
         final TestAssetChartBuilder chartBuilder = new TestAssetChartBuilder(config.getAssetsToTrack());
         this.balanceReportGenerator = new TestBalanceReportGenerator(config, chartBuilder);
-        this.algorithm = new TestSpotBalanceCalcAlgorithm();
+        this.algorithm = new SpotBalanceCalcAlgorithm();
     }
 
     @Override
@@ -42,5 +44,9 @@ public class TestSpotBalanceProcessor extends SpotBalanceProcessor {
         System.out.println("Transferred to Futures: " + FuturesBalanceStateProcessor.calculateDepositDelta(periodRelevantEvents));
         System.out.println("Processor done for config: " + config);
         return balanceReport;
+    }
+    
+    private boolean inRange(LocalDateTime date, LocalDateTime rangeStart, LocalDateTime rangeEnd){
+        return date.compareTo(rangeStart) >= 0 && date.compareTo(rangeEnd) <= 0;
     }
 }
