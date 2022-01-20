@@ -53,6 +53,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
 				logBalanceUpdate(balanceEvent);
 				processBalanceUpdate(incomeState, balanceEvent, (AccountPositionUpdateEvent) nextEvent);
+				spotIncomeStates.add(incomeState);
 				continue;
 			}
 
@@ -289,8 +290,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		updateAssetsBalance(state, accEvent, baseAsset, dateTime);
 	}
 
-	private void updateAssetsBalance(SpotIncomeState state, OrderTradeUpdateEvent orderEvent,
-			AccountPositionUpdateEvent accEvent) {
+	private void updateAssetsBalance(SpotIncomeState state, OrderTradeUpdateEvent orderEvent, AccountPositionUpdateEvent accEvent) {
 		final String baseAsset = orderEvent.getBaseAsset();
 		final LocalDateTime dateTime = orderEvent.getDateTime();
 		updateAssetsBalance(state, accEvent, baseAsset, dateTime);
