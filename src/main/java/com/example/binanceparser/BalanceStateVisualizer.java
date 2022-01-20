@@ -47,8 +47,8 @@ public class BalanceStateVisualizer {
 //      addSubject(config, person, "SPOT_PRODUCER");
 
         final File logsDir = new File(config.getInputFilepath());
-        //final CSVEventSource logsEventSource = new CSVEventSource(logsDir, person);
-        final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
+        final CSVEventSource logsEventSource = new CSVEventSource(logsDir, person);
+//        final LogsEventSource logsEventSource = new LogsEventSource(logsDir, filters(config));
         SpotBalanceProcessor testProcessor = new SpotBalanceProcessor(logsEventSource, config);
         final BalanceReport testReport = testProcessor.process();
         System.out.println("Test report....");

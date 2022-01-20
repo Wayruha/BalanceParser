@@ -113,7 +113,7 @@ public class SpotIncomeStateTest {
         SpotIncomeState state;
         OrderTradeUpdateEvent orderEvent;
         AccountPositionUpdateEvent accEvent;
-      
+
         // selling 0.2 ETH for 3500 per 1
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(ETH + USDT).orderStatus("FILLED").side("SELL").price(num("3500"))
@@ -165,11 +165,11 @@ public class SpotIncomeStateTest {
         AccountPositionUpdateEvent accEvent;
 
         // withdrawing 0.1 BTC
+        state = new SpotIncomeState(
+                setOf(asset(VIRTUAL_USD, num("5400")), asset(ETH, num("0.2")), asset(BTC, num("0.1"))),
+                setOf(locked(ETH, num("0.1"), num("400")), locked(BTC, num("0.1"), num("5000"))), emptyList(), emptyList());
         balanceEvent = balanceUpdateEvent(BTC, num("-0.1"));
         accEvent = accountUpdateEvent(toEventAsset(asset(BTC, num("0.0"))));
-        state = new SpotIncomeState(
-                setOf(asset(VIRTUAL_USD, num("5400")), asset(BTC, num("0.1")), asset(ETH, num("0.2"))),
-                setOf(locked(ETH, num("0.1"), num("400")), locked(BTC, num("0.1"), num("5000"))), emptyList(), emptyList());
 
         calcAlgorithm.processBalanceUpdate(state, balanceEvent, accEvent);
         assertTrue(state.findLockedAsset(BTC).isEmpty());// asset balance, null because it was deleted after we withdrew all available amount
@@ -180,25 +180,18 @@ public class SpotIncomeStateTest {
         // withdrawing 0.05 ETH
         balanceEvent = balanceUpdateEvent(ETH, num("-0.05"));
         accEvent = accountUpdateEvent(toEventAsset(asset(ETH, num("0.15"))));
-        state = new SpotIncomeState(
-                setOf(asset(VIRTUAL_USD, num("400")), asset(ETH, num("0.2"))),
-                setOf(locked(ETH, num("0.1"), num("400"))), emptyList(), emptyList());
         calcAlgorithm.processBalanceUpdate(state, balanceEvent, accEvent);
-        assertTrue(state.findLockedAsset(ETH).isPresent());// asset balance, present because it was not withdrawed completely
-        assertEquals(num("0"), state.getTXs().get(0).getValueIncome());
+        assertTrue(state.findLockedAsset(ETH).isPresent());// asset balance, present because it was not withdrawn completely
+        assertEquals(num("0"), state.getTXs().get(1).getValueIncome());
         assertEquals(num("0.1"), state.findLockedAsset(ETH).get().getBalance());
         assertEquals(num("400"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
-        
+
         // withdrawing 0.15 ETH
         balanceEvent = balanceUpdateEvent(ETH, num("-0.15"));
         accEvent = accountUpdateEvent(toEventAsset(asset(ETH, num("0.0"))));
-        state = new SpotIncomeState(
-                setOf(asset(VIRTUAL_USD, num("400")), asset(ETH, num("0.15"))),
-                setOf(locked(ETH, num("0.1"), num("400"))), emptyList(), emptyList());
         calcAlgorithm.processBalanceUpdate(state, balanceEvent, accEvent);
-        assertTrue(state.findLockedAsset(ETH).isEmpty());// asset balance, empty because it was withdrawed completely
-        assertEquals(num("-400.0"), state.getTXs().get(0).getValueIncome());
-        assertTrue(state.findLockedAsset(ETH).isEmpty());//because withdrawed all amount
+        assertTrue(state.findLockedAsset(ETH).isEmpty()); //because withdrawed all amount
+        assertEquals(num("-400.0"), state.getTXs().get(2).getValueIncome());
         assertEquals(num("0"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
     }
 
@@ -240,71 +233,69 @@ public class SpotIncomeStateTest {
         assertEquals(btcBalanceAfter, state.findAssetOpt(BTC).get().getBalance());
         assertEquals(num("900"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
     }
-    
-    
+
     @Test
     public void shouldCorrectlyHandleConvert() {
-    	 OrderTradeUpdateEvent orderEvent;
-         AccountPositionUpdateEvent accEvent;
-         SpotIncomeState state;
-         
-         //transfering 0.1 ETH <-- 0.01 BTC
-         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
-                 .symbol(ETH + BTC).orderStatus("FILLED").side("TRANSFER").price(num("0.1"))
-                 .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("0.1")).commission(num("0"))
-                 .commissionAsset(BTC).build();
-         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.2"), num("0")), eventAsset(BTC, num("0.03"), num("0")));
-         state = new SpotIncomeState(
-                 setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.04")), asset(ETH, num("0.1")), asset(USDT, num("19100"))),
-                 setOf(locked(ETH, num("0.1"), num("400")), locked(BTC, num("0.03"), num("1500")), locked(USDT, num("19100"), num("19100"))), emptyList(),
-                 emptyList());
-         calcAlgorithm.processOrder(state, orderEvent, accEvent);
-         assertEquals(num("21000"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
-         assertEquals(num("0.2"), state.findLockedAsset(ETH).get().getBalance());//should be 0.2 but 0.3
-         assertEquals(num("0.02"), state.findLockedAsset(BTC).get().getBalance());
-         
-         //transfering 0.25 ETH<-- 0.025 BTC
-         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
-                 .symbol(ETH + BTC).orderStatus("FILLED").side("TRANSFER").price(num("0.1"))
-                 .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("0.25")).commission(num("0"))
-                 .commissionAsset(BTC).build();
-         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.45"), num("0")), eventAsset(BTC, num("0.005"), num("0")));
-         state = new SpotIncomeState(
-                 setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.03")), asset(ETH, num("0.2")), asset(USDT, num("19100"))),
-                 setOf(locked(ETH, num("0.2"), num("900")), locked(BTC, num("0.02"), num("1000")), locked(USDT, num("19100"), num("19100"))), emptyList(),
-                 emptyList());
-         calcAlgorithm.processOrder(state, orderEvent, accEvent);
-         assertEquals(num("21000"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
-         assertEquals(num("0.4"), state.findLockedAsset(ETH).get().getBalance());//should be 0.4 but 0.45 (only 0.02 BTC of 0.025 is legal)
-         assertTrue(state.findLockedAsset(BTC).isEmpty());//transfered all legal BTC to ETH
-         
-         //transfering 1 AXS <-- 0.005 BTC
-         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
-                 .symbol(AXS + BTC).orderStatus("FILLED").side("TRANSFER").price(num("0.005"))
-                 .priceOfLastFilledTrade(num("0.005")).originalQuantity(num("1")).commission(num("0"))
-                 .commissionAsset(BTC).build();
-         accEvent = accountUpdateEvent(eventAsset(BTC, num("0.0"), num("0")), eventAsset(AXS, num("1"), num("0")));
-         state = new SpotIncomeState(
-                 setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.005")), asset(ETH, num("0.45")), asset(USDT, num("19100"))),
-                 setOf(locked(ETH, num("0.4"), num("1900")), locked(USDT, num("19100"), num("19100"))), emptyList(),
-                 emptyList());
-         calcAlgorithm.processOrder(state, orderEvent, accEvent);
-         assertEquals(num("21000"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
-         assertTrue(state.findLockedAsset(AXS).isEmpty());//because was bought for illegal asset
-         
-         //transfering 1 BNB <-- 0.1 ETH
-         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
-                 .symbol(BNB + ETH).orderStatus("FILLED").side("TRANSFER").price(num("0.1"))
-                 .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("1")).commission(num("0"))
-                 .commissionAsset(ETH).build();
-         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.35"), num("0")), eventAsset(BNB, num("1"), num("0")));
-         state = new SpotIncomeState(
-                 setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.0")), asset(ETH, num("0.45")), asset(AXS, num("1")), asset(USDT, num("19100"))),
-                 setOf(locked(ETH, num("0.4"), num("1900")), locked(USDT, num("19100"), num("19100"))), emptyList(),
-                 emptyList());
-         calcAlgorithm.processOrder(state, orderEvent, accEvent);
-         assertEquals(num("1"), state.findLockedAsset(BNB).get().getBalance());
-         assertEquals(num("0.3"), state.findLockedAsset(ETH).get().getBalance());
+        OrderTradeUpdateEvent orderEvent;
+        AccountPositionUpdateEvent accEvent;
+        SpotIncomeState state;
+        //transfering 0.1 ETH <-- 0.01 BTC
+        //TODO просто поміняв місцями стейт і аккІвент. Ідея в тому що спочатку був певний баланс (стейт) а потім прийшов аккІвент з новими балансами монет
+        state = new SpotIncomeState(
+                setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.04")), asset(ETH, num("0.1")), asset(USDT, num("19100"))),
+                setOf(locked(ETH, num("0.1"), num("400")), locked(BTC, num("0.03"), num("1500")), locked(USDT, num("19100"), num("19100"))), emptyList(), emptyList());
+        orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).side("BUY").eventType(EventType.ORDER_TRADE_UPDATE)
+                .symbol(ETH + BTC).orderStatus("FILLED").side("TRANSFER").price(num("0.1"))
+                .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("0.1")).commission(num("0"))
+                .commissionAsset(BTC).build();
+        accEvent = accountUpdateEvent(eventAsset(ETH, num("0.2"), num("0")), eventAsset(BTC, num("0.03"), num("0")));
+
+        calcAlgorithm.processOrder(state, orderEvent, accEvent);
+        assertEquals(num("21000"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
+        assertEquals(num("0.2"), state.findAssetOpt(ETH).get().getBalance());
+        assertEquals(num("0.03"), state.findAssetOpt(BTC).get().getBalance());
+        assertEquals(num("0.2"), state.findLockedAsset(ETH).get().getBalance());// TODO should be 0.2 but 0.3
+        assertEquals(num("0.02"), state.findLockedAsset(BTC).get().getBalance());
+
+        //transfering 0.25 ETH<-- 0.025 BTC
+        state = new SpotIncomeState(
+                setOf(asset(VIRTUAL_USD, num("21000")), asset(ETH, num("0.2")), asset(BTC, num("0.03")), asset(USDT, num("19100"))),
+                setOf(locked(ETH, num("0.2"), num("900")), locked(BTC, num("0.02"), num("1000")), locked(USDT, num("19100"), num("19100"))), emptyList(), emptyList());
+        orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).side("BUY").eventType(EventType.ORDER_TRADE_UPDATE)
+                .symbol(ETH + BTC).orderStatus("FILLED").side("TRANSFER").price(num("0.1"))
+                .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("0.25")).commission(num("0"))
+                .commissionAsset(BTC).build();
+        accEvent = accountUpdateEvent(eventAsset(ETH, num("0.45"), num("0")), eventAsset(BTC, num("0.005"), num("0")));
+        calcAlgorithm.processOrder(state, orderEvent, accEvent);
+        assertEquals(num("21000"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
+        assertEquals(num("0.4"), state.findLockedAsset(ETH).get().getBalance());//should be 0.4 but 0.45 (only 0.02 BTC of 0.025 is legal)
+        assertTrue(state.findLockedAsset(BTC).isEmpty());//transfered all legal BTC to ETH
+
+        //transfering 1 AXS <-- 0.005 BTC
+        state = new SpotIncomeState(
+                setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.005")), asset(ETH, num("0.45")), asset(USDT, num("19100"))),
+                setOf(locked(ETH, num("0.4"), num("1900")), locked(USDT, num("19100"), num("19100"))), emptyList(), emptyList());
+        orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).side("BUY").eventType(EventType.ORDER_TRADE_UPDATE)
+                .symbol(AXS + BTC).orderStatus("FILLED").side("TRANSFER").price(num("0.005"))
+                .priceOfLastFilledTrade(num("0.005")).originalQuantity(num("1")).commission(num("0"))
+                .commissionAsset(BTC).build();
+        accEvent = accountUpdateEvent(eventAsset(BTC, num("0.0"), num("0")), eventAsset(AXS, num("1"), num("0")));
+        calcAlgorithm.processOrder(state, orderEvent, accEvent);
+        assertEquals(num("21000"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
+        assertTrue(state.findLockedAsset(AXS).isEmpty());//because was bought for illegal asset
+
+        //transfering 1 BNB <-- 0.1 ETH
+        state = new SpotIncomeState(
+                setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.0")), asset(ETH, num("0.45")), asset(AXS, num("1")), asset(USDT, num("19100"))),
+                setOf(locked(ETH, num("0.4"), num("1900")), locked(USDT, num("19100"), num("19100"))), emptyList(), emptyList());
+        orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
+                .symbol(BNB + ETH).orderStatus("FILLED").side("TRANSFER").price(num("0.1"))
+                .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("1")).commission(num("0"))
+                .commissionAsset(ETH).build();
+        accEvent = accountUpdateEvent(eventAsset(ETH, num("0.35"), num("0")), eventAsset(BNB, num("1"), num("0")));
+        calcAlgorithm.processOrder(state, orderEvent, accEvent);
+        assertEquals(num("1"), state.findLockedAsset(BNB).get().getBalance());
+        assertEquals(num("0.3"), state.findLockedAsset(ETH).get().getBalance());
     }
 
     private static BalanceUpdateEvent balanceUpdateEvent(String asset, BigDecimal assetDelta) {

@@ -93,6 +93,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		state.findAssetOpt(VIRTUAL_USD).get().setBalance(state.calculateVirtualUSDBalance());
 	}
 
+	//TODO залежить ще від order.side=BUY | SELL
 	/**
 	 * Цей метод враховує тільки "легальну" частину ассета за який ми щось купляємо.
 	 * Віповідно, ми додаємо в lockAssets тільки ту частину купленої монети
@@ -140,8 +141,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		state.getTXs().add(TransactionX.convertTx(base, quote));
 	}
 
-	// TODO ми платимо комісію за операцію, мабуть потрібно тут її вказувати в
-	// income
+	// TODO ми платимо комісію за операцію, мабуть потрібно тут її вказувати в income
 	/**
 	 * просто збільшуємо баланс/stableValue LockedAsset'у якщо він вже існує.
 	 */
@@ -172,13 +172,11 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 	}
 
 	/**
-	 * if baseQty > lockedQty then we calculate the profit using only part of
-	 * baseAsset (since other part comes from unknown source
-	 * quoteAssetEarnedWithValuableFunds = quoteAssetQty * (lockedQty / baseQty)
+	 * if baseQty > lockedQty then we calculate the profit using only part of baseAsset
+	 * (since another part comes from unknown source quoteAssetEarnedWithValuableFunds = quoteAssetQty * (lockedQty / baseQty)
 	 * lockedQty.balance -= baseQtyCapped (locked part of asset)
 	 * lockedQty.stableValue -= {proportionally to balance change in prev. line}
-	 * income = {what we can got selling 'valuable' asset - stableValue of that
-	 * asset}
+	 * income = {what we got selling 'valuable' asset - stableValue of that asset}
 	 */
 	private void handleSell(SpotIncomeState state, OrderTradeUpdateEvent orderEvent,
 			AccountPositionUpdateEvent accEvent) {
@@ -199,8 +197,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 					MATH_CONTEXT);
 		}
 
-		// if there is no locked (or 'valuable') qty then user does not profit from such
-		// operation
+		// if there is no locked (or 'valuable') qty then user does not profit from such operation
 		if (baseAssetLocked.isPresent()) {
 			final LockedAsset locked = baseAssetLocked.get();
 			final BigDecimal stableValueBefore = locked.getStableValue();
@@ -217,9 +214,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.fullBalance(baseAsset.getBalance())
 				.valuableBalance(baseAssetLocked.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(baseAssetLocked.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-		final BigDecimal quoteAssetBalance = quoteAsset.map(Asset::getBalance).orElse(ZERO); // quoteAsset is always
-																								// stablecoin in this
-																								// method
+		final BigDecimal quoteAssetBalance = quoteAsset.map(Asset::getBalance).orElse(ZERO); // quoteAsset is always stablecoin
+
 		TransactionX.Asset2 quote = TransactionX.Asset2.builder().assetName(quoteAssetName).txQty(quoteAssetQty)
 				.fullBalance(quoteAssetBalance).valuableBalance(quoteAssetBalance).stableValue(quoteAssetBalance)
 				.build();
@@ -251,8 +247,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		final BigDecimal qty = balanceEvent.getBalanceDelta().abs();
 		final Optional<Asset> assetOpt = state.findAssetOpt(assetName);
 		
-		// updateAssetsBalance(state, balanceEvent, accEvent);
-		/**примечание для себя
+		/* примечание для себя
 		 * сейчас если апдейт происходит в 282 строке, то получается, что если мы
 		 * попытаемся вывести монету и ДО этого у нас не было с ней операцийб то ее не
 		 * будет в списке карентАссетс, а если обновить в 254 строке, то мы вытянем уже
@@ -260,35 +255,28 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		 * иногда вылeтает NoSuchElement
 		 */
 
-		Asset existingAsset;
-		Optional<LockedAsset> optLocked;
+		Optional<LockedAsset> optLocked = state.findLockedAsset(assetName);;
 		BigDecimal stableValueDiff = ZERO;
-		
-		//when we try to withdraw asset we have worked with before (if not, assetOpt is empty) 
+		//when we try to withdraw asset we have worked with before (if not, assetOpt is empty)
 		if(assetOpt.isPresent()) {
-			existingAsset = state.findAssetOpt(assetName).get(); // not null because we CAN withdraw it
-			optLocked = state.findLockedAsset(assetName);
-
+			final Asset existingAsset = state.findAssetOpt(assetName).get();
 			final BigDecimal valuableAssetBalance = optLocked.map(Asset::getBalance).orElse(ZERO);
-			//final BigDecimal nonValuableAssetBalance = existingAsset.getBalance().subtract(valuableAssetBalance);
-			// final BigDecimal withdrawValuableQty = qty.subtract(nonValuableAssetBalance).max(ZERO);
-			final BigDecimal withdrawValuableQty = qty.min(valuableAssetBalance);
+			final BigDecimal nonValuableAssetBalance = existingAsset.getBalance().subtract(valuableAssetBalance);
+			// first, we withdraw as much nonValuable asset as possible and only then withdraw with valuable part
+			final BigDecimal withdrawValuableQty = qty.subtract(nonValuableAssetBalance).max(ZERO);
 
 			if (optLocked.isPresent()) {
-				final BigDecimal stableValueBefore = optLocked.map(LockedAsset::getStableValue).orElse(ZERO);
 				final LockedAsset locked = optLocked.get();
+				final BigDecimal stableValueBefore = locked.getStableValue();
 				locked.deductBalance(withdrawValuableQty);
 				stableValueDiff = locked.getStableValue().subtract(stableValueBefore);
 			}
 		}
 		
 		updateAssetsBalance(state, balanceEvent, accEvent);
-
-		existingAsset = state.findAssetOpt(assetName).get();
 		optLocked = state.findLockedAsset(assetName);
-
 		TransactionX.Asset2 txAsset = TransactionX.Asset2.builder().assetName(assetName).txQty(qty)
-				.fullBalance(existingAsset.getBalance())
+				.fullBalance(state.findAssetOpt(assetName).map(Asset::getBalance).orElse(ZERO))
 				.valuableBalance(optLocked.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(optLocked.map(LockedAsset::getStableValue).orElse(ZERO)).build();
 		state.getTXs().add(TransactionX.withdrawTx(txAsset, stableValueDiff));

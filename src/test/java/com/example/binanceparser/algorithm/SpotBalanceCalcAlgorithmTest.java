@@ -132,6 +132,8 @@ public class SpotBalanceCalcAlgorithmTest {
 	public void shouldReturnCorrectBalanceStatesForAllAssets() throws SecurityException, IllegalArgumentException {
 		SpotBalanceCalcAlgorithm alg = new SpotBalanceCalcAlgorithm();
 		List<SpotIncomeState> acceptedBSlist = alg.processEvents(aelist);
+		//TODO краще вручну пройтися і порівняти параметри. наприклад bsList[0]=accepted[0] і т.д.
+		// якщо щось зафейлиться, то у нас буде строка яка зафейлилася і відразу буде видно на якому етапі проблема
 		assertIterableEquals(bsList, acceptedBSlist);
 	}
 }
