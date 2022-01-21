@@ -26,7 +26,9 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class ChartBuilder<T extends BalanceState> {
@@ -99,10 +101,8 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	}
 
 	protected boolean anyTransfer(List<TransactionX> transactions) {
-		return transactions.stream()
-				.filter((transaction) -> transaction.getType().equals(TransactionType.DEPOSIT)
-						|| transaction.getType().equals(TransactionType.WITHDRAW))
-				.anyMatch((transaction) -> {
+		return transactions.stream().filter((transaction) -> transaction.getType().equals(TransactionType.DEPOSIT)
+				|| transaction.getType().equals(TransactionType.WITHDRAW)).anyMatch((transaction) -> {
 					final TransactionX.Update tx = (TransactionX.Update) transaction;
 					final TransactionX.Asset2 asset = tx.getAsset();
 					return isTransfer(asset.getAssetName(), transaction);
@@ -111,11 +111,13 @@ public abstract class ChartBuilder<T extends BalanceState> {
 
 	private List<TransactionX> getAllTransactionsToProcess(List<TransactionX> transactions) {
 		return transactions.stream().filter((transaction) -> {
+			if(!transaction.getType().equals(TransactionType.SELL)) {
+				return false;
+			}
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
 			final TransactionX.Asset2 asset = tx.getQuoteAsset();
 
-			return transaction.getType().equals(TransactionType.SELL)
-					&& transaction.getValueIncome().compareTo(asset.getTxQty()) < 0;
+			return transaction.getValueIncome().compareTo(asset.getTxQty()) < 0;
 		}).collect(Collectors.toList());
 	}
 
@@ -135,15 +137,30 @@ public abstract class ChartBuilder<T extends BalanceState> {
 				milsToLocaldateLime(finish.getLastMillisecond()));
 	}
 
-	protected Asset getAssetToProcess(String trackedAsset, List<TransactionX> transactions) {
-		// overall unlocked amount
-		BigDecimal val = BigDecimal.ZERO;
+	protected List<Asset> getAssetsToProcess(String trackedAsset, List<TransactionX> transactions) {
+		Map<String, Asset> assetsToProcess = new HashMap<>();
 		for (TransactionX transaction : getTransactionsToProcess(trackedAsset, transactions)) {
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
 			final TransactionX.Asset2 asset = tx.getQuoteAsset();
-			val = val.add(asset.getTxQty()).subtract(transaction.getValueIncome());
+			if (!assetsToProcess.containsKey(asset.getAssetName())) {
+				assetsToProcess.put(asset.getAssetName(), new Asset(asset.getAssetName(), BigDecimal.ZERO));
+			}
+			Asset assetToProcess = assetsToProcess.get(asset.getAssetName());
+			assetToProcess.setBalance(
+					assetToProcess.getBalance().add(asset.getTxQty()).subtract(transaction.getValueIncome()));
 		}
-		return new Asset(VIRTUAL_USD, val);
+		return new ArrayList<>(assetsToProcess.values());
+	}
+
+	protected void updateSpecialAndWithdrawPoints(int row, int insertedItem) {
+		withdrawPoints.stream().filter((point) -> point.getRow() == row && point.item >= insertedItem)
+				.forEach((point) -> {
+					point.setItem(point.getItem() + 1);
+				});
+		specialPoints.stream().filter((point) -> point.getRow() == row && point.item >= insertedItem)
+				.forEach((point) -> {
+					point.setItem(point.getItem() + 1);
+				});
 	}
 
 	private LocalDateTime milsToLocaldateLime(long val) {

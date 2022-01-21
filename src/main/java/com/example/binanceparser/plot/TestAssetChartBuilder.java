@@ -17,18 +17,21 @@ import com.example.binanceparser.domain.SpotIncomeState;
 import static com.example.binanceparser.Constants.*;
 
 public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
+	TimeSeriesCollection dataSeries;
+
 	public TestAssetChartBuilder(List<String> assetsToTrack) {
 		super(assetsToTrack);
+		dataSeries = new TimeSeriesCollection();
 	}
 
 	public TestAssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
 		super(assetsToTrack, config);
+		dataSeries = new TimeSeriesCollection();
 	}
 
 	@Override
 	public JFreeChart buildLineChart(List<SpotIncomeState> incomeStates) {
-		TimeSeriesCollection dataSeries = new TimeSeriesCollection();
-		getTimeSeriesForEveryAsset(incomeStates).forEach(dataSeries::addSeries);
+		addSeriesForEveryAsset(incomeStates);
 		JFreeChart chart = ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", dataSeries);
 		if (config.isDrawPoints()) {
 			chart.getXYPlot().setRenderer(getRenderer());
@@ -36,51 +39,53 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 		return chart;
 	}
 
-	private List<TimeSeries> getTimeSeriesForEveryAsset(List<SpotIncomeState> incomeStates) {
-		List<TimeSeries> timeSeriesList = new ArrayList<>();
+	private void addSeriesForEveryAsset(List<SpotIncomeState> incomeStates) {
 		if (incomeStates.size() != 0) {
 			final List<String> assetsToTrack = listAssetsInvolved(incomeStates.get(incomeStates.size() - 1));
+			assetsToTrack.stream().forEach((assetTotrack) -> {
+				dataSeries.addSeries(new TimeSeries(assetTotrack + " balance (USD)"));
+			});
 			for (int n = 0; n < assetsToTrack.size(); n++) {
-				timeSeriesList.add(createTimeSeries(incomeStates, assetsToTrack.get(n), n));
+				fillTimeSeries(incomeStates, assetsToTrack.get(n), n);
 			}
 		}
-		return timeSeriesList;
 	}
 
-	private TimeSeries createTimeSeries(List<SpotIncomeState> incomeStates, String trackedAsset, int row) {
-		final TimeSeries series = new TimeSeries(trackedAsset + " balance (USD)");
+	private void fillTimeSeries(List<SpotIncomeState> incomeStates, String trackedAsset, int row) {
+		final TimeSeries series = dataSeries.getSeries(trackedAsset+ " balance (USD)");
 		int pointsNumber = 0;
 		Second previousSecValue = null;
 		for (int n = 0; n < incomeStates.size(); n++) {
 			SpotIncomeState incomeState = incomeStates.get(n);
 			LocalDateTime currentDateTime = incomeState.getDateTime();
 			Second currentSecValue = dateTimeToSecond(currentDateTime);
-			BigDecimal unlockedAmount = getUnlockedAmount(trackedAsset, incomeState.getTXs());
+			List<Asset> assetsToProcess = getAssetsToProcess(trackedAsset, incomeState.getTXs());
 			// if withdraw or deposit
 			if (isWithdrawOrDeposit(trackedAsset, incomeState)) {
 				withdrawPoints.add(new Point(row, pointsNumber));
-			} else if (unlockedAmount.compareTo(BigDecimal.ZERO) > 0) {
-				// if sell contains unlocked asset
-				// creating point counting only locked part
-				BigDecimal wholeAmount = incomeState.calculateVirtualUSDBalance(trackedAsset);
-				BigDecimal lockedAmount = wholeAmount.subtract(unlockedAmount);
-				//this throws ArithmeticException /0, wholeAmount should not be 0
-				BigDecimal coeff = unlockedAmount.divide(wholeAmount, MATH_CONTEXT);
-				intermediatePoints.add(new Point(row, pointsNumber));
-				LocalDateTime intermTime = currentDateTime.minusSeconds(
-						secondsBetween(previousSecValue == null ? currentSecValue : previousSecValue, currentSecValue)
-								* coeff.intValue());
-				series.addOrUpdate(dateTimeToSecond(intermTime), lockedAmount);
-				// creating point counting unlocked part
-				specialPoints.add(new Point(row, pointsNumber + 1));
+			} else if (assetsToProcess.size() != 0) {
+				for (Asset asset : assetsToProcess) {
+					BigDecimal wholeAmount = incomeState.calculateVirtualUSDBalance(trackedAsset);
+					BigDecimal lockedAmount = wholeAmount.subtract(asset.getBalance());
+					BigDecimal coeff = asset.getBalance().divide(wholeAmount, MATH_CONTEXT);
+					long secondsBetween = secondsBetween(previousSecValue == null ? currentSecValue : previousSecValue,
+							currentSecValue);
+					LocalDateTime intermTime = currentDateTime
+							.minusSeconds(secondsBetween * coeff.intValue());
+					TimeSeries stableCoinSeries = dataSeries.getSeries(asset.getAsset()+ " balance (USD)");
+					stableCoinSeries.addOrUpdate(dateTimeToSecond(intermTime), lockedAmount);
+					int seriesId = dataSeries.getSeriesIndex(asset.getAsset()+ " balance (USD)");
+					int intermediateIndex = stableCoinSeries.getIndex(dateTimeToSecond(intermTime));
+					updateSpecialAndWithdrawPoints(seriesId, intermediateIndex);
+					intermediatePoints.add(new Point(seriesId, intermediateIndex));
+					specialPoints.add(new Point(seriesId, intermediateIndex + 1));
+				}
 			}
 
-			pointsNumber++;
 			series.addOrUpdate(currentSecValue, incomeState.calculateVirtualUSDBalance(trackedAsset));
-
 			previousSecValue = dateTimeToSecond(incomeState.getDateTime());
+			pointsNumber++;
 		}
-		return series;
 	}
 
 	private boolean isWithdrawOrDeposit(String trackedAsset, SpotIncomeState incomeState) {
