@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.management.RuntimeErrorException;
 
@@ -32,7 +33,7 @@ public class BalanceStateVisualizer {
 		appProperties.load(new FileReader("src/main/resources/application.properties"));
 		BalanceStateVisualizer app = new BalanceStateVisualizer();
 		final String person = appProperties.getProperty("config.person");
-		//app.futuresStateChangeFromLogs(person);
+		// app.futuresStateChangeFromLogs(person);
 		app.spotStateChangeFromLogs(person);
 	}
 
@@ -71,8 +72,8 @@ public class BalanceStateVisualizer {
 		config.setInputFilepath(inputPath);
 		config.setOutputDir(outputPath);
 		// config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
-		config.setAssetsToTrack(Collections.emptyList());
-		config.setConvertToUSD(false);
+		config.setAssetsToTrack(assetsToTrack());
+		config.setConvertToUSD(true);
 		return config;
 	}
 
@@ -98,17 +99,23 @@ public class BalanceStateVisualizer {
 	}
 
 	private EventSource<AbstractEvent> getEventSource(BalanceVisualizerConfig config) {
-    	String eventSourceType = appProperties.getProperty("config.event_source_type");
-    	String person = appProperties.getProperty("config.person");
-    	final File logsDir = new File(config.getInputFilepath());
-    	EventSource<AbstractEvent> eventSource;
-    	if(eventSourceType.equalsIgnoreCase("logs")) {
-    		eventSource = new LogsEventSource(logsDir, filters(config));
-    	} else if(eventSourceType.equalsIgnoreCase("csv")) {
-    		eventSource = new CSVEventSource(logsDir, person);
-    	} else {
-    		throw new RuntimeException("unknown event source type specified");
-    	}
-    	return eventSource;
-    }
+		String eventSourceType = appProperties.getProperty("config.event_source_type");
+		String person = appProperties.getProperty("config.person");
+		final File logsDir = new File(config.getInputFilepath());
+		EventSource<AbstractEvent> eventSource;
+		if (eventSourceType.equalsIgnoreCase("logs")) {
+			eventSource = new LogsEventSource(logsDir, filters(config));
+		} else if (eventSourceType.equalsIgnoreCase("csv")) {
+			eventSource = new CSVEventSource(logsDir, person);
+		} else {
+			throw new RuntimeException("unknown event source type specified");
+		}
+		return eventSource;
+	}
+
+	private static List<String> assetsToTrack() {
+		List<String> assetsToTrack = Arrays.asList(appProperties.getProperty("config.assets_to_track").split(","));
+		assetsToTrack = assetsToTrack.stream().map(String::trim).collect(Collectors.toList());
+		return assetsToTrack;
+	}
 }

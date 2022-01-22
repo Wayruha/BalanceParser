@@ -126,14 +126,87 @@ public class SpotBalanceCalcAlgorithmTest {
 		bsList.add(incomeState);
 		aelist.add(orderEvent);
 		aelist.add(accEvent);
+		// buying 0.001 BTC with price 45000
+		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
+				.symbol(BTC + USDT).orderStatus("FILLED").side("SELL").price(new BigDecimal("45000"))
+				.priceOfLastFilledTrade(new BigDecimal("45000")).originalQuantity(new BigDecimal("0.001"))
+				.commission(new BigDecimal("1")).commissionAsset(USDT).build();
+		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
+				.balances(List.of(
+						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.0015"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(USDT, new BigDecimal("318"), new BigDecimal("0"))))
+				.build();
+		incomeState = new SpotIncomeState(dateTime, incomeState);
+		calcAlgorithm.processOrder(incomeState, orderEvent, accEvent);
+		bsList.add(incomeState);
+		aelist.add(orderEvent);
+		aelist.add(accEvent);
+		// transfering 0.003 ETH <-- 0.0003 BTC
+		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
+				.symbol(ETH + BTC).orderStatus("FILLED").side("TRANSFER").price(new BigDecimal("0.1"))
+				.priceOfLastFilledTrade(new BigDecimal("0.1")).originalQuantity(new BigDecimal("0.003"))
+				.commission(new BigDecimal("0.00001")).commissionAsset(BTC).build();
+		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
+				.balances(List.of(
+						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.00119"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(ETH, new BigDecimal("0.103"), new BigDecimal("0"))))
+				.build();
+		incomeState = new SpotIncomeState(dateTime, incomeState);
+		calcAlgorithm.processOrder(incomeState, orderEvent, accEvent);
+		bsList.add(incomeState);
+		aelist.add(orderEvent);
+		aelist.add(accEvent);
+		// transfering 0.1 BNB <-- 0.001 ETH
+		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
+				.symbol(BNB + ETH).orderStatus("FILLED").side("TRANSFER").price(new BigDecimal("0.01"))
+				.priceOfLastFilledTrade(new BigDecimal("0.01")).originalQuantity(new BigDecimal("0.1"))
+				.commission(new BigDecimal("0.0001")).commissionAsset(BTC).build();
+		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
+				.balances(List.of(new AccountPositionUpdateEvent.Asset(BNB, new BigDecimal("0.1"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(ETH, new BigDecimal("0.1019"), new BigDecimal("0"))))
+				.build();
+		incomeState = new SpotIncomeState(dateTime, incomeState);
+		calcAlgorithm.processOrder(incomeState, orderEvent, accEvent);
+		bsList.add(incomeState);
+		aelist.add(orderEvent);
+		aelist.add(accEvent);
+		// withdrawing 0.0009 ETH
+		balanceEvent = BalanceUpdateEvent.builder().dateTime(dateTime).eventType(EventType.BALANCE_UPDATE).balances(ETH)
+				.balanceDelta(new BigDecimal("-0.0009")).build();
+		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
+				.balances(List
+						.of(new AccountPositionUpdateEvent.Asset(ETH, new BigDecimal("0.101"), new BigDecimal("0"))))
+				.build();
+		incomeState = new SpotIncomeState(dateTime, incomeState);
+		calcAlgorithm.processBalanceUpdate(incomeState, balanceEvent, accEvent);
+		bsList.add(incomeState);
+		aelist.add(balanceEvent);
+		aelist.add(accEvent);
+		// selling 0.00119 BTC with price 50000
+		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
+				.symbol(BTC + USDT).orderStatus("FILLED").side("SELL").price(new BigDecimal("50000"))
+				.priceOfLastFilledTrade(new BigDecimal("50000")).originalQuantity(new BigDecimal("0.00119"))
+				.commission(new BigDecimal("1.5")).commissionAsset(USDT).build();
+		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
+				.balances(List.of(
+						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(USDT, new BigDecimal("376"), new BigDecimal("0"))))
+				.build();
+		incomeState = new SpotIncomeState(dateTime, incomeState);
+		calcAlgorithm.processOrder(incomeState, orderEvent, accEvent);
+		bsList.add(incomeState);
+		aelist.add(orderEvent);
+		aelist.add(accEvent);
 	}
 
 	@Test
 	public void shouldReturnCorrectBalanceStatesForAllAssets() throws SecurityException, IllegalArgumentException {
 		SpotBalanceCalcAlgorithm alg = new SpotBalanceCalcAlgorithm();
 		List<SpotIncomeState> acceptedBSlist = alg.processEvents(aelist);
-		//TODO краще вручну пройтися і порівняти параметри. наприклад bsList[0]=accepted[0] і т.д.
-		// якщо щось зафейлиться, то у нас буде строка яка зафейлилася і відразу буде видно на якому етапі проблема
+		// TODO краще вручну пройтися і порівняти параметри. наприклад
+		// bsList[0]=accepted[0] і т.д.
+		// якщо щось зафейлиться, то у нас буде строка яка зафейлилася і відразу буде
+		// видно на якому етапі проблема
 		assertIterableEquals(bsList, acceptedBSlist);
 	}
 }

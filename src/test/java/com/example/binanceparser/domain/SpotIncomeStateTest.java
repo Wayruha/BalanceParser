@@ -240,7 +240,6 @@ public class SpotIncomeStateTest {
         AccountPositionUpdateEvent accEvent;
         SpotIncomeState state;
         //transfering 0.1 ETH <-- 0.01 BTC
-        //TODO просто поміняв місцями стейт і аккІвент. Ідея в тому що спочатку був певний баланс (стейт) а потім прийшов аккІвент з новими балансами монет
         state = new SpotIncomeState(
                 setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.04")), asset(ETH, num("0.1")), asset(USDT, num("19100"))),
                 setOf(locked(ETH, num("0.1"), num("400")), locked(BTC, num("0.03"), num("1500")), locked(USDT, num("19100"), num("19100"))), emptyList(), emptyList());
