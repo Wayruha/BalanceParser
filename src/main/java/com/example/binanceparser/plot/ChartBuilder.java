@@ -111,7 +111,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 
 	private List<TransactionX> getAllTransactionsToProcess(List<TransactionX> transactions) {
 		return transactions.stream().filter((transaction) -> {
-			if(!transaction.getType().equals(TransactionType.SELL)) {
+			if (!transaction.getType().equals(TransactionType.SELL)) {
 				return false;
 			}
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
@@ -142,12 +142,14 @@ public abstract class ChartBuilder<T extends BalanceState> {
 		for (TransactionX transaction : getTransactionsToProcess(trackedAsset, transactions)) {
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
 			final TransactionX.Asset2 asset = tx.getQuoteAsset();
-			if (!assetsToProcess.containsKey(asset.getAssetName())) {
-				assetsToProcess.put(asset.getAssetName(), new Asset(asset.getAssetName(), BigDecimal.ZERO));
+			String assetName = trackedAsset.equals(VIRTUAL_USD) ? VIRTUAL_USD : asset.getAssetName();
+			if (!assetsToProcess.containsKey(assetName)) {
+				assetsToProcess.put(assetName, new Asset(assetName, BigDecimal.ZERO));
 			}
-			Asset assetToProcess = assetsToProcess.get(asset.getAssetName());
-			assetToProcess.setBalance(
-					assetToProcess.getBalance().add(asset.getTxQty()).subtract(transaction.getValueIncome()));
+			Asset assetToProcess = assetsToProcess.get(assetName);
+			BigDecimal nonValuableBalance = assetToProcess.getBalance().add(asset.getTxQty())
+					.subtract(transaction.getValueIncome());
+			assetToProcess.setBalance(nonValuableBalance);
 		}
 		return new ArrayList<>(assetsToProcess.values());
 	}
@@ -180,11 +182,11 @@ public abstract class ChartBuilder<T extends BalanceState> {
 
 		@Override
 		public Paint getItemPaint(int row, int item) {
-			if (isWithdraw(row, item)) {
-				return config.getWithdrawColor();
-			}
 			if (isSpecialPoint(row, item)) {
 				return config.getSpetialPointColor();
+			}
+			if (isWithdraw(row, item)) {
+				return config.getWithdrawColor();
 			}
 			return super.getItemPaint(row, item);
 		}
