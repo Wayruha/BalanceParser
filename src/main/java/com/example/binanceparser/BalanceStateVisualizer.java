@@ -47,11 +47,9 @@ public class BalanceStateVisualizer {
 
 	public void spotStateChangeFromLogs() throws IOException {
 		final BalanceVisualizerConfig config = configure();
-		config.setAssetsToTrack(List.of(VIRTUAL_USD));
 		addSubject(config, appProperties.getTrackedPerson(), appProperties.getSpotAccountPrefix());
 		final EventSource<AbstractEvent> eventSource = getEventSource(config);
 		final SpotBalanceProcessor testProcessor = new SpotBalanceProcessor(eventSource, config);
-
 		final BalanceReport testReport = testProcessor.process();
 		System.out.println("Test report....");
 		System.out.println(testReport.toPrettyString());
@@ -68,7 +66,7 @@ public class BalanceStateVisualizer {
 		config.setInputFilepath(inputPath);
 		config.setOutputDir(outputPath);
 		// config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
-		config.setAssetsToTrack(Collections.emptyList());
+		config.setAssetsToTrack(appProperties.getAssetsToTrack());
 		config.setConvertToUSD(true);
 		return config;
 	}
