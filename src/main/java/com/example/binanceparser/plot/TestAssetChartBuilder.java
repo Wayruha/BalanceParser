@@ -13,30 +13,19 @@ import org.jfree.data.time.TimeSeriesCollection;
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.SpotIncomeState;
-import com.example.binanceparser.plot.ChartBuilder.Point;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import static com.example.binanceparser.Constants.*;
 
 public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
-	private TimeSeriesCollection dataSeries;
-	protected List<PointTime> sp;
-	protected List<PointTime> ip;
+	TimeSeriesCollection dataSeries;
 
 	public TestAssetChartBuilder(List<String> assetsToTrack) {
 		super(assetsToTrack);
-		sp = new ArrayList<>();
-		ip = new ArrayList<>();
 		dataSeries = new TimeSeriesCollection();
 	}
 
 	public TestAssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
 		super(assetsToTrack, config);
-		sp = new ArrayList<>();
-		ip = new ArrayList<>();
 		dataSeries = new TimeSeriesCollection();
 	}
 
@@ -53,18 +42,17 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 	private void addSeriesForEveryAsset(List<SpotIncomeState> incomeStates) {
 		if (incomeStates.size() != 0) {
 			final List<String> assetsToTrack = listAssetsInvolved(incomeStates.get(incomeStates.size() - 1));
-			assetsToTrack.stream().forEach((assetTotrack) -> {
-				dataSeries.addSeries(new TimeSeries(assetTotrack + " balance (USD)"));
+			assetsToTrack.forEach(assetToTrack -> {
+				dataSeries.addSeries(new TimeSeries(assetToTrack + " balance (USD)"));
 			});
 			for (int n = 0; n < assetsToTrack.size(); n++) {
 				fillTimeSeries(incomeStates, assetsToTrack.get(n), n);
 			}
-			pointTimeToPoint();
 		}
 	}
 
 	private void fillTimeSeries(List<SpotIncomeState> incomeStates, String trackedAsset, int row) {
-		final TimeSeries series = dataSeries.getSeries(trackedAsset + " balance (USD)");
+		final TimeSeries series = dataSeries.getSeries(trackedAsset+ " balance (USD)");
 		int pointsNumber = 0;
 		Second previousSecValue = null;
 		for (int n = 0; n < incomeStates.size(); n++) {
@@ -77,23 +65,20 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 				withdrawPoints.add(new Point(row, pointsNumber));
 			} else if (assetsToProcess.size() != 0) {
 				for (Asset asset : assetsToProcess) {
-					BigDecimal wholeAmount = incomeState.calculateVirtualUSDBalance(asset.getAsset());
+					BigDecimal wholeAmount = incomeState.calculateVirtualUSDBalance(trackedAsset);
 					BigDecimal lockedAmount = wholeAmount.subtract(asset.getBalance());
 					BigDecimal coeff = asset.getBalance().divide(wholeAmount, MATH_CONTEXT);
 					long secondsBetween = secondsBetween(previousSecValue == null ? currentSecValue : previousSecValue,
 							currentSecValue);
 					LocalDateTime intermTime = currentDateTime
-							.minusSeconds((int) (secondsBetween * coeff.doubleValue()));
-					TimeSeries stableCoinSeries = dataSeries.getSeries(asset.getAsset() + " balance (USD)");
+							.minusSeconds(secondsBetween * coeff.intValue());
+					TimeSeries stableCoinSeries = dataSeries.getSeries(asset.getAsset()+ " balance (USD)");
 					stableCoinSeries.addOrUpdate(dateTimeToSecond(intermTime), lockedAmount);
-					// int seriesId = dataSeries.getSeriesIndex(asset.getAsset()+ " balance (USD)");
-					// int intermediateIndex =
-					// stableCoinSeries.getIndex(dateTimeToSecond(intermTime));
-					// updateSpecialAndWithdrawPoints(seriesId, intermediateIndex);
-					ip.add(new PointTime(asset.getAsset() + " balance (USD)", intermTime));
-					sp.add(new PointTime(asset.getAsset() + " balance (USD)", currentDateTime));
-					// intermediatePoints.add(new Point(seriesId, intermediateIndex));
-					// specialPoints.add(new Point(seriesId, intermediateIndex + 1));
+					int seriesId = dataSeries.getSeriesIndex(asset.getAsset()+ " balance (USD)");
+					int intermediateIndex = stableCoinSeries.getIndex(dateTimeToSecond(intermTime));
+					updateSpecialAndWithdrawPoints(seriesId, intermediateIndex);
+					intermediatePoints.add(new Point(seriesId, intermediateIndex));
+					specialPoints.add(new Point(seriesId, intermediateIndex + 1));
 				}
 			}
 
@@ -110,31 +95,7 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 
 	private List<String> listAssetsInvolved(SpotIncomeState lastIncomeState) {
 		return assetsToTrack.isEmpty()
-				? new ArrayList<>(
-						lastIncomeState.getCurrentAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
+				? lastIncomeState.getCurrentAssets().stream().map(Asset::getAsset).collect(Collectors.toList())
 				: assetsToTrack;
-	}
-
-	private void pointTimeToPoint() {
-		sp.stream().forEach((pt) -> {
-			TimeSeries stableCoinSeries = dataSeries.getSeries(pt.name);
-			int row = dataSeries.getSeriesIndex(pt.name);
-			int item = stableCoinSeries.getIndex(dateTimeToSecond(pt.getTime()));
-			specialPoints.add(new Point(row, item));
-		});
-		ip.stream().forEach((pt) -> {
-			TimeSeries stableCoinSeries = dataSeries.getSeries(pt.name);
-			int row = dataSeries.getSeriesIndex(pt.name);
-			int item = stableCoinSeries.getIndex(dateTimeToSecond(pt.getTime()));
-			intermediatePoints.add(new Point(row, item));
-		});
-	}
-
-	@Data
-	@NoArgsConstructor
-	@AllArgsConstructor
-	class PointTime {
-		private String name;
-		private LocalDateTime time;
 	}
 }

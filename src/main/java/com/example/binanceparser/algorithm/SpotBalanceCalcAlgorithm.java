@@ -5,6 +5,7 @@ import com.example.binanceparser.domain.events.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -320,8 +321,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.multiply(orderEvent.getPriceOfLastFilledTrade());
 		String str = String.format("%s %s %s %s for total of %s quoteAsset",
 				orderEvent.getDateTime().format(ISO_DATE_TIME), orderEvent.getSide(),
-				orderEvent.getOriginalQuantity().toPlainString(), orderEvent.getSymbol(),
-				quoteAssetQty.toPlainString());
+				orderEvent.getOriginalQuantity().stripTrailingZeros().doubleValue(), orderEvent.getSymbol(),
+				quoteAssetQty.setScale(1, RoundingMode.HALF_EVEN).toPlainString());
 
 		if (orderEvent.getSide().equals("SELL")) {
 			final String baseAsset = EXCHANGE_INFO.getSymbolInfo(orderEvent.getSymbol()).getBaseAsset();

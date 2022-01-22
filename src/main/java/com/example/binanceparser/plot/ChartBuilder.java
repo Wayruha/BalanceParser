@@ -77,19 +77,12 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	}
 
 	protected boolean isTransfer(String trackedAsset, com.example.binanceparser.domain.Transaction transaction) {
-		return isStableCoin(transaction.getBaseAsset()) && transaction.getBaseAsset().equals(trackedAsset) // TODO ця
-																											// стрічка
-																											// скоріш за
-																											// все не
-																											// має
-																											// багато
-																											// сенсу
+		return isStableCoin(transaction.getBaseAsset()) && transaction.getBaseAsset().equals(trackedAsset)
 				&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
 						|| transaction.getTransactionType().equals(TransactionType.DEPOSIT));
 	}
 
-	// TODO повністю переробити - я зробив цей метод як копію існуючого тільки щоб
-	// не поломати код
+	// TODO повністю переробити - я зробив цей метод як копію існуючого тільки щоб не поломати код
 	protected boolean isTransfer(String trackedAsset, TransactionX transaction) {
 		if (transaction.getType() == TransactionType.WITHDRAW || transaction.getType() == TransactionType.DEPOSIT) {
 			final TransactionX.Update tx = (TransactionX.Update) transaction;
@@ -101,8 +94,10 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	}
 
 	protected boolean anyTransfer(List<TransactionX> transactions) {
-		return transactions.stream().filter((transaction) -> transaction.getType().equals(TransactionType.DEPOSIT)
-				|| transaction.getType().equals(TransactionType.WITHDRAW)).anyMatch((transaction) -> {
+		return transactions.stream()
+				.filter(transaction -> transaction.getType().equals(TransactionType.DEPOSIT)
+					|| transaction.getType().equals(TransactionType.WITHDRAW))
+				.anyMatch(transaction -> {
 					final TransactionX.Update tx = (TransactionX.Update) transaction;
 					final TransactionX.Asset2 asset = tx.getAsset();
 					return isTransfer(asset.getAssetName(), transaction);
@@ -111,7 +106,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 
 	private List<TransactionX> getAllTransactionsToProcess(List<TransactionX> transactions) {
 		return transactions.stream().filter((transaction) -> {
-			if (!transaction.getType().equals(TransactionType.SELL)) {
+			if(!transaction.getType().equals(TransactionType.SELL)) {
 				return false;
 			}
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
@@ -142,14 +137,12 @@ public abstract class ChartBuilder<T extends BalanceState> {
 		for (TransactionX transaction : getTransactionsToProcess(trackedAsset, transactions)) {
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
 			final TransactionX.Asset2 asset = tx.getQuoteAsset();
-			String assetName = trackedAsset.equals(VIRTUAL_USD) ? VIRTUAL_USD : asset.getAssetName();
-			if (!assetsToProcess.containsKey(assetName)) {
-				assetsToProcess.put(assetName, new Asset(assetName, BigDecimal.ZERO));
+			if (!assetsToProcess.containsKey(asset.getAssetName())) {
+				assetsToProcess.put(asset.getAssetName(), new Asset(asset.getAssetName(), BigDecimal.ZERO));
 			}
-			Asset assetToProcess = assetsToProcess.get(assetName);
-			BigDecimal nonValuableBalance = assetToProcess.getBalance().add(asset.getTxQty())
-					.subtract(transaction.getValueIncome());
-			assetToProcess.setBalance(nonValuableBalance);
+			Asset assetToProcess = assetsToProcess.get(asset.getAssetName());
+			assetToProcess.setBalance(
+					assetToProcess.getBalance().add(asset.getTxQty()).subtract(transaction.getValueIncome()));
 		}
 		return new ArrayList<>(assetsToProcess.values());
 	}
@@ -182,11 +175,11 @@ public abstract class ChartBuilder<T extends BalanceState> {
 
 		@Override
 		public Paint getItemPaint(int row, int item) {
-			if (isSpecialPoint(row, item)) {
-				return config.getSpetialPointColor();
-			}
 			if (isWithdraw(row, item)) {
 				return config.getWithdrawColor();
+			}
+			if (isSpecialPoint(row, item)) {
+				return config.getSpetialPointColor();
 			}
 			return super.getItemPaint(row, item);
 		}
