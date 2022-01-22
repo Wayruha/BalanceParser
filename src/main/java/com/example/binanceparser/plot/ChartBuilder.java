@@ -77,19 +77,12 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	}
 
 	protected boolean isTransfer(String trackedAsset, com.example.binanceparser.domain.Transaction transaction) {
-		return isStableCoin(transaction.getBaseAsset()) && transaction.getBaseAsset().equals(trackedAsset) // TODO ця
-																											// стрічка
-																											// скоріш за
-																											// все не
-																											// має
-																											// багато
-																											// сенсу
+		return isStableCoin(transaction.getBaseAsset()) && transaction.getBaseAsset().equals(trackedAsset)
 				&& (transaction.getTransactionType().equals(TransactionType.WITHDRAW)
 						|| transaction.getTransactionType().equals(TransactionType.DEPOSIT));
 	}
 
-	// TODO повністю переробити - я зробив цей метод як копію існуючого тільки щоб
-	// не поломати код
+	// TODO повністю переробити - я зробив цей метод як копію існуючого тільки щоб не поломати код
 	protected boolean isTransfer(String trackedAsset, TransactionX transaction) {
 		if (transaction.getType() == TransactionType.WITHDRAW || transaction.getType() == TransactionType.DEPOSIT) {
 			final TransactionX.Update tx = (TransactionX.Update) transaction;
@@ -101,8 +94,10 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	}
 
 	protected boolean anyTransfer(List<TransactionX> transactions) {
-		return transactions.stream().filter((transaction) -> transaction.getType().equals(TransactionType.DEPOSIT)
-				|| transaction.getType().equals(TransactionType.WITHDRAW)).anyMatch((transaction) -> {
+		return transactions.stream()
+				.filter(transaction -> transaction.getType().equals(TransactionType.DEPOSIT)
+					|| transaction.getType().equals(TransactionType.WITHDRAW))
+				.anyMatch(transaction -> {
 					final TransactionX.Update tx = (TransactionX.Update) transaction;
 					final TransactionX.Asset2 asset = tx.getAsset();
 					return isTransfer(asset.getAssetName(), transaction);

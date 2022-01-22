@@ -42,8 +42,8 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 	private void addSeriesForEveryAsset(List<SpotIncomeState> incomeStates) {
 		if (incomeStates.size() != 0) {
 			final List<String> assetsToTrack = listAssetsInvolved(incomeStates.get(incomeStates.size() - 1));
-			assetsToTrack.stream().forEach((assetTotrack) -> {
-				dataSeries.addSeries(new TimeSeries(assetTotrack + " balance (USD)"));
+			assetsToTrack.forEach(assetToTrack -> {
+				dataSeries.addSeries(new TimeSeries(assetToTrack + " balance (USD)"));
 			});
 			for (int n = 0; n < assetsToTrack.size(); n++) {
 				fillTimeSeries(incomeStates, assetsToTrack.get(n), n);
@@ -95,8 +95,7 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 
 	private List<String> listAssetsInvolved(SpotIncomeState lastIncomeState) {
 		return assetsToTrack.isEmpty()
-				? new ArrayList<>(
-						lastIncomeState.getCurrentAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
+				? lastIncomeState.getCurrentAssets().stream().map(Asset::getAsset).collect(Collectors.toList())
 				: assetsToTrack;
 	}
 }
