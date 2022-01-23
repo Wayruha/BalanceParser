@@ -23,7 +23,7 @@ import static com.example.binanceparser.Constants.*;
 
 public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 	private TimeSeriesCollection dataSeries;
-	protected List<PointTime> sp;
+	protected List<PointTime> sp; // TODO погані назви, не читабельні
 	protected List<PointTime> ip;
 
 	public TestAssetChartBuilder(List<String> assetsToTrack) {

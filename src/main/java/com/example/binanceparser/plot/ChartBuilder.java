@@ -83,6 +83,8 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	}
 
 	// TODO повністю переробити - я зробив цей метод як копію існуючого тільки щоб не поломати код
+	// TODO Для чого цей метод? чи в ньому є якийсь сенс? Він працював зі старими транзакціями,
+	//  і я його просто поправив щоб код компілився, але помітив щоб прибрати.
 	protected boolean isTransfer(String trackedAsset, TransactionX transaction) {
 		if (transaction.getType() == TransactionType.WITHDRAW || transaction.getType() == TransactionType.DEPOSIT) {
 			final TransactionX.Update tx = (TransactionX.Update) transaction;
