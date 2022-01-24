@@ -145,7 +145,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.fullBalance(quoteAsset.map(Asset::getBalance).orElse(ZERO))
 				.valuableBalance(lockedQuote.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(lockedQuote.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-		state.getTXs().add(TransactionX.convertTx(base, quote));
+		state.getTXs().add(TransactionX.convertTx(state.getDateTime(), base, quote));
 	}
 
 	public void handleConvertStables(SpotIncomeState state, OrderTradeUpdateEvent order, AccountPositionUpdateEvent accUpdate){
@@ -166,7 +166,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.fullBalance(quoteAsset.map(Asset::getBalance).orElse(ZERO))
 				.valuableBalance(lockedQuote.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(lockedQuote.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-		state.getTXs().add(TransactionX.convertTx(base, quote));
+		state.getTXs().add(TransactionX.convertTx(state.getDateTime(), base, quote));
 	}
 
 	// TODO ми платимо комісію за операцію, мабуть потрібно тут її вказувати в income
@@ -196,7 +196,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.valuableBalance(quoteLocked.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(quoteLocked.map(LockedAsset::getStableValue).orElse(ZERO)).build();
 
-		state.getTXs().add(TransactionX.buyTx(base, quote, orderEvent.getQuoteAssetCommission().negate()));
+		state.getTXs().add(TransactionX.buyTx(state.getDateTime(), base, quote, orderEvent.getQuoteAssetCommission().negate()));
 	}
 
 	/**
@@ -248,7 +248,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.fullBalance(quoteAssetBalance).valuableBalance(quoteAssetBalance).stableValue(quoteAssetBalance)
 				.build();
 
-		state.getTXs().add(TransactionX.sellTx(base, quote, income.subtract(orderEvent.getQuoteAssetCommission())));
+		state.getTXs().add(TransactionX.sellTx(state.getDateTime(), base, quote, income.subtract(orderEvent.getQuoteAssetCommission())));
 	}
 
 	private void handleDeposit(SpotIncomeState state, BalanceUpdateEvent balanceEvent,
@@ -266,7 +266,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.stableValue(lockedAsset.map(LockedAsset::getStableValue).orElse(ZERO)).build();
 
 		final BigDecimal transactionStableValue = STABLECOIN_RATE.getOrDefault(assetName, ZERO).multiply(assetQty);
-		state.getTXs().add(TransactionX.depositTx(txAsset, transactionStableValue));
+		state.getTXs().add(TransactionX.depositTx(state.getDateTime(), txAsset, transactionStableValue));
 	}
 
 	public void handleWithdraw(SpotIncomeState state, BalanceUpdateEvent balanceEvent,
@@ -307,7 +307,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.fullBalance(state.findAssetOpt(assetName).map(Asset::getBalance).orElse(ZERO))
 				.valuableBalance(optLocked.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(optLocked.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-		state.getTXs().add(TransactionX.withdrawTx(txAsset, stableValueDiff));
+		state.getTXs().add(TransactionX.withdrawTx(state.getDateTime(), txAsset, stableValueDiff));
 	}
 
 	private void updateAssetsBalance(SpotIncomeState state, BalanceUpdateEvent balanceEvent,
