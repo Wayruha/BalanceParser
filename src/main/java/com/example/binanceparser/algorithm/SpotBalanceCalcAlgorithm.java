@@ -101,6 +101,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 	}
 
 	// TODO залежить ще від order.side=BUY | SELL
+	// BUY/SELL вроде влияют только на опредление base/quote asset? 
+	// а это уже учтено в методах ордер трейда
 	/**
 	 * Цей метод враховує тільки "легальну" частину ассета за який ми щось купляємо.
 	 * Віповідно, ми додаємо в lockAssets тільки ту частину купленої монети
