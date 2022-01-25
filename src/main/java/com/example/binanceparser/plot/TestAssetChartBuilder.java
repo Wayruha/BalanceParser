@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -68,26 +69,24 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 			SpotIncomeState incomeState = incomeStates.get(n);
 			LocalDateTime currentDateTime = incomeState.getDateTime();
 			Second currentSecValue = dateTimeToSecond(currentDateTime);
-			List<Asset> assetsToProcess = getAssetsToProcess(trackedAsset, incomeState.getTXs());
+			Map<String, BigDecimal> nonValuableAssetTradeParts = getNonValuableAssetTradeParts(trackedAsset, incomeState.getTXs());
 			// if withdraw or deposit
 			if (isWithdrawOrDeposit(trackedAsset, incomeState)) {
 				withdrawPoints.add(new Point(row, n));
-			} else if (assetsToProcess.size() != 0) { 
-				// не стал выносить в другой метод, 
-				// потому что довольно много переменных учтеноб мне кажется читаемость не улучшится
-				// да и я поубирал закомменченое и вроде не так много кода, чтобы выносить
-				for (Asset asset : assetsToProcess) {
-					BigDecimal wholeAmount = incomeState.calculateVirtualUSDBalance(asset.getAsset());
-					BigDecimal lockedAmount = wholeAmount.subtract(asset.getBalance());
-					BigDecimal coeff = asset.getBalance().divide(wholeAmount, MATH_CONTEXT);
+			} else if (nonValuableAssetTradeParts.size() != 0) {
+				for (String asset : nonValuableAssetTradeParts.keySet()) {
+					BigDecimal nonValuablePart = nonValuableAssetTradeParts.get(asset);
+					BigDecimal wholeAmount = incomeState.calculateVirtualUSDBalance(asset);
+					BigDecimal lockedAmount = wholeAmount.subtract(nonValuablePart);
+					BigDecimal coeff = nonValuablePart.divide(wholeAmount, MATH_CONTEXT);
 					long secondsBetween = secondsBetween(previousSecValue == null ? currentSecValue : previousSecValue,
 							currentSecValue);
 					LocalDateTime intermTime = currentDateTime
 							.minusSeconds((int) (secondsBetween * coeff.doubleValue()));
-					TimeSeries stableCoinSeries = dataSeries.getSeries(asset.getAsset() + " balance (USD)");
+					TimeSeries stableCoinSeries = dataSeries.getSeries(asset + " balance (USD)");
 					stableCoinSeries.addOrUpdate(dateTimeToSecond(intermTime), lockedAmount);
-					intermediatePointTimes.add(new PointTime(asset.getAsset() + " balance (USD)", intermTime));
-					specialPointTimes.add(new PointTime(asset.getAsset() + " balance (USD)", currentDateTime));
+					intermediatePointTimes.add(new PointTime(asset + " balance (USD)", intermTime));
+					specialPointTimes.add(new PointTime(asset + " balance (USD)", currentDateTime));
 				}
 			}
 

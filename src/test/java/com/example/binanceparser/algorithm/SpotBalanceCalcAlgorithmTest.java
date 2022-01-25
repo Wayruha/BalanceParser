@@ -1,6 +1,7 @@
 package com.example.binanceparser.algorithm;
 
 import static com.example.binanceparser.Constants.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
 import java.math.BigDecimal;
@@ -8,10 +9,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import com.example.binanceparser.config.BalanceVisualizerConfig;
+
+import com.example.binanceparser.domain.Asset;
+import com.example.binanceparser.domain.LockedAsset;
 import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.AccountPositionUpdateEvent;
@@ -24,7 +30,6 @@ import com.example.binanceparser.domain.events.OrderTradeUpdateEvent;
 public class SpotBalanceCalcAlgorithmTest {
 	private static List<AbstractEvent> aelist = new ArrayList<>();
 	private static List<SpotIncomeState> bsList = new ArrayList<>();
-	private static BalanceVisualizerConfig config = new BalanceVisualizerConfig();
 	private static SpotBalanceCalcAlgorithm calcAlgorithm = new SpotBalanceCalcAlgorithm();
 
 	@BeforeAll
@@ -32,12 +37,6 @@ public class SpotBalanceCalcAlgorithmTest {
 		// defining config objects
 		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		LocalDateTime dateTime = LocalDateTime.parse("2021-08-16 00:01:00", dateFormat);
-		config.setStartTrackDate(LocalDateTime.parse("2021-08-16 00:00:00", dateFormat));
-		config.setFinishTrackDate(LocalDateTime.parse("2021-09-15 00:00:00", dateFormat));
-		config.setInputFilepath("C:/Users/Sanya/Desktop/ParserOutput/logs");
-		config.setOutputDir("C:/Users/Sanya/Desktop/ParserOutput");
-		config.setAssetsToTrack(Collections.emptyList());
-		config.setConvertToUSD(true);
 
 		// defining events and income states
 		BalanceUpdateEvent balanceEvent;
@@ -208,5 +207,46 @@ public class SpotBalanceCalcAlgorithmTest {
 		// якщо щось зафейлиться, то у нас буде строка яка зафейлилася і відразу буде
 		// видно на якому етапі проблема
 		assertIterableEquals(bsList, acceptedBSlist);
+	}
+	
+	@Test
+	public void shouldCorrectlyHandleConvert() {
+		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime dateTime = LocalDateTime.parse("2021-08-16 00:01:00", dateFormat);
+		OrderTradeUpdateEvent orderEvent;
+		AccountPositionUpdateEvent accEvent;
+		SpotIncomeState incomeState;
+		
+		incomeState = new SpotIncomeState(new LinkedHashSet<>(List.of(new Asset(ETH, new BigDecimal("2")), new Asset(BTC, new BigDecimal("0")))), 
+				new LinkedHashSet<>(List.of(new LockedAsset(ETH, new BigDecimal("1"), new BigDecimal("4000")))), 
+				Collections.emptyList(), 
+				Collections.emptyList());
+		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
+				.symbol(BTC + ETH).orderStatus("FILLED").side("BUY").price(new BigDecimal("10"))
+				.priceOfLastFilledTrade(new BigDecimal("10")).originalQuantity(new BigDecimal("0.1"))
+				.commission(new BigDecimal("0")).commissionAsset(USDT).build();
+		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
+				.balances(List.of(
+						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.1"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(ETH, new BigDecimal("1"), new BigDecimal("0"))))
+				.build();
+		calcAlgorithm.handleConvertOperation(incomeState, orderEvent, accEvent);
+		assertEquals(new BigDecimal("0.1"), incomeState.findLockedAsset(BTC).get().getBalance());
+		assertEquals(new BigDecimal("0"), incomeState.findLockedAsset(ETH).get().getBalance());
+		assertEquals(new BigDecimal("1"), incomeState.findAssetOpt(ETH).get().getBalance());
+		
+		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
+				.symbol(BTC + ETH).orderStatus("FILLED").side("SELL").price(new BigDecimal("0.1"))
+				.priceOfLastFilledTrade(new BigDecimal("0.1")).originalQuantity(new BigDecimal("0.1"))
+				.commission(new BigDecimal("0")).commissionAsset(USDT).build();
+		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
+				.balances(List.of(
+						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.0"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(ETH, new BigDecimal("2"), new BigDecimal("0"))))
+				.build();
+		calcAlgorithm.handleConvertOperation(incomeState, orderEvent, accEvent);
+		assertEquals(new BigDecimal("0.0"), incomeState.findLockedAsset(BTC).get().getBalance());
+		assertEquals(new BigDecimal("1"), incomeState.findLockedAsset(ETH).get().getBalance());
+		assertEquals(new BigDecimal("2"), incomeState.findAssetOpt(ETH).get().getBalance());
 	}
 }

@@ -345,6 +345,6 @@ public class SpotIncomeStateTest {
     }
 
     private static LinkedHashSet setOf(Object... args) {
-        return new LinkedHashSet(List.of(args));
+        return new LinkedHashSet<>(List.of(args));
     }
 }

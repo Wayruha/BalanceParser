@@ -130,25 +130,27 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	}
 
 	protected long secondsBetween(Second start, Second finish) {
-		return ChronoUnit.SECONDS.between(milsToLocaldateLime(start.getLastMillisecond()),
-				milsToLocaldateLime(finish.getLastMillisecond()));
+		return ChronoUnit.SECONDS.between(milsToLocalDateTime(start.getLastMillisecond()),
+				milsToLocalDateTime(finish.getLastMillisecond()));
 	}
 
-	protected List<Asset> getAssetsToProcess(String trackedAsset, List<TransactionX> transactions) {
-		Map<String, Asset> assetsToProcess = new HashMap<>();
+	protected Map<String, BigDecimal> getNonValuableAssetTradeParts(String trackedAsset, List<TransactionX> transactions) {
+		Map<String, BigDecimal> assetsToProcess = new HashMap<>();
 		for (TransactionX transaction : getTransactionsToProcess(trackedAsset, transactions)) {
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
-			final TransactionX.Asset2 asset = tx.getQuoteAsset();
-			String assetName = trackedAsset.equals(VIRTUAL_USD) ? VIRTUAL_USD : asset.getAssetName();
+			final TransactionX.Asset2 quoteAsset = tx.getQuoteAsset();
+			final TransactionX.Asset2 baseAsset = tx.getBaseAsset();
+			BigDecimal legalQuoteAssetQty = tx.getValuableBaseQtyInvolved().divide(baseAsset.getTxQty())
+					.multiply(quoteAsset.getTxQty());
+			String assetName = trackedAsset.equals(VIRTUAL_USD) ? VIRTUAL_USD : quoteAsset.getAssetName();
 			if (!assetsToProcess.containsKey(assetName)) {
-				assetsToProcess.put(assetName, new Asset(assetName, BigDecimal.ZERO));
+				assetsToProcess.put(assetName, BigDecimal.ZERO);
 			}
-			Asset assetToProcess = assetsToProcess.get(assetName);
-			BigDecimal nonValuableBalance = assetToProcess.getBalance().add(asset.getTxQty())
-					.subtract(transaction.getValueIncome());
-			assetToProcess.setBalance(nonValuableBalance);
+			BigDecimal nonValuableBalance = assetsToProcess.get(assetName).add(quoteAsset.getTxQty())
+					.subtract(legalQuoteAssetQty);
+			assetsToProcess.put(assetName, nonValuableBalance);
 		}
-		return new ArrayList<>(assetsToProcess.values());
+		return assetsToProcess;
 	}
 
 	protected void updateSpecialAndWithdrawPoints(int row, int insertedItem) {
@@ -162,7 +164,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 				});
 	}
 
-	private LocalDateTime milsToLocaldateLime(long val) {
+	private LocalDateTime milsToLocalDateTime(long val) {
 		return LocalDateTime.ofInstant(Instant.ofEpochMilli(val), ZoneId.systemDefault());
 	}
 

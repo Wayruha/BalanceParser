@@ -100,9 +100,6 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		state.findAssetOpt(VIRTUAL_USD).get().setBalance(state.calculateVirtualUSDBalance());
 	}
 
-	// TODO залежить ще від order.side=BUY | SELL
-	// BUY/SELL вроде влияют только на опредление base/quote asset? 
-	// а это уже учтено в методах ордер трейда
 	/**
 	 * Цей метод враховує тільки "легальну" частину ассета за який ми щось купляємо.
 	 * Віповідно, ми додаємо в lockAssets тільки ту частину купленої монети
@@ -121,6 +118,11 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 			// deduct from locked quote asset
 			final BigDecimal cappedQuoteAssetQty = quoteOrderQty.min(lockedQuoteAsset.getBalance());
 			BigDecimal stableValueUsed = lockedQuoteAsset.getStableValue();
+			if(orderEvent.getSide().equals("BUY")) {
+				lockedQuoteAsset.deductBalance(cappedQuoteAssetQty);
+			} else if(orderEvent.getSide().equals("SELL")) {
+				lockedQuoteAsset.addBalance(cappedQuoteAssetQty, stableValueUsed);
+			}
 			lockedQuoteAsset.deductBalance(cappedQuoteAssetQty);
 			stableValueUsed = stableValueUsed.subtract(lockedQuoteAsset.getStableValue());
 
@@ -129,7 +131,11 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 					.divide(quoteOrderQty, MathContext.DECIMAL64).max(ONE);
 			final BigDecimal lockedBaseQty = valuableQuoteAssetFraction.multiply(orderQty, MATH_CONTEXT);
 			final LockedAsset lockedBaseAsset = state.addLockedAssetIfNotExist(baseAssetName);
-			lockedBaseAsset.addBalance(lockedBaseQty, stableValueUsed);
+			if(orderEvent.getSide().equals("BUY")) {
+				lockedBaseAsset.addBalance(lockedBaseQty, stableValueUsed);
+			} else if(orderEvent.getSide().equals("SELL")){
+				lockedBaseAsset.deductBalance(lockedBaseQty);
+			}
 			state.addLockedAsset(lockedBaseAsset);
 		}
 
