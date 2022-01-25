@@ -72,7 +72,10 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 			// if withdraw or deposit
 			if (isWithdrawOrDeposit(trackedAsset, incomeState)) {
 				withdrawPoints.add(new Point(row, n));
-			} else if (assetsToProcess.size() != 0) {
+			} else if (assetsToProcess.size() != 0) { 
+				// не стал выносить в другой метод, 
+				// потому что довольно много переменных учтеноб мне кажется читаемость не улучшится
+				// да и я поубирал закомменченое и вроде не так много кода, чтобы выносить
 				for (Asset asset : assetsToProcess) {
 					BigDecimal wholeAmount = incomeState.calculateVirtualUSDBalance(asset.getAsset());
 					BigDecimal lockedAmount = wholeAmount.subtract(asset.getBalance());
