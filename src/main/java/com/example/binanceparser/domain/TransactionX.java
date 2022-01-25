@@ -24,16 +24,16 @@ public abstract class TransactionX {
         this.date = date;
     }
 
-    public static Trade buyTx(LocalDateTime date, Asset2 baseAsset, Asset2 quoteAsset, BigDecimal income) {
-        return new Trade(BUY, date, baseAsset, quoteAsset, income);
+    public static Trade buyTx(LocalDateTime date, Asset2 baseAsset, Asset2 quoteAsset, BigDecimal income, BigDecimal valuableBaseQtyInvolved) {
+        return new Trade(BUY, date, baseAsset, quoteAsset, income, valuableBaseQtyInvolved);
     }
 
-    public static Trade sellTx(LocalDateTime date, Asset2 baseAsset, Asset2 quoteAsset, BigDecimal income) {
-        return new Trade(SELL, date, baseAsset, quoteAsset, income);
+    public static Trade sellTx(LocalDateTime date, Asset2 baseAsset, Asset2 quoteAsset, BigDecimal income, BigDecimal valuableBaseQtyInvolved) {
+        return new Trade(SELL, date, baseAsset, quoteAsset, income, valuableBaseQtyInvolved);
     }
 
-    public static Trade convertTx(LocalDateTime date, Asset2 baseAsset, Asset2 quoteAsset) {
-        return new Trade(CONVERT, date, baseAsset, quoteAsset, BigDecimal.ZERO);
+    public static Trade convertTx(LocalDateTime date, Asset2 baseAsset, Asset2 quoteAsset, BigDecimal valuableBaseQtyInvolved) {
+        return new Trade(CONVERT, date, baseAsset, quoteAsset, BigDecimal.ZERO, valuableBaseQtyInvolved);
     }
 
     public static Update depositTx(LocalDateTime date, Asset2 asset, BigDecimal income) {
@@ -79,11 +79,13 @@ public abstract class TransactionX {
     public static class Trade extends TransactionX {
         Asset2 baseAsset;
         Asset2 quoteAsset;
-
-        protected Trade(TransactionType type, LocalDateTime date, Asset2 baseAsset, Asset2 quoteAsset, BigDecimal valueIncome) {
+        BigDecimal valuableBaseQtyInvolved;
+        
+        protected Trade(TransactionType type, LocalDateTime date, Asset2 baseAsset, Asset2 quoteAsset, BigDecimal valueIncome, BigDecimal valuableBaseQtyInvolved) {
             super(type, date, valueIncome);
             this.baseAsset = baseAsset;
             this.quoteAsset = quoteAsset;
+            this.valuableBaseQtyInvolved = valuableBaseQtyInvolved;
         }
     }
 

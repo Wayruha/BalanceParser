@@ -112,9 +112,9 @@ public abstract class ChartBuilder<T extends BalanceState> {
 				return false;
 			}
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
-			final TransactionX.Asset2 asset = tx.getQuoteAsset();
+			final TransactionX.Asset2 asset = tx.getBaseAsset();
 
-			return transaction.getValueIncome().compareTo(asset.getTxQty()) < 0;
+			return tx.getValuableBaseQtyInvolved().compareTo(asset.getTxQty()) < 0;
 		}).collect(Collectors.toList());
 	}
 

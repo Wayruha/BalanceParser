@@ -88,7 +88,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		final String baseAsset = orderEvent.getBaseAsset();
 		final String quote = orderEvent.getQuoteAsset();
 
-		if(isStableCoin(baseAsset) && isStableCoin(quote)) {
+		if (isStableCoin(baseAsset) && isStableCoin(quote)) {
 			handleConvertStables(state, orderEvent, accEvent);
 		} else if (orderEvent.getSide().equals("BUY") && isStableCoin(quote)) {
 			handleBuy(state, orderEvent, accEvent);
@@ -100,7 +100,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		state.findAssetOpt(VIRTUAL_USD).get().setBalance(state.calculateVirtualUSDBalance());
 	}
 
-	//TODO залежить ще від order.side=BUY | SELL
+	// TODO залежить ще від order.side=BUY | SELL
 	/**
 	 * Цей метод враховує тільки "легальну" частину ассета за який ми щось купляємо.
 	 * Віповідно, ми додаємо в lockAssets тільки ту частину купленої монети
@@ -133,7 +133,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 
 		updateAssetsBalance(state, orderEvent, accEvent);
 
-		final Optional<Asset> baseAsset = state.findAssetOpt(quoteAssetName);
+		final Optional<Asset> baseAsset = state.findAssetOpt(baseAssetName);
 		final Optional<Asset> quoteAsset = state.findAssetOpt(quoteAssetName);
 		final Optional<LockedAsset> lockedBase = state.findLockedAsset(baseAssetName);
 		final Optional<LockedAsset> lockedQuote = state.findLockedAsset(quoteAssetName);
@@ -145,12 +145,14 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.fullBalance(quoteAsset.map(Asset::getBalance).orElse(ZERO))
 				.valuableBalance(lockedQuote.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(lockedQuote.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-		state.getTXs().add(TransactionX.convertTx(state.getDateTime(), base, quote));
+		state.getTXs().add(TransactionX.convertTx(state.getDateTime(), base, quote, orderQty));
 	}
 
-	public void handleConvertStables(SpotIncomeState state, OrderTradeUpdateEvent order, AccountPositionUpdateEvent accUpdate){
+	public void handleConvertStables(SpotIncomeState state, OrderTradeUpdateEvent order,
+			AccountPositionUpdateEvent accUpdate) {
 		final String baseAssetName = order.getBaseAsset();
 		final String quoteAssetName = order.getQuoteAsset();
+		final BigDecimal baseQty = order.getActualQty();
 
 		updateAssetsBalance(state, order, accUpdate);
 
@@ -158,15 +160,15 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		final Optional<Asset> quoteAsset = state.findAssetOpt(quoteAssetName);
 		final Optional<LockedAsset> lockedBase = state.findLockedAsset(baseAssetName);
 		final Optional<LockedAsset> lockedQuote = state.findLockedAsset(quoteAssetName);
-		TransactionX.Asset2 base = TransactionX.Asset2.builder().assetName(baseAssetName)
-				.txQty(order.getActualQty()).fullBalance(baseAsset.map(Asset::getBalance).orElse(ZERO))
+		TransactionX.Asset2 base = TransactionX.Asset2.builder().assetName(baseAssetName).txQty(order.getActualQty())
+				.fullBalance(baseAsset.map(Asset::getBalance).orElse(ZERO))
 				.valuableBalance(lockedBase.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(lockedBase.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-		TransactionX.Asset2 quote = TransactionX.Asset2.builder().assetName(quoteAssetName).txQty(order.getQuoteAssetQty())
-				.fullBalance(quoteAsset.map(Asset::getBalance).orElse(ZERO))
+		TransactionX.Asset2 quote = TransactionX.Asset2.builder().assetName(quoteAssetName)
+				.txQty(order.getQuoteAssetQty()).fullBalance(quoteAsset.map(Asset::getBalance).orElse(ZERO))
 				.valuableBalance(lockedQuote.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(lockedQuote.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-		state.getTXs().add(TransactionX.convertTx(state.getDateTime(), base, quote));
+		state.getTXs().add(TransactionX.convertTx(state.getDateTime(), base, quote, baseQty));
 	}
 
 	// TODO ми платимо комісію за операцію, мабуть потрібно тут її вказувати в income
@@ -196,12 +198,14 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.valuableBalance(quoteLocked.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(quoteLocked.map(LockedAsset::getStableValue).orElse(ZERO)).build();
 
-		state.getTXs().add(TransactionX.buyTx(state.getDateTime(), base, quote, orderEvent.getQuoteAssetCommission().negate()));
+		state.getTXs().add(TransactionX.buyTx(state.getDateTime(), base, quote,
+				orderEvent.getQuoteAssetCommission().negate(), baseQty));
 	}
 
 	/**
-	 * if baseQty > lockedQty then we calculate the profit using only part of baseAsset
-	 * (since another part comes from unknown source quoteAssetEarnedWithValuableFunds = quoteAssetQty * (lockedQty / baseQty)
+	 * if baseQty > lockedQty then we calculate the profit using only part of
+	 * baseAsset (since another part comes from unknown source
+	 * quoteAssetEarnedWithValuableFunds = quoteAssetQty * (lockedQty / baseQty)
 	 * lockedQty.balance -= baseQtyCapped (locked part of asset)
 	 * lockedQty.stableValue -= {proportionally to balance change in prev. line}
 	 * income = {what we got selling 'valuable' asset - stableValue of that asset}
@@ -225,7 +229,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 					MATH_CONTEXT);
 		}
 
-		// if there is no locked (or 'valuable') qty then user does not profit from such operation
+		// if there is no locked (or 'valuable') qty then user does not profit from such
+		// operation
 		if (baseAssetLocked.isPresent()) {
 			final LockedAsset locked = baseAssetLocked.get();
 			final BigDecimal stableValueBefore = locked.getStableValue();
@@ -242,13 +247,15 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 				.fullBalance(baseAsset.getBalance())
 				.valuableBalance(baseAssetLocked.map(LockedAsset::getBalance).orElse(ZERO))
 				.stableValue(baseAssetLocked.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-		final BigDecimal quoteAssetBalance = quoteAsset.map(Asset::getBalance).orElse(ZERO); // quoteAsset is always stablecoin
+		final BigDecimal quoteAssetBalance = quoteAsset.map(Asset::getBalance).orElse(ZERO); // quoteAsset is always
+																								// stablecoin
 
 		TransactionX.Asset2 quote = TransactionX.Asset2.builder().assetName(quoteAssetName).txQty(quoteAssetQty)
 				.fullBalance(quoteAssetBalance).valuableBalance(quoteAssetBalance).stableValue(quoteAssetBalance)
 				.build();
 
-		state.getTXs().add(TransactionX.sellTx(state.getDateTime(), base, quote, income.subtract(orderEvent.getQuoteAssetCommission())));
+		state.getTXs().add(TransactionX.sellTx(state.getDateTime(), base, quote,
+				income.subtract(orderEvent.getQuoteAssetCommission()), baseQtyCapped));
 	}
 
 	private void handleDeposit(SpotIncomeState state, BalanceUpdateEvent balanceEvent,
@@ -275,22 +282,25 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		final BigDecimal qty = balanceEvent.getBalanceDelta().abs();
 		final Optional<Asset> assetOpt = state.findAssetOpt(assetName);
 
-		/* примечание для себя
-		 * сейчас если апдейт происходит в 282 строке, то получается, что если мы
-		 * попытаемся вывести монету и ДО этого у нас не было с ней операцийб то ее не
-		 * будет в списке карентАссетс, а если обновить в 254 строке, то мы вытянем уже
-		 * ОБНОВЛЕННОЕ значение после трейда, так как вытягиваем его из AccPosUpd,
-		 * иногда вылeтает NoSuchElement
+		/*
+		 * примечание для себя сейчас если апдейт происходит в 282 строке, то
+		 * получается, что если мы попытаемся вывести монету и ДО этого у нас не было с
+		 * ней операцийб то ее не будет в списке карентАссетс, а если обновить в 254
+		 * строке, то мы вытянем уже ОБНОВЛЕННОЕ значение после трейда, так как
+		 * вытягиваем его из AccPosUpd, иногда вылeтает NoSuchElement
 		 */
 
-		Optional<LockedAsset> optLocked = state.findLockedAsset(assetName);;
+		Optional<LockedAsset> optLocked = state.findLockedAsset(assetName);
+		;
 		BigDecimal stableValueDiff = ZERO;
-		//when we try to withdraw asset we have worked with before (if not, assetOpt is empty)
-		if(assetOpt.isPresent()) {
+		// when we try to withdraw asset we have worked with before (if not, assetOpt is
+		// empty)
+		if (assetOpt.isPresent()) {
 			final Asset existingAsset = state.findAssetOpt(assetName).get();
 			final BigDecimal valuableAssetBalance = optLocked.map(Asset::getBalance).orElse(ZERO);
 			final BigDecimal nonValuableAssetBalance = existingAsset.getBalance().subtract(valuableAssetBalance);
-			// first, we withdraw as much nonValuable asset as possible and only then withdraw with valuable part
+			// first, we withdraw as much nonValuable asset as possible and only then
+			// withdraw with valuable part
 			final BigDecimal withdrawValuableQty = qty.subtract(nonValuableAssetBalance).max(ZERO);
 
 			if (optLocked.isPresent()) {
@@ -317,7 +327,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		updateAssetsBalance(state, accEvent, baseAsset, dateTime);
 	}
 
-	private void updateAssetsBalance(SpotIncomeState state, OrderTradeUpdateEvent orderEvent, AccountPositionUpdateEvent accEvent) {
+	private void updateAssetsBalance(SpotIncomeState state, OrderTradeUpdateEvent orderEvent,
+			AccountPositionUpdateEvent accEvent) {
 		final String baseAsset = orderEvent.getBaseAsset();
 		final LocalDateTime dateTime = orderEvent.getDateTime();
 		updateAssetsBalance(state, accEvent, baseAsset, dateTime);
