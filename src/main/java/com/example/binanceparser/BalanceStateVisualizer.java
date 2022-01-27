@@ -1,6 +1,7 @@
 package com.example.binanceparser;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
+import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.datasource.CSVEventSource;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.datasource.LogsEventSource;
@@ -22,40 +23,36 @@ import static com.example.binanceparser.Constants.*;
 
 public class BalanceStateVisualizer {
 
-	private static AppProperties appProperties;
+	private AppProperties appProperties;
 
 	public static void main(String[] args) throws IOException {
-		final Properties prop = new Properties();
-		prop.load(new FileReader("src/main/resources/application.properties"));
-		appProperties = new AppProperties(prop);
-		BalanceStateVisualizer app = new BalanceStateVisualizer();
-		//app.futuresStateChangeFromLogs();
-		app.spotStateChangeFromLogs();
-	}
+		final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/application.properties");
 
-	public void futuresStateChangeFromLogs() throws IOException {
-		final BalanceVisualizerConfig config = configure();
-		final String person = appProperties.getTrackedPerson();
-		String prefix = appProperties.getFuturesAccountPrefix();
-		addSubject(config, person, prefix);
-		final EventSource<AbstractEvent> eventSource = getEventSource(config);
-		FuturesBalanceStateProcessor processor = new FuturesBalanceStateProcessor(eventSource, config);
-		final BalanceReport report = processor.process();
-		System.out.println("Report....");
+		BalanceStateVisualizer app = new BalanceStateVisualizer(appProperties);
+		//app.futuresStateChangeFromLogs();
+		final BalanceVisualizerConfig config = ConfigUtil.loadConfig(appProperties);
+		final String trackedPerson = appProperties.getTrackedPerson();
+		final BalanceReport report = app.spotStateChangeFromLogs(trackedPerson, config);
+		System.out.println("Test report for " + trackedPerson + ":");
 		System.out.println(report.toPrettyString());
 	}
 
-	public void spotStateChangeFromLogs() throws IOException {
-		final BalanceVisualizerConfig config = configure();
-		addSubject(config, appProperties.getTrackedPerson(), appProperties.getSpotAccountPrefix());
-		final EventSource<AbstractEvent> eventSource = getEventSource(config);
-		final SpotBalanceProcessor testProcessor = new SpotBalanceProcessor(eventSource, config);
-		final BalanceReport testReport = testProcessor.process();
-		System.out.println("Test report....");
-		System.out.println(testReport.toPrettyString());
+	public BalanceStateVisualizer(AppProperties properties) {
+		this.appProperties = properties;
 	}
 
-	private static BalanceVisualizerConfig configure() {
+	public BalanceReport spotStateChangeFromLogs(String user, BalanceVisualizerConfig config) throws IOException {
+		config.setSubject(List.of(user));
+		final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
+		final SpotBalanceProcessor testProcessor = new SpotBalanceProcessor(eventSource, config);
+		final BalanceReport testReport = testProcessor.process();
+		return testReport;
+	}
+
+	//TODO ці закоментовані методи - це графік для фючерсів. відрефакторити ці методи на подобі СПОТа.
+	// а ще краще - винести в окремий клас для фючерсної візуалізації.
+
+	/*private static BalanceVisualizerConfig configure() {
 		final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
 		LocalDateTime start = appProperties.getStartTrackDate();
 		LocalDateTime finish = appProperties.getEndTrackDate();
@@ -80,18 +77,17 @@ public class BalanceStateVisualizer {
 		config.getSubject().add(resolvedSubjectName);
 	}
 
-	private static Set<Filter> filters(BalanceVisualizerConfig config) {
-		final Set<Filter> filters = new HashSet<>();
-		if (config.getSubject() != null) {
-			filters.add(new SourceFilter(config.getSubject()));
-		}
-
-		if (config.getEventType() != null) {
-			filters.add(new EventTypeFilter(config.getEventType()));
-		}
-		return filters;
+	public void futuresStateChangeFromLogs() throws IOException {
+		final BalanceVisualizerConfig config = configure();
+		final String person = appProperties.getTrackedPerson();
+		String prefix = appProperties.getFuturesAccountPrefix();
+		addSubject(config, person, prefix);
+		final EventSource<AbstractEvent> eventSource = getEventSource(config);
+		FuturesBalanceStateProcessor processor = new FuturesBalanceStateProcessor(eventSource, config);
+		final BalanceReport report = processor.process();
+		System.out.println("Report....");
+		System.out.println(report.toPrettyString());
 	}
-
 	private EventSource<AbstractEvent> getEventSource(BalanceVisualizerConfig config) {
     	AppProperties.DatasourceType eventSourceType = appProperties.getDataSourceType();
     	String person = appProperties.getTrackedPerson();
@@ -109,4 +105,34 @@ public class BalanceStateVisualizer {
 		}
     	return eventSource;
     }
+
+	*/
+
+	public static Set<Filter> filters(BalanceVisualizerConfig config) {
+		final Set<Filter> filters = new HashSet<>();
+		if (config.getSubject() != null) {
+			filters.add(new SourceFilter(config.getSubject()));
+		}
+
+		if (config.getEventType() != null) {
+			filters.add(new EventTypeFilter(config.getEventType()));
+		}
+		return filters;
+	}
+
+	private EventSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
+		final File logsDir = new File(config.getInputFilepath());
+		EventSource<AbstractEvent> eventSource;
+		switch (datasourceType) {
+			case CSV:
+				eventSource = new CSVEventSource(logsDir, config.getSubject().get(0));
+				break;
+			case LOGS:
+				eventSource = new LogsEventSource(logsDir, filters(config));
+				break;
+			default:
+				throw new RuntimeException("unknown event source type specified");
+		}
+		return eventSource;
+	}
 }

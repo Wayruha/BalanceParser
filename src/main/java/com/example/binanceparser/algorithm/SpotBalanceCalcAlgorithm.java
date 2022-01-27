@@ -258,8 +258,12 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 		final BigDecimal quoteAssetBalance = quoteAsset.map(Asset::getBalance).orElse(ZERO); // quoteAsset is always
 																								// stablecoin
 
-		TransactionX.Asset2 quote = TransactionX.Asset2.builder().assetName(quoteAssetName).txQty(quoteAssetQty)
-				.fullBalance(quoteAssetBalance).valuableBalance(quoteAssetBalance).stableValue(quoteAssetBalance)
+		TransactionX.Asset2 quote = TransactionX.Asset2.builder()
+				.assetName(quoteAssetName)
+				.txQty(quoteAssetQty)
+				.fullBalance(quoteAssetBalance)
+				.valuableBalance(quoteAssetBalance)
+				.stableValue(quoteAssetBalance)
 				.build();
 
 		state.getTXs().add(TransactionX.sellTx(state.getDateTime(), base, quote,
