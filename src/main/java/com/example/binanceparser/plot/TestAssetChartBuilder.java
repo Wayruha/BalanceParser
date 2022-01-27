@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.SpotIncomeState;
@@ -21,22 +21,22 @@ import lombok.NoArgsConstructor;
 import static com.example.binanceparser.Constants.*;
 
 public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
-	private TimeSeriesCollection dataSeries;
 	protected List<PointTime> specialPointTimes;
 	protected List<PointTime> intermediatePointTimes;
+	protected List<PointTime> withdrawPointTimes;
 
 	public TestAssetChartBuilder(List<String> assetsToTrack) {
 		super(assetsToTrack);
 		specialPointTimes = new ArrayList<>();
 		intermediatePointTimes = new ArrayList<>();
-		dataSeries = new TimeSeriesCollection();
+		withdrawPointTimes = new ArrayList<>();
 	}
 
 	public TestAssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
 		super(assetsToTrack, config);
 		specialPointTimes = new ArrayList<>();
 		intermediatePoints = new ArrayList<>();
-		dataSeries = new TimeSeriesCollection();
+		withdrawPointTimes = new ArrayList<>();
 	}
 
 	@Override
@@ -46,6 +46,7 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 		if (config.isDrawPoints()) {
 			chart.getXYPlot().setRenderer(getRenderer());
 		}
+		chart.addLegend(new LegendTitle(getlegendItemSource()));
 		return chart;
 	}
 
@@ -72,20 +73,25 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 			Map<String, BigDecimal> nonValuableAssetTradeParts = getNonValuableAssetTradeParts(trackedAsset, incomeState.getTXs());
 			// if withdraw or deposit
 			if (isWithdrawOrDeposit(trackedAsset, incomeState)) {
-				withdrawPoints.add(new Point(row, n));
+				withdrawPointTimes.add(new PointTime(trackedAsset + " balance (USD)", currentDateTime));
 			} else if (nonValuableAssetTradeParts.size() != 0) {
 				for (String asset : nonValuableAssetTradeParts.keySet()) {
-					BigDecimal nonValuablePart = nonValuableAssetTradeParts.get(asset);
-					BigDecimal wholeAmount = incomeState.calculateVirtualUSDBalance(asset);
-					BigDecimal lockedAmount = wholeAmount.subtract(nonValuablePart);
-					BigDecimal coeff = nonValuablePart.divide(wholeAmount, MATH_CONTEXT);
+					BigDecimal previousAssetBalance = n != 0 ? incomeStates.get(n - 1).calculateVirtualUSDBalance(asset)
+							: BigDecimal.ZERO;
+					BigDecimal wholeTradeAmount = incomeState.calculateVirtualUSDBalance(asset).subtract(previousAssetBalance);
+					BigDecimal coeff = nonValuableAssetTradeParts.get(asset);
+					BigDecimal valuablePart = wholeTradeAmount
+							.multiply(BigDecimal.ONE.subtract(coeff));
+					BigDecimal intermValue = previousAssetBalance.add(valuablePart);
 					long secondsBetween = secondsBetween(previousSecValue == null ? currentSecValue : previousSecValue,
 							currentSecValue);
 					LocalDateTime intermTime = currentDateTime
 							.minusSeconds((int) (secondsBetween * coeff.doubleValue()));
 					TimeSeries stableCoinSeries = dataSeries.getSeries(asset + " balance (USD)");
-					stableCoinSeries.addOrUpdate(dateTimeToSecond(intermTime), lockedAmount);
-					intermediatePointTimes.add(new PointTime(asset + " balance (USD)", intermTime));
+					if (coeff.compareTo(BigDecimal.ZERO) != 0 && coeff.compareTo(BigDecimal.ONE) != 0) {
+						stableCoinSeries.addOrUpdate(dateTimeToSecond(intermTime), intermValue);
+						intermediatePointTimes.add(new PointTime(asset + " balance (USD)", intermTime));
+					}
 					specialPointTimes.add(new PointTime(asset + " balance (USD)", currentDateTime));
 				}
 			}
@@ -107,17 +113,23 @@ public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 	}
 
 	private void pointTimeToPoint() {
-		specialPointTimes.stream().forEach((pt) -> {
+		specialPointTimes.forEach((pt) -> {
 			TimeSeries stableCoinSeries = dataSeries.getSeries(pt.name);
 			int row = dataSeries.getSeriesIndex(pt.name);
 			int item = stableCoinSeries.getIndex(dateTimeToSecond(pt.getTime()));
 			specialPoints.add(new Point(row, item));
 		});
-		intermediatePointTimes.stream().forEach((pt) -> {
+		intermediatePointTimes.forEach((pt) -> {
 			TimeSeries stableCoinSeries = dataSeries.getSeries(pt.name);
 			int row = dataSeries.getSeriesIndex(pt.name);
 			int item = stableCoinSeries.getIndex(dateTimeToSecond(pt.getTime()));
 			intermediatePoints.add(new Point(row, item));
+		});
+		withdrawPointTimes.forEach((pt)->{
+			TimeSeries assetSeries = dataSeries.getSeries(pt.name);
+			int row = dataSeries.getSeriesIndex(pt.name);
+			int item = assetSeries.getIndex(dateTimeToSecond(pt.getTime()));
+			withdrawPoints.add(new Point(row, item));
 		});
 	}
 

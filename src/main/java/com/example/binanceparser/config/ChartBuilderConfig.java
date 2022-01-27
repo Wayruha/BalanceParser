@@ -15,9 +15,9 @@ public class ChartBuilderConfig {
 	private float crossLength;
 	private float crossWidth;
 	private Color withdrawColor;
-	private Color spetialPointColor;
+	private Color specialPointColor;
 
 	public static ChartBuilderConfig getDefaultConfig() {
-		return new ChartBuilderConfig(true, true, 4, 6, 2, Color.yellow, Color.red);
+		return new ChartBuilderConfig(true, true, 4, 6, 2, Color.yellow, Color.green);
 	}
 }

@@ -1,7 +1,6 @@
 package com.example.binanceparser.plot;
 
 import com.example.binanceparser.config.ChartBuilderConfig;
-import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.BalanceState;
 import com.example.binanceparser.domain.TransactionType;
 import com.example.binanceparser.domain.TransactionX;
@@ -9,10 +8,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItem;
+import org.jfree.chart.LegendItemCollection;
+import org.jfree.chart.LegendItemSource;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.util.ShapeUtils;
 import org.jfree.data.time.Second;
+import org.jfree.data.time.TimeSeriesCollection;
 
 import static com.example.binanceparser.Constants.*;
 
@@ -33,7 +36,7 @@ import java.util.stream.Collectors;
 
 public abstract class ChartBuilder<T extends BalanceState> {
 	public abstract JFreeChart buildLineChart(List<T> logBalanceStates);
-
+	protected TimeSeriesCollection dataSeries;
 	protected List<String> assetsToTrack;
 	protected List<Point> withdrawPoints;
 	protected List<Point> specialPoints;
@@ -41,7 +44,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	protected ChartBuilderConfig config;
 
 	public ChartBuilder() {
-
+		dataSeries = new TimeSeriesCollection();
 	}
 
 	public ChartBuilder(List<String> assetsToTrack) {
@@ -50,6 +53,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 		this.intermediatePoints = new ArrayList<>();
 		this.assetsToTrack = assetsToTrack;
 		this.config = ChartBuilderConfig.getDefaultConfig();
+		dataSeries = new TimeSeriesCollection();
 	}
 
 	public ChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
@@ -58,6 +62,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 		this.intermediatePoints = new ArrayList<>();
 		this.assetsToTrack = assetsToTrack;
 		this.config = config;
+		dataSeries = new TimeSeriesCollection();
 	}
 
 	protected boolean isStableCoin(String asset) {
@@ -82,9 +87,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 						|| transaction.getTransactionType().equals(TransactionType.DEPOSIT));
 	}
 
-	// TODO повністю переробити - я зробив цей метод як копію існуючого тільки щоб не поломати код
-	// TODO Для чого цей метод? чи в ньому є якийсь сенс? Він працював зі старими транзакціями,
-	//  і я його просто поправив щоб код компілився, але помітив щоб прибрати.
+	// метод имеет ту же функцию, что и прошлая версия, проверяет является ли транзакция выводом или депозитом стейблкоина
 	protected boolean isTransfer(String trackedAsset, TransactionX transaction) {
 		if (transaction.getType() == TransactionType.WITHDRAW || transaction.getType() == TransactionType.DEPOSIT) {
 			final TransactionX.Update tx = (TransactionX.Update) transaction;
@@ -148,7 +151,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 			}
 			BigDecimal nonValuableBalance = assetsToProcess.get(assetName).add(quoteAsset.getTxQty())
 					.subtract(legalQuoteAssetQty);
-			assetsToProcess.put(assetName, nonValuableBalance);
+			assetsToProcess.put(assetName, nonValuableBalance.divide(quoteAsset.getTxQty(), MATH_CONTEXT));
 		}
 		return assetsToProcess;
 	}
@@ -167,6 +170,22 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	private LocalDateTime milsToLocalDateTime(long val) {
 		return LocalDateTime.ofInstant(Instant.ofEpochMilli(val), ZoneId.systemDefault());
 	}
+	
+	public LegendItemSource getlegendItemSource() {
+		return new LegendItemSource() {
+			@Override
+			public LegendItemCollection getLegendItems() {
+				LegendItemCollection legendItems = new LegendItemCollection();
+				legendItems.add(new LegendItem("stablecoin withdraw or deposit", null, null, null, ShapeUtils
+						.createDiagonalCross(config.getCrossLength(), config.getCrossWidth()), config.getWithdrawColor()));
+				legendItems.add(new LegendItem("selling amount of asset that contained non-valuable part",
+						"first part of a line shows how much of asset sold was valuable", null, null,
+						ShapeUtils.createDiagonalCross(config.getCrossLength(), config.getCrossWidth()),
+						config.getSpecialPointColor()));
+				return legendItems;
+			}
+		};	
+	}
 
 	@Data
 	@NoArgsConstructor
@@ -182,7 +201,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 		@Override
 		public Paint getItemPaint(int row, int item) {
 			if (isSpecialPoint(row, item)) {
-				return config.getSpetialPointColor();
+				return config.getSpecialPointColor();
 			}
 			if (isWithdraw(row, item)) {
 				return config.getWithdrawColor();

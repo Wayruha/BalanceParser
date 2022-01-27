@@ -37,26 +37,35 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
 	private Long orderId;
 
-	public BigDecimal getActualQty() {
+	public BigDecimal getActualBaseQty() {
 		return commissionAsset != null && commissionAsset.equals(getBaseAsset()) ? originalQuantity.subtract(commission)
 				: originalQuantity;
+	}
+	
+	public BigDecimal getOriginalQuoteQty() {
+		return originalQuantity.multiply(price);
+	}
+	
+	public BigDecimal getActualQuoteQty() {
+		return commissionAsset != null && commissionAsset.equals(getQuoteAsset()) ? getOriginalQuoteQty().subtract(commission)
+				: getOriginalQuoteQty();
 	}
 
 	public BigDecimal getPriceIncludingCommission() {
 		if (orderStatus.equals("FILLED")) {
 			if (side.equals("BUY")) {
 				if (commissionAsset.equals(getQuoteAsset())) {
-					return priceOfLastFilledTrade.add(commission.divide(getActualQty(), MATH_CONTEXT));
+					return priceOfLastFilledTrade.add(commission.divide(getActualBaseQty(), MATH_CONTEXT));
 				} else if (commissionAsset.equals(getBaseAsset())) {
-					return priceOfLastFilledTrade.multiply(originalQuantity).divide(getActualQty(), MATH_CONTEXT);
+					return priceOfLastFilledTrade.multiply(originalQuantity).divide(getActualBaseQty(), MATH_CONTEXT);
 				} else {
 					return priceOfLastFilledTrade;
 				}
 			} else if (side.equals("SELL")) {
 				if (commissionAsset.equals(getQuoteAsset())) {
-					return priceOfLastFilledTrade.subtract(commission.divide(getActualQty(), MATH_CONTEXT));
+					return priceOfLastFilledTrade.subtract(commission.divide(getActualBaseQty(), MATH_CONTEXT));
 				} else if (commissionAsset.equals(getBaseAsset())) {
-					return priceOfLastFilledTrade.multiply(getActualQty()).divide(originalQuantity, MATH_CONTEXT);
+					return priceOfLastFilledTrade.multiply(getActualBaseQty()).divide(originalQuantity, MATH_CONTEXT);
 				} else {
 					return priceOfLastFilledTrade;
 				}
@@ -70,16 +79,16 @@ public class OrderTradeUpdateEvent extends AbstractEvent {
 
 	public BigDecimal getTradeDelta() {
 		if (side.equals("BUY")) {
-			return getActualQty();
+			return getActualBaseQty();
 		} else if (side.equals("SELL")) {
-			return getActualQty().negate();
+			return getActualBaseQty().negate();
 		} else {
 			throw new IllegalArgumentException("Unrecognized order.Side");
 		}
 	}
 
 	public BigDecimal getQuoteAssetQty() {
-		return getActualQty().multiply(priceOfLastFilledTrade);
+		return getActualBaseQty().multiply(priceOfLastFilledTrade);
 	}
 
 	public BigDecimal getQuoteAssetCommission(){

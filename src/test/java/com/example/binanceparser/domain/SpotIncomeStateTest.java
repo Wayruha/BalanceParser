@@ -244,7 +244,7 @@ public class SpotIncomeStateTest {
                 setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.04")), asset(ETH, num("0.1")), asset(USDT, num("19100"))),
                 setOf(locked(ETH, num("0.1"), num("400")), locked(BTC, num("0.03"), num("1500")), locked(USDT, num("19100"), num("19100"))), emptyList(), emptyList());
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).side("BUY").eventType(EventType.ORDER_TRADE_UPDATE)
-                .symbol(ETH + BTC).orderStatus("FILLED").side("TRANSFER").price(num("0.1"))
+                .symbol(ETH + BTC).orderStatus("FILLED").side("BUY").price(num("0.1"))
                 .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("0.1")).commission(num("0"))
                 .commissionAsset(BTC).build();
         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.2"), num("0")), eventAsset(BTC, num("0.03"), num("0")));
@@ -261,7 +261,7 @@ public class SpotIncomeStateTest {
                 setOf(asset(VIRTUAL_USD, num("21000")), asset(ETH, num("0.2")), asset(BTC, num("0.03")), asset(USDT, num("19100"))),
                 setOf(locked(ETH, num("0.2"), num("900")), locked(BTC, num("0.02"), num("1000")), locked(USDT, num("19100"), num("19100"))), emptyList(), emptyList());
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).side("BUY").eventType(EventType.ORDER_TRADE_UPDATE)
-                .symbol(ETH + BTC).orderStatus("FILLED").side("TRANSFER").price(num("0.1"))
+                .symbol(ETH + BTC).orderStatus("FILLED").side("BUY").price(num("0.1"))
                 .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("0.25")).commission(num("0"))
                 .commissionAsset(BTC).build();
         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.45"), num("0")), eventAsset(BTC, num("0.005"), num("0")));
@@ -275,7 +275,7 @@ public class SpotIncomeStateTest {
                 setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.005")), asset(ETH, num("0.45")), asset(USDT, num("19100"))),
                 setOf(locked(ETH, num("0.4"), num("1900")), locked(USDT, num("19100"), num("19100"))), emptyList(), emptyList());
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).side("BUY").eventType(EventType.ORDER_TRADE_UPDATE)
-                .symbol(AXS + BTC).orderStatus("FILLED").side("TRANSFER").price(num("0.005"))
+                .symbol(AXS + BTC).orderStatus("FILLED").side("BUY").price(num("0.005"))
                 .priceOfLastFilledTrade(num("0.005")).originalQuantity(num("1")).commission(num("0"))
                 .commissionAsset(BTC).build();
         accEvent = accountUpdateEvent(eventAsset(BTC, num("0.0"), num("0")), eventAsset(AXS, num("1"), num("0")));
@@ -288,7 +288,7 @@ public class SpotIncomeStateTest {
                 setOf(asset(VIRTUAL_USD, num("21000")), asset(BTC, num("0.0")), asset(ETH, num("0.45")), asset(AXS, num("1")), asset(USDT, num("19100"))),
                 setOf(locked(ETH, num("0.4"), num("1900")), locked(USDT, num("19100"), num("19100"))), emptyList(), emptyList());
         orderEvent = OrderTradeUpdateEvent.builder().dateTime(null).eventType(EventType.ORDER_TRADE_UPDATE)
-                .symbol(BNB + ETH).orderStatus("FILLED").side("TRANSFER").price(num("0.1"))
+                .symbol(BNB + ETH).orderStatus("FILLED").side("BUY").price(num("0.1"))
                 .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("1")).commission(num("0"))
                 .commissionAsset(ETH).build();
         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.35"), num("0")), eventAsset(BNB, num("1"), num("0")));

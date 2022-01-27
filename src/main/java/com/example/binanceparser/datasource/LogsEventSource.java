@@ -17,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-
-import static com.example.binanceparser.BalanceStateVisualizer.filters;
 import static com.example.binanceparser.datasource.ParserUtil.fromPlainToJson;
 import static com.example.binanceparser.domain.events.EventType.*;
 

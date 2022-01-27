@@ -36,7 +36,7 @@ public class BalanceReport {
                 .append("Min balance: ").append(min).append("\n")
                 .append("Max balance: ").append(max).append("\n")
                 .append("Balance Delta: ").append(balanceDifference).append("\n")
-                .append("Total transactions:").append(transactions.size()).append("\n")
+                .append("Total transactions:")//.append(transactions.size()).append("\n")
                 .append("Chart: ").append(outputPath).append("\n")
                 .toString();
     }

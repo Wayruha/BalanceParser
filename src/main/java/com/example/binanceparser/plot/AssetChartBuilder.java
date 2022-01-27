@@ -6,7 +6,6 @@ import com.example.binanceparser.domain.EventBalanceState;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +21,6 @@ public class AssetChartBuilder extends ChartBuilder<EventBalanceState> {
 
 	@Override
 	public JFreeChart buildLineChart(List<EventBalanceState> eventBalanceStates) {
-		final TimeSeriesCollection dataSeries = new TimeSeriesCollection();
 		getTimeSeriesForEveryAsset(eventBalanceStates).forEach(dataSeries::addSeries);
 		JFreeChart chart = ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", dataSeries);
 		if (config.isDrawPoints()) {

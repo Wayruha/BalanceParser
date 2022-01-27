@@ -15,7 +15,7 @@ import static java.time.LocalDateTime.parse;
 public class AppProperties {
     private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    private String trackedPerson;
+    private List<String> trackedPersons;
     private String futuresAccountPrefix;
     private String spotAccountPrefix;
     private LocalDateTime startTrackDate;
@@ -26,7 +26,7 @@ public class AppProperties {
     private DatasourceType dataSourceType;
 
     public AppProperties(Properties props) {
-        this.trackedPerson = props.getProperty("config.person");
+        this.trackedPersons = personsTotrack(props);
         this.futuresAccountPrefix = props.getProperty("config.futures_prefix");
         this.spotAccountPrefix = props.getProperty("config.spot_prefix");
         this.startTrackDate = parse(props.getProperty("config.start_track_date"), formatter);
@@ -42,6 +42,12 @@ public class AppProperties {
 		assetsToTrack = assetsToTrack.stream().map(String::trim).collect(Collectors.toList());
 		return assetsToTrack;
 	}
+    
+    private static List<String> personsTotrack(Properties props){
+    	List<String> personsTotrack = Arrays.asList(props.getProperty("config.person").split(","));
+    	personsTotrack = personsTotrack.stream().map(String::trim).collect(Collectors.toList());
+    	return personsTotrack;
+    }
 
     public enum DatasourceType {
         LOGS("logs"),
