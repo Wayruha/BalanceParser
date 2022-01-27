@@ -140,7 +140,7 @@ public abstract class ChartBuilder<T extends BalanceState> {
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
 			final TransactionX.Asset2 quoteAsset = tx.getQuoteAsset();
 			final TransactionX.Asset2 baseAsset = tx.getBaseAsset();
-			BigDecimal legalQuoteAssetQty = tx.getValuableBaseQtyInvolved().divide(baseAsset.getTxQty())
+			BigDecimal legalQuoteAssetQty = tx.getValuableBaseQtyInvolved().divide(baseAsset.getTxQty(), MATH_CONTEXT)
 					.multiply(quoteAsset.getTxQty());
 			String assetName = trackedAsset.equals(VIRTUAL_USD) ? VIRTUAL_USD : quoteAsset.getAssetName();
 			if (!assetsToProcess.containsKey(assetName)) {

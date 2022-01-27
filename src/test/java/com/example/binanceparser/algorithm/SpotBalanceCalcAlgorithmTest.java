@@ -3,6 +3,7 @@ package com.example.binanceparser.algorithm;
 import static com.example.binanceparser.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -142,7 +143,7 @@ public class SpotBalanceCalcAlgorithmTest {
 		aelist.add(accEvent);
 		// transfering 0.003 ETH <-- 0.0003 BTC
 		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
-				.symbol(ETH + BTC).orderStatus("FILLED").side("TRANSFER").price(new BigDecimal("0.1"))
+				.symbol(ETH + BTC).orderStatus("FILLED").side("BUY").price(new BigDecimal("0.1"))
 				.priceOfLastFilledTrade(new BigDecimal("0.1")).originalQuantity(new BigDecimal("0.003"))
 				.commission(new BigDecimal("0.00001")).commissionAsset(BTC).build();
 		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
@@ -157,7 +158,7 @@ public class SpotBalanceCalcAlgorithmTest {
 		aelist.add(accEvent);
 		// transfering 0.1 BNB <-- 0.001 ETH
 		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
-				.symbol(BNB + ETH).orderStatus("FILLED").side("TRANSFER").price(new BigDecimal("0.01"))
+				.symbol(BNB + ETH).orderStatus("FILLED").side("BUY").price(new BigDecimal("0.01"))
 				.priceOfLastFilledTrade(new BigDecimal("0.01")).originalQuantity(new BigDecimal("0.1"))
 				.commission(new BigDecimal("0.0001")).commissionAsset(BTC).build();
 		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
@@ -187,8 +188,7 @@ public class SpotBalanceCalcAlgorithmTest {
 				.priceOfLastFilledTrade(new BigDecimal("50000")).originalQuantity(new BigDecimal("0.00119"))
 				.commission(new BigDecimal("1.5")).commissionAsset(USDT).build();
 		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
-				.balances(List.of(
-						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0"), new BigDecimal("0")),
+				.balances(List.of(new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0"), new BigDecimal("0")),
 						new AccountPositionUpdateEvent.Asset(USDT, new BigDecimal("376"), new BigDecimal("0"))))
 				.build();
 		incomeState = new SpotIncomeState(dateTime, incomeState);
@@ -208,7 +208,7 @@ public class SpotBalanceCalcAlgorithmTest {
 		// видно на якому етапі проблема
 		assertIterableEquals(bsList, acceptedBSlist);
 	}
-	
+
 	@Test
 	public void shouldCorrectlyHandleConvert() {
 		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -216,36 +216,34 @@ public class SpotBalanceCalcAlgorithmTest {
 		OrderTradeUpdateEvent orderEvent;
 		AccountPositionUpdateEvent accEvent;
 		SpotIncomeState incomeState;
-		
-		incomeState = new SpotIncomeState(new LinkedHashSet<>(List.of(new Asset(ETH, new BigDecimal("2")), new Asset(BTC, new BigDecimal("0")))), 
-				new LinkedHashSet<>(List.of(new LockedAsset(ETH, new BigDecimal("1"), new BigDecimal("4000")))), 
-				Collections.emptyList(), 
-				Collections.emptyList());
+
+		incomeState = new SpotIncomeState(
+				new LinkedHashSet<>(new ArrayList<>(List.of(new Asset(ETH, new BigDecimal("2"))))),
+				new LinkedHashSet<>(new ArrayList<>(List.of(new LockedAsset(ETH, new BigDecimal("1"), new BigDecimal("4000"))))),
+				new ArrayList<>(Collections.emptyList()), new ArrayList<>(Collections.emptyList()));
 		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
-				.symbol(BTC + ETH).orderStatus("FILLED").side("BUY").price(new BigDecimal("10"))
-				.priceOfLastFilledTrade(new BigDecimal("10")).originalQuantity(new BigDecimal("0.1"))
+				.symbol(ETH + BTC).orderStatus("FILLED").side("SELL").price(new BigDecimal("0.1"))
+				.priceOfLastFilledTrade(new BigDecimal("0.1")).originalQuantity(new BigDecimal("1"))
 				.commission(new BigDecimal("0")).commissionAsset(USDT).build();
 		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
-				.balances(List.of(
-						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.1"), new BigDecimal("0")),
-						new AccountPositionUpdateEvent.Asset(ETH, new BigDecimal("1"), new BigDecimal("0"))))
+				.balances(new ArrayList<>(List.of(new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.1"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(ETH, new BigDecimal("1"), new BigDecimal("0")))))
 				.build();
 		calcAlgorithm.handleConvertOperation(incomeState, orderEvent, accEvent);
 		assertEquals(new BigDecimal("0.1"), incomeState.findLockedAsset(BTC).get().getBalance());
-		assertEquals(new BigDecimal("0"), incomeState.findLockedAsset(ETH).get().getBalance());
+		assertTrue(incomeState.findLockedAsset(ETH).isEmpty());
 		assertEquals(new BigDecimal("1"), incomeState.findAssetOpt(ETH).get().getBalance());
-		
+
 		orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
-				.symbol(BTC + ETH).orderStatus("FILLED").side("SELL").price(new BigDecimal("0.1"))
-				.priceOfLastFilledTrade(new BigDecimal("0.1")).originalQuantity(new BigDecimal("0.1"))
+				.symbol(ETH + BTC).orderStatus("FILLED").side("BUY").price(new BigDecimal("10"))
+				.priceOfLastFilledTrade(new BigDecimal("10")).originalQuantity(new BigDecimal("1"))
 				.commission(new BigDecimal("0")).commissionAsset(USDT).build();
 		accEvent = AccountPositionUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ACCOUNT_POSITION_UPDATE)
-				.balances(List.of(
-						new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.0"), new BigDecimal("0")),
-						new AccountPositionUpdateEvent.Asset(ETH, new BigDecimal("2"), new BigDecimal("0"))))
+				.balances(new ArrayList<>(List.of(new AccountPositionUpdateEvent.Asset(BTC, new BigDecimal("0.0"), new BigDecimal("0")),
+						new AccountPositionUpdateEvent.Asset(ETH, new BigDecimal("2"), new BigDecimal("0")))))
 				.build();
 		calcAlgorithm.handleConvertOperation(incomeState, orderEvent, accEvent);
-		assertEquals(new BigDecimal("0.0"), incomeState.findLockedAsset(BTC).get().getBalance());
+		assertTrue(incomeState.findLockedAsset(BTC).isEmpty());
 		assertEquals(new BigDecimal("1"), incomeState.findLockedAsset(ETH).get().getBalance());
 		assertEquals(new BigDecimal("2"), incomeState.findAssetOpt(ETH).get().getBalance());
 	}
