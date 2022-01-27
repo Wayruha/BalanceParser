@@ -67,6 +67,7 @@ public class BalanceStateVisualizer {
 		config.setConvertToUSD(true);
 		return config;
 	}
+	
 	private static void addSubject(BalanceVisualizerConfig config, String subject, String prefix) {
 		final String resolvedSubjectName = prefix.equals("") ? subject : prefix + "_" + subject;
 		final List<String> list = config.getSubject();
@@ -75,6 +76,7 @@ public class BalanceStateVisualizer {
 		}
 		config.getSubject().add(resolvedSubjectName);
 	}
+	
 	public void futuresStateChangeFromLogs() throws IOException {
 		final BalanceVisualizerConfig config = configure();
 		final String person = appProperties.getTrackedPerson();
@@ -86,6 +88,7 @@ public class BalanceStateVisualizer {
 		System.out.println("Report....");
 		System.out.println(report.toPrettyString());
 	}
+	
 	private EventSource<AbstractEvent> getEventSource(BalanceVisualizerConfig config) {
     	AppProperties.DatasourceType eventSourceType = appProperties.getDataSourceType();
     	String person = appProperties.getTrackedPerson();

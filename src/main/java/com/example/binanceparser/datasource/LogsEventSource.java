@@ -1,5 +1,6 @@
 package com.example.binanceparser.datasource;
 
+import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.EventType;
@@ -17,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import static com.example.binanceparser.BalanceStateVisualizer.filters;
 import static com.example.binanceparser.datasource.ParserUtil.fromPlainToJson;
 import static com.example.binanceparser.domain.events.EventType.*;
 
