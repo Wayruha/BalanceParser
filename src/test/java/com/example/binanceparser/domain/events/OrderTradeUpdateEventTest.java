@@ -97,7 +97,7 @@ public class OrderTradeUpdateEventTest {
                 .originalQuantity(new BigDecimal("0.0011"))
                 .commission(new BigDecimal("0.0001"))
                 .commissionAsset(BTC).build();
-        assertEquals(new BigDecimal("40909.090"), orderEvent.getPriceIncludingCommission());
+        assertEquals(new BigDecimal("40909.09"), orderEvent.getPriceIncludingCommission());
         orderEvent = OrderTradeUpdateEvent.builder()
                 .dateTime(dateTime)
                 .eventType(EventType.ORDER_TRADE_UPDATE)

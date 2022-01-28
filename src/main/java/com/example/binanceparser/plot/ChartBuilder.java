@@ -2,6 +2,7 @@ package com.example.binanceparser.plot;
 
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.BalanceState;
+import com.example.binanceparser.domain.Transaction;
 import com.example.binanceparser.domain.TransactionType;
 import com.example.binanceparser.domain.TransactionX;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 
 public abstract class ChartBuilder<T extends BalanceState> {
 	public abstract JFreeChart buildLineChart(List<T> logBalanceStates);
+
 	protected TimeSeriesCollection dataSeries;
 	protected List<String> assetsToTrack;
 	protected List<Point> withdrawPoints;
@@ -87,7 +89,12 @@ public abstract class ChartBuilder<T extends BalanceState> {
 						|| transaction.getTransactionType().equals(TransactionType.DEPOSIT));
 	}
 
-	// метод имеет ту же функцию, что и прошлая версия, проверяет является ли транзакция выводом или депозитом стейблкоина
+	protected boolean anyTransfers(List<Transaction> transactions) {
+		return transactions.stream().anyMatch((tr) -> isTransfer(tr.getBaseAsset(), tr));
+	}
+
+	// метод имеет ту же функцию, что и прошлая версия, проверяет является ли
+	// транзакция выводом или депозитом стейблкоина
 	protected boolean isTransfer(String trackedAsset, TransactionX transaction) {
 		if (transaction.getType() == TransactionType.WITHDRAW || transaction.getType() == TransactionType.DEPOSIT) {
 			final TransactionX.Update tx = (TransactionX.Update) transaction;
@@ -99,10 +106,8 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	}
 
 	protected boolean anyTransfer(List<TransactionX> transactions) {
-		return transactions.stream()
-				.filter(transaction -> transaction.getType().equals(TransactionType.DEPOSIT)
-					|| transaction.getType().equals(TransactionType.WITHDRAW))
-				.anyMatch(transaction -> {
+		return transactions.stream().filter(transaction -> transaction.getType().equals(TransactionType.DEPOSIT)
+				|| transaction.getType().equals(TransactionType.WITHDRAW)).anyMatch(transaction -> {
 					final TransactionX.Update tx = (TransactionX.Update) transaction;
 					final TransactionX.Asset2 asset = tx.getAsset();
 					return isTransfer(asset.getAssetName(), transaction);
@@ -137,7 +142,8 @@ public abstract class ChartBuilder<T extends BalanceState> {
 				milsToLocalDateTime(finish.getLastMillisecond()));
 	}
 
-	protected Map<String, BigDecimal> getNonValuableAssetTradeParts(String trackedAsset, List<TransactionX> transactions) {
+	protected Map<String, BigDecimal> getNonValuableAssetTradeParts(String trackedAsset,
+			List<TransactionX> transactions) {
 		Map<String, BigDecimal> assetsToProcess = new HashMap<>();
 		for (TransactionX transaction : getTransactionsToProcess(trackedAsset, transactions)) {
 			final TransactionX.Trade tx = (TransactionX.Trade) transaction;
@@ -170,21 +176,22 @@ public abstract class ChartBuilder<T extends BalanceState> {
 	private LocalDateTime milsToLocalDateTime(long val) {
 		return LocalDateTime.ofInstant(Instant.ofEpochMilli(val), ZoneId.systemDefault());
 	}
-	
+
 	public LegendItemSource getlegendItemSource() {
 		return new LegendItemSource() {
 			@Override
 			public LegendItemCollection getLegendItems() {
 				LegendItemCollection legendItems = new LegendItemCollection();
-				legendItems.add(new LegendItem("stablecoin withdraw or deposit", null, null, null, ShapeUtils
-						.createDiagonalCross(config.getCrossLength(), config.getCrossWidth()), config.getWithdrawColor()));
+				legendItems.add(new LegendItem("stablecoin withdraw or deposit", null, null, null,
+						ShapeUtils.createDiagonalCross(config.getCrossLength(), config.getCrossWidth()),
+						config.getWithdrawColor()));
 				legendItems.add(new LegendItem("selling amount of asset that contained non-valuable part",
 						"first part of a line shows how much of asset sold was valuable", null, null,
 						ShapeUtils.createDiagonalCross(config.getCrossLength(), config.getCrossWidth()),
 						config.getSpecialPointColor()));
 				return legendItems;
 			}
-		};	
+		};
 	}
 
 	@Data

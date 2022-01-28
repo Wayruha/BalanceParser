@@ -1,5 +1,6 @@
 package com.example.binanceparser.plot;
 
+import static com.example.binanceparser.Constants.*;
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.EventBalanceState;
@@ -45,12 +46,12 @@ public class AssetChartBuilder extends ChartBuilder<EventBalanceState> {
 		for (int n = 0; n < eventStates.size(); n++) {
 			EventBalanceState eventBalanceState = eventStates.get(n);
 			Asset asset = eventBalanceState.findAsset(trackedAsset);
-			if(asset == null) continue;
-			if (eventBalanceState.getTransactions().stream().anyMatch(transaction -> isTransfer(trackedAsset, transaction))) {
+			if (eventBalanceState.getTransactions().stream().anyMatch(transaction -> isTransfer(trackedAsset, transaction))
+					|| (trackedAsset.equals(VIRTUAL_USD) && anyTransfers(eventBalanceState.getTransactions()))) {
 				withdrawPoints.add(new Point(row, n));
 				withdrawPoints.add(new Point(0, n));
 			}
-			series.addOrUpdate(dateTimeToSecond(eventBalanceState.getDateTime()), asset.getBalance());
+			series.addOrUpdate(dateTimeToSecond(eventBalanceState.getDateTime()), eventBalanceState.getAssetBalance(trackedAsset));
 		}
 		return series;
 	}

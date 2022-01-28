@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,13 +34,13 @@ public class EventBalanceState extends BalanceState {
 		this.assets = new LinkedHashSet<>(assets);
 		transactions = new ArrayList<>();
 	}
-	
+
 	public EventBalanceState(LocalDateTime dateTime, EventBalanceState balanceState, BigDecimal balanceUpdateDelta) {
 		super(dateTime);
 		assets = new LinkedHashSet<>(balanceState.getAssets());
 		transactions = new ArrayList<>();
 	}
-	
+
 	public void updateAssets(List<Asset> newAssets) {
 		newAssets.stream().forEach((updatedAsset) -> {
 			assets.removeIf((currentAsset) -> currentAsset.getAsset().equals(updatedAsset.getAsset()));
@@ -60,13 +59,13 @@ public class EventBalanceState extends BalanceState {
 			transactions.add(new Transaction());
 		}
 	}
-	
-	//will be rewrited entirely 
+
+	// will be rewrited entirely
 	public BigDecimal calculateVirtualUSDBalance() {
 		BigDecimal virtualBalance = BigDecimal.ZERO;
 		// works for quoteAsset = USD
 		for (Asset asset : assets) {
-			if(STABLECOIN_RATE.containsKey(asset.getAsset())) {
+			if (STABLECOIN_RATE.containsKey(asset.getAsset())) {
 				virtualBalance = virtualBalance.add(STABLECOIN_RATE.get(asset.getAsset()).multiply(asset.getBalance()));
 			}
 		}
@@ -78,11 +77,11 @@ public class EventBalanceState extends BalanceState {
 	}
 
 	public BigDecimal getAssetBalance(String assetName) {
-		//this will be removed later
-		if(assetName.equals(VIRTUAL_USD)) {
+		// this will be removed later
+		if (assetName.equals(VIRTUAL_USD)) {
 			return calculateVirtualUSDBalance();
 		}
-		
+
 		final Asset asset = findAsset(assetName);
 		return asset == null ? BigDecimal.ZERO : asset.getBalance();
 	}
