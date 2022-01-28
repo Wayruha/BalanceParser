@@ -35,7 +35,7 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
         final String chartPath = config.getOutputDir() + "/" + "TEST_" + subject + CHART_FILE_EXT;
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
-        List<BigDecimal> values = balanceStates.stream().map(state -> state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO))
+        List<BigDecimal> values = balanceStates.stream().map(state -> state.findAsset(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO))
                 .collect(Collectors.toList());
 
         return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
@@ -51,8 +51,8 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
 
     private BigDecimal calcBalanceDelta(List<SpotIncomeState> balanceStates) {
         if (balanceStates.size() == 0) return BigDecimal.ZERO;
-        final Asset last = balanceStates.get(balanceStates.size() - 1).findAssetOpt(VIRTUAL_USD).get();
-        final Asset first = balanceStates.get(0).findAssetOpt(VIRTUAL_USD).get();
+        final Asset last = balanceStates.get(balanceStates.size() - 1).findAsset(VIRTUAL_USD).get();
+        final Asset first = balanceStates.get(0).findAsset(VIRTUAL_USD).get();
         return last.getBalance().subtract(first.getBalance());
     }
 

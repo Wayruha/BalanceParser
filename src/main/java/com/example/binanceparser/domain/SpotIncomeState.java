@@ -72,10 +72,6 @@ public class SpotIncomeState extends BalanceState {
         return lockedAsset.map(LockedAsset::getStableValue).orElse(ZERO);
     }
 
-  /*  public LockedAsset findLockedAsset(String assetName) {
-        return lockedLockedAssets.stream().filter(a -> a.getAsset().equals(assetName)).findFirst().orElse(null);
-    }*/
-
     public Optional<LockedAsset> findLockedAsset(String assetName) {
         return ofNullable(lockedAssets.get(assetName));
     }
@@ -91,19 +87,9 @@ public class SpotIncomeState extends BalanceState {
                 .collect(Collectors.toList());
     }
 
-    public Optional<Asset> findAssetOpt(String assetName) {
+    public Optional<Asset> findAsset(String assetName) {
         return ofNullable(currentAssets.get(assetName));
     }
-
-   /* public Asset addAssetIfNotExist(String assetName) {
-        final Asset asset = findAsset(assetName);
-        if (asset != null)
-            return asset;
-
-        final Asset newAsset = new Asset(assetName, ZERO);
-        currentAssets.put(assetName, newAsset);
-        return newAsset;
-    }*/
 
     public void removeLockedStateIfEmpty(String... assetNames) {
         for (String assetName : assetNames) {
@@ -156,7 +142,7 @@ public class SpotIncomeState extends BalanceState {
 
     public void updateAssetsBalance(List<Asset> updatedAssets) {
         updatedAssets.forEach(updatedAsset -> {
-            final Optional<Asset> assetOpt = findAssetOpt(updatedAsset.getAsset());
+            final Optional<Asset> assetOpt = findAsset(updatedAsset.getAsset());
             assetOpt.ifPresentOrElse(asset -> asset.setBalance(updatedAsset.getBalance()),
                     () -> addAsset(updatedAsset));
             removeLockedStateIfEmpty(updatedAsset.getAsset());

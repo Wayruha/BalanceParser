@@ -80,7 +80,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
         } else {
             handleDeposit(state, balanceEvent, accEvent);
         }
-        state.findAssetOpt(VIRTUAL_USD).get().setBalance(state.calculateVirtualUSDBalance());
+        state.findAsset(VIRTUAL_USD).get().setBalance(state.calculateVirtualUSDBalance());
     }
 
     public void processOrder(SpotIncomeState state, OrderTradeUpdateEvent orderEvent,
@@ -97,7 +97,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
         } else {
             handleConvertOperation(state, orderEvent, accEvent);
         }
-        state.findAssetOpt(VIRTUAL_USD).get().setBalance(state.calculateVirtualUSDBalance());
+        state.findAsset(VIRTUAL_USD).get().setBalance(state.calculateVirtualUSDBalance());
     }
 
     /**
@@ -149,8 +149,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 
         updateAssetsBalance(state, orderEvent, accEvent);
 
-        final Optional<Asset> baseAsset = state.findAssetOpt(baseAssetName);
-        final Optional<Asset> quoteAsset = state.findAssetOpt(quoteAssetName);
+        final Optional<Asset> baseAsset = state.findAsset(baseAssetName);
+        final Optional<Asset> quoteAsset = state.findAsset(quoteAssetName);
         final Optional<LockedAsset> lockedBase = state.findLockedAsset(baseAssetName);
         final Optional<LockedAsset> lockedQuote = state.findLockedAsset(quoteAssetName);
         TransactionX.Asset2 base = TransactionX.Asset2.builder().assetName(baseAssetName)
@@ -172,8 +172,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 
         updateAssetsBalance(state, order, accUpdate);
 
-        final Optional<Asset> baseAsset = state.findAssetOpt(quoteAssetName);
-        final Optional<Asset> quoteAsset = state.findAssetOpt(quoteAssetName);
+        final Optional<Asset> baseAsset = state.findAsset(quoteAssetName);
+        final Optional<Asset> quoteAsset = state.findAsset(quoteAssetName);
         final Optional<LockedAsset> lockedBase = state.findLockedAsset(baseAssetName);
         final Optional<LockedAsset> lockedQuote = state.findLockedAsset(quoteAssetName);
         TransactionX.Asset2 base = TransactionX.Asset2.builder().assetName(baseAssetName).txQty(order.getActualBaseQty())
@@ -204,8 +204,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
         final LockedAsset baseLocked = state.addLockedAssetIfNotExist(baseAssetName);
         baseLocked.addBalance(baseQty, quoteQty);
 
-        final Optional<Asset> baseAsset = state.findAssetOpt(baseAssetName);
-        final Optional<Asset> quoteAsset = state.findAssetOpt(quoteAssetName);
+        final Optional<Asset> baseAsset = state.findAsset(baseAssetName);
+        final Optional<Asset> quoteAsset = state.findAsset(quoteAssetName);
         final Optional<LockedAsset> quoteLocked = state.findLockedAsset(quoteAssetName);
         TransactionX.Asset2 base = TransactionX.Asset2.builder().assetName(baseAssetName).txQty(baseQty)
                 .fullBalance(baseAsset.map(Asset::getBalance).orElse(ZERO)).valuableBalance(baseLocked.getBalance())
@@ -257,8 +257,8 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 
         updateAssetsBalance(state, orderEvent, accEvent);
 
-        final Asset baseAsset = state.findAssetOpt(baseAssetName).get(); // not null because we CAN sell it
-        final Optional<Asset> quoteAsset = state.findAssetOpt(quoteAssetName);
+        final Asset baseAsset = state.findAsset(baseAssetName).get(); // not null because we CAN sell it
+        final Optional<Asset> quoteAsset = state.findAsset(quoteAssetName);
         TransactionX.Asset2 base = TransactionX.Asset2.builder()
                 .assetName(baseAssetName)
                 .txQty(baseQty)
@@ -286,7 +286,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 
         updateAssetsBalance(state, balanceEvent, accEvent);
 
-        final Optional<Asset> existingAsset = state.findAssetOpt(assetName);
+        final Optional<Asset> existingAsset = state.findAsset(assetName);
         final Optional<LockedAsset> lockedAsset = state.findLockedAsset(assetName);
         TransactionX.Asset2 txAsset = TransactionX.Asset2.builder().assetName(assetName).txQty(assetQty)
                 .fullBalance(existingAsset.map(Asset::getBalance).orElse(ZERO))
@@ -301,7 +301,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
                                AccountPositionUpdateEvent accEvent) {
         final String assetName = balanceEvent.getBalances();
         final BigDecimal qty = balanceEvent.getBalanceDelta().abs();
-        final Optional<Asset> assetOpt = state.findAssetOpt(assetName);
+        final Optional<Asset> assetOpt = state.findAsset(assetName);
 
         /*
          * примечание для себя сейчас если апдейт происходит в 282 строке, то
@@ -317,7 +317,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
         // when we try to withdraw asset we have worked with before (if not, assetOpt is
         // empty)
         if (assetOpt.isPresent()) {
-            final Asset existingAsset = state.findAssetOpt(assetName).get();
+            final Asset existingAsset = state.findAsset(assetName).get();
             final BigDecimal valuableAssetBalance = optLocked.map(Asset::getBalance).orElse(ZERO);
             final BigDecimal nonValuableAssetBalance = existingAsset.getBalance().subtract(valuableAssetBalance);
             // first, we withdraw as much nonValuable asset as possible and only then
@@ -335,7 +335,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
         updateAssetsBalance(state, balanceEvent, accEvent);
         optLocked = state.findLockedAsset(assetName);
         TransactionX.Asset2 txAsset = TransactionX.Asset2.builder().assetName(assetName).txQty(qty)
-                .fullBalance(state.findAssetOpt(assetName).map(Asset::getBalance).orElse(ZERO))
+                .fullBalance(state.findAsset(assetName).map(Asset::getBalance).orElse(ZERO))
                 .valuableBalance(optLocked.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(optLocked.map(LockedAsset::getStableValue).orElse(ZERO)).build();
         state.getTXs().add(TransactionX.withdrawTx(state.getDateTime(), txAsset, stableValueDiff));

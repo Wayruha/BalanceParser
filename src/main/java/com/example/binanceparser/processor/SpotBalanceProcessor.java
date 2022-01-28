@@ -62,7 +62,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
 
     private void logTransaction(SpotIncomeState state){
         final TransactionX _tx = state.getTXs().get(0);
-        final BigDecimal usdBalance = state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO);
+        final BigDecimal usdBalance = state.findAsset(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO);
         if(_tx.getType() == TransactionType.DEPOSIT || _tx.getType() == TransactionType.WITHDRAW){
             final TransactionX.Update tx = (TransactionX.Update) _tx;
             final TransactionX.Asset2 asset = tx.getAsset();

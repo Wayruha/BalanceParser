@@ -192,42 +192,6 @@ public class SpotBalanceCalcAlgorithmTest {
     }
 
     @Test
-    public void shouldCorrectlyHandleConvert() {
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime dateTime = LocalDateTime.parse("2021-08-16 00:01:00", dateFormat);
-        OrderTradeUpdateEvent orderEvent;
-        AccountPositionUpdateEvent accEvent;
-        SpotIncomeState incomeState;
-
-        incomeState = new SpotIncomeState(
-                setOf(asset(ETH, num("2")), asset(BTC, num("1"))),
-                setOf(locked(ETH, num("1"), num("4000"))), emptyList(), emptyList());
-        orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
-                .symbol(ETH + BTC).orderStatus("FILLED").side("SELL").price(num("0.1"))
-                .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("1"))
-                .commission(num("0")).commissionAsset(USDT).build();
-        accEvent = accountUpdateEvent(toEventAsset(asset(BTC, num("1.1"))), toEventAsset(asset(ETH, num("1"))));
-
-        calcAlgorithm.handleConvertOperation(incomeState, orderEvent, accEvent);
-        assertTrue(incomeState.findLockedAsset(ETH).isEmpty());
-        assertEquals(num("1"), incomeState.findAssetOpt(ETH).get().getBalance());
-        assertEquals(num("1.1"), incomeState.findAssetOpt(BTC).get().getBalance());
-        assertEquals(num("0.1"), incomeState.findLockedAsset(BTC).get().getBalance());
-        assertEquals(num("4000"), incomeState.findLockedAsset(BTC).get().getStableValue());
-
-        orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
-                .symbol(ETH + BTC).orderStatus("FILLED").side("BUY").price(num("0.2"))
-                .priceOfLastFilledTrade(num("0.2")).originalQuantity(num("1"))
-                .commission(num("0")).commissionAsset(USDT).build();
-        accEvent = accountUpdateEvent(toEventAsset(asset(BTC, num("0"))), toEventAsset(asset(ETH, num("2"))));
-        calcAlgorithm.handleConvertOperation(incomeState, orderEvent, accEvent);
-        assertTrue(incomeState.findLockedAsset(BTC).isEmpty());
-        assertEquals(num("4000"), incomeState.findLockedAsset(ETH).get().getStableValue());
-        assertEquals(num("0.5"), incomeState.findLockedAsset(ETH).get().getBalance());
-        assertEquals(num("2"), incomeState.findAssetOpt(ETH).get().getBalance());
-    }
-
-    @Test
     public void shouldCorrectlyHandleBuy() {
         OrderTradeUpdateEvent orderEvent;
         AccountPositionUpdateEvent accEvent;
@@ -246,7 +210,7 @@ public class SpotBalanceCalcAlgorithmTest {
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertEquals(num("0.2"), state.findLockedAsset(ETH).get().getBalance());
         assertEquals(num("900.0"), state.findLockedAsset(ETH).get().getStableValue());
-        assertEquals(num("21000.0"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());// virtual balance
+        assertEquals(num("21000.0"), state.findAsset(VIRTUAL_USD).get().getBalance());// virtual balance
         assertEquals(num("-1.0"), state.getTXs().get(0).getValueIncome());// virtual balance
 
         // buying 0.1 ETH for USDT. price: 6000 usdt
@@ -258,7 +222,7 @@ public class SpotBalanceCalcAlgorithmTest {
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertEquals(num("0.3"), state.findLockedAsset(ETH).get().getBalance());
         assertEquals(num("1500.0"), state.findLockedAsset(ETH).get().getStableValue());
-        assertEquals(num("21000.0"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());// virtual balance
+        assertEquals(num("21000.0"), state.findAsset(VIRTUAL_USD).get().getBalance());// virtual balance
         assertEquals(num("-5.0"), state.getTXs().get(1).getValueIncome());
 
         // buying 0.1 BTC for 45000 per 1
@@ -270,7 +234,7 @@ public class SpotBalanceCalcAlgorithmTest {
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertEquals(num("0.1"), state.findLockedAsset("BTC").get().getBalance());
         assertEquals(num("4500.0"), state.findLockedAsset(BTC).get().getStableValue());
-        assertEquals(num("21000.0"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());// virtual balance
+        assertEquals(num("21000.0"), state.findAsset(VIRTUAL_USD).get().getBalance());// virtual balance
         assertEquals(num("-10.0"), state.getTXs().get(2).getValueIncome());
 
         // buying 0.3 BTC for 50000 per 1
@@ -282,7 +246,7 @@ public class SpotBalanceCalcAlgorithmTest {
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertEquals(num("0.4"), state.findLockedAsset(BTC).get().getBalance());
         assertEquals(num("19500.0"), state.findLockedAsset(BTC).get().getStableValue());
-        assertEquals(num("21000.0"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());// virtual balance
+        assertEquals(num("21000.0"), state.findAsset(VIRTUAL_USD).get().getBalance());// virtual balance
         assertEquals(num("-3.0"), state.getTXs().get(3).getValueIncome());
     }
 
@@ -304,7 +268,7 @@ public class SpotBalanceCalcAlgorithmTest {
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertEquals(num("0.1"), state.findLockedAsset(ETH).get().getBalance());// asset balance
         assertEquals(num("500"), state.findLockedAsset(ETH).get().getStableValue());
-        assertEquals(num("20700"), state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO));
+        assertEquals(num("20700"), state.findAsset(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO));
         //это противоречит предыдущему тесту, если -310, должно быть 21000-310=20690
         assertEquals(num("-310"), state.getTXs().get(0).getValueIncome().setScale(0)); // includes commission
 
@@ -316,7 +280,7 @@ public class SpotBalanceCalcAlgorithmTest {
         accEvent = accountUpdateEvent(eventAsset(BTC, num("0.0"), num("0")), eventAsset(USDT, num("16700"), num("0")));
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertTrue(state.findLockedAsset(BTC).isEmpty());// asset balance, null because it was deleted
-        assertEquals(num("17200"), state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO).setScale(0));
+        assertEquals(num("17200"), state.findAsset(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO).setScale(0));
         assertEquals(num("-3520"), state.getTXs().get(1).getValueIncome().setScale(0)); // includes commission
 
         // selling 0.15 ETH for 3000 per 1
@@ -330,9 +294,9 @@ public class SpotBalanceCalcAlgorithmTest {
         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.05"), num("0")), eventAsset(USDT, num("17000"), num("0")));
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertTrue(state.findLockedAsset(ETH).isEmpty());// asset balance, null because it was deleted
-        assertEquals(num("0.05"), state.findAssetOpt(ETH).map(Asset::getBalance).orElse(BigDecimal.ZERO));// virtual balance
-        assertEquals(num("17000"), state.findAssetOpt(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO));// virtual balance
-        assertEquals(num("17000"), state.findAssetOpt(USDT).map(Asset::getBalance).orElse(BigDecimal.ZERO));// virtual balance
+        assertEquals(num("0.05"), state.findAsset(ETH).map(Asset::getBalance).orElse(BigDecimal.ZERO));// virtual balance
+        assertEquals(num("17000"), state.findAsset(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO));// virtual balance
+        assertEquals(num("17000"), state.findAsset(USDT).map(Asset::getBalance).orElse(BigDecimal.ZERO));// virtual balance
         assertEquals(num("-205"), state.getTXs().get(0).getValueIncome().setScale(0, RoundingMode.HALF_UP)); // includes commission
     }
 
@@ -353,7 +317,7 @@ public class SpotBalanceCalcAlgorithmTest {
         assertTrue(state.findLockedAsset(BTC).isEmpty());// asset balance, null because it was deleted after we withdrew all available amount
         assertEquals(num("400"), state.findLockedAsset(ETH).get().getStableValue());// asset balance, null because it was deleted after we withdrew all available amount
         assertEquals(num("-5000"), state.getTXs().get(0).getValueIncome());
-        assertEquals(num("400"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
+        assertEquals(num("400"), state.findAsset(VIRTUAL_USD).get().getBalance());
 
         // withdrawing 0.05 ETH
         balanceEvent = balanceUpdateEvent(ETH, num("-0.05"));
@@ -362,7 +326,7 @@ public class SpotBalanceCalcAlgorithmTest {
         assertTrue(state.findLockedAsset(ETH).isPresent());// asset balance, present because it was not withdrawn completely
         assertEquals(num("0"), state.getTXs().get(1).getValueIncome());
         assertEquals(num("0.1"), state.findLockedAsset(ETH).get().getBalance());
-        assertEquals(num("400"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
+        assertEquals(num("400"), state.findAsset(VIRTUAL_USD).get().getBalance());
 
         // withdrawing 0.15 ETH
         balanceEvent = balanceUpdateEvent(ETH, num("-0.15"));
@@ -370,7 +334,7 @@ public class SpotBalanceCalcAlgorithmTest {
         calcAlgorithm.processBalanceUpdate(state, balanceEvent, accEvent);
         assertTrue(state.findLockedAsset(ETH).isEmpty()); //because withdrawed all amount
         assertEquals(num("-400.0"), state.getTXs().get(2).getValueIncome());
-        assertEquals(num("0"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
+        assertEquals(num("0"), state.findAsset(VIRTUAL_USD).get().getBalance());
     }
 
     @Test
@@ -394,8 +358,8 @@ public class SpotBalanceCalcAlgorithmTest {
         // depositing 0.5 ETH
         assertEquals(ethBalBefore, state.findLockedAsset(ETH).get().getBalance());
         assertEquals(num("800"), state.findLockedAsset(ETH).get().getStableValue());
-        assertEquals(ethBalAfter, state.findAssetOpt(ETH).get().getBalance());
-        assertEquals(num("900"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
+        assertEquals(ethBalAfter, state.findAsset(ETH).get().getBalance());
+        assertEquals(num("900"), state.findAsset(VIRTUAL_USD).get().getBalance());
 
         // depositing 0.1 BTC
         final BigDecimal btcBefore = num("0.1");
@@ -408,12 +372,12 @@ public class SpotBalanceCalcAlgorithmTest {
 
         calcAlgorithm.processBalanceUpdate(state, balanceEvent2, accEvent2);
         assertTrue(state.findLockedAsset(BTC).isEmpty());
-        assertEquals(btcBalanceAfter, state.findAssetOpt(BTC).get().getBalance());
-        assertEquals(num("900"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
+        assertEquals(btcBalanceAfter, state.findAsset(BTC).get().getBalance());
+        assertEquals(num("900"), state.findAsset(VIRTUAL_USD).get().getBalance());
     }
 
     @Test
-    public void shouldCorrectlyHandleConvert_2() {
+    public void shouldCorrectlyHandleConvert() {
         OrderTradeUpdateEvent orderEvent;
         AccountPositionUpdateEvent accEvent;
         SpotIncomeState state;
@@ -428,9 +392,9 @@ public class SpotBalanceCalcAlgorithmTest {
         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.2"), num("0")), eventAsset(BTC, num("0.03"), num("0")));
 
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
-        assertEquals(num("21000"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
-        assertEquals(num("0.2"), state.findAssetOpt(ETH).get().getBalance());
-        assertEquals(num("0.03"), state.findAssetOpt(BTC).get().getBalance());
+        assertEquals(num("21000"), state.findAsset(VIRTUAL_USD).get().getBalance());
+        assertEquals(num("0.2"), state.findAsset(ETH).get().getBalance());
+        assertEquals(num("0.03"), state.findAsset(BTC).get().getBalance());
         assertEquals(num("0.2"), state.findLockedAsset(ETH).get().getBalance());
         assertEquals(num("0.02"), state.findLockedAsset(BTC).get().getBalance());
 
@@ -441,7 +405,7 @@ public class SpotBalanceCalcAlgorithmTest {
                 .commissionAsset(BTC).build();
         accEvent = accountUpdateEvent(eventAsset(ETH, num("0.45"), num("0")), eventAsset(BTC, num("0.005"), num("0")));
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
-        assertEquals(num("21000"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
+        assertEquals(num("21000"), state.findAsset(VIRTUAL_USD).get().getBalance());
         assertEquals(num("0.400"), state.findLockedAsset(ETH).get().getBalance());//should be 0.4 but 0.45 (only 0.02 BTC of 0.025 is legal)
         assertTrue(state.findLockedAsset(BTC).isEmpty());//transfered all legal BTC to ETH
 
@@ -452,7 +416,7 @@ public class SpotBalanceCalcAlgorithmTest {
                 .commissionAsset(BTC).build();
         accEvent = accountUpdateEvent(eventAsset(BTC, num("0.0"), num("0")), eventAsset(AXS, num("1"), num("0")));
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
-        assertEquals(num("21000"), state.findAssetOpt(VIRTUAL_USD).get().getBalance());
+        assertEquals(num("21000"), state.findAsset(VIRTUAL_USD).get().getBalance());
         assertTrue(state.findLockedAsset(AXS).isEmpty());//because was bought for illegal asset
 
         //transfering 1 BNB <-- 0.1 ETH
@@ -464,6 +428,35 @@ public class SpotBalanceCalcAlgorithmTest {
         calcAlgorithm.processOrder(state, orderEvent, accEvent);
         assertEquals(num("1"), state.findLockedAsset(BNB).get().getBalance());
         assertEquals(num("0.300"), state.findLockedAsset(ETH).get().getBalance());
+
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dateTime = LocalDateTime.parse("2021-08-16 00:01:00", dateFormat);
+        state = new SpotIncomeState(
+                setOf(asset(VIRTUAL_USD, "4000"), asset(ETH, num("2")), asset(BTC, num("1"))),
+                setOf(locked(ETH, num("1"), num("4000"))), emptyList(), emptyList());
+        orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
+                .symbol(ETH + BTC).orderStatus("FILLED").side("SELL").price(num("0.1"))
+                .priceOfLastFilledTrade(num("0.1")).originalQuantity(num("1"))
+                .commission(num("0")).commissionAsset(USDT).build();
+        accEvent = accountUpdateEvent(toEventAsset(asset(BTC, num("1.1"))), toEventAsset(asset(ETH, num("1"))));
+
+        calcAlgorithm.processOrder(state, orderEvent, accEvent);
+        assertTrue(state.findLockedAsset(ETH).isEmpty());
+        assertEquals(num("1"), state.findAsset(ETH).get().getBalance());
+        assertEquals(num("1.1"), state.findAsset(BTC).get().getBalance());
+        assertEquals(num("0.1"), state.findLockedAsset(BTC).get().getBalance());
+        assertEquals(num("4000"), state.findLockedAsset(BTC).get().getStableValue());
+
+        orderEvent = OrderTradeUpdateEvent.builder().dateTime(dateTime).eventType(EventType.ORDER_TRADE_UPDATE)
+                .symbol(ETH + BTC).orderStatus("FILLED").side("BUY").price(num("0.2"))
+                .priceOfLastFilledTrade(num("0.2")).originalQuantity(num("1"))
+                .commission(num("0")).commissionAsset(USDT).build();
+        accEvent = accountUpdateEvent(toEventAsset(asset(BTC, num("0"))), toEventAsset(asset(ETH, num("2"))));
+        calcAlgorithm.processOrder(state, orderEvent, accEvent);
+        assertTrue(state.findLockedAsset(BTC).isEmpty());
+        assertEquals(num("4000"), state.findLockedAsset(ETH).get().getStableValue());
+        assertEquals(num("0.5"), state.findLockedAsset(ETH).get().getBalance());
+        assertEquals(num("2"), state.findAsset(ETH).get().getBalance());
     }
 
     private static LockedAsset locked(String assetName, String balance, String stableValue) {
