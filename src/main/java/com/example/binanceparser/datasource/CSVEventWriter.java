@@ -14,9 +14,11 @@ import com.example.binanceparser.domain.events.AbstractEvent;
 
 public class CSVEventWriter implements EventWriter<AbstractEvent> {
 	private File outputDir;
+	private String personId;
 
-	public CSVEventWriter(File outputDir) {
+	public CSVEventWriter(File outputDir, String personId) {
 		this.outputDir = outputDir;
+		this.personId = personId;
 	}
 
 	@Override
@@ -25,24 +27,21 @@ public class CSVEventWriter implements EventWriter<AbstractEvent> {
 		List<CSVModel> models = events.stream().map((event) -> {
 			CSVModel model = null;
 			try {
-				model = new CSVModel(event.getEventType().toString(),
+				model = new CSVModel(personId, event.getEventType().toString(),
 						event.getDateTime().format(dateFormat).toString(),
 						new ObjectMapper().writer().writeValueAsString(event));
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
-			}	
+			}
 			return model;
 		}).collect(Collectors.toList());
-		
+
 		try {
-			CsvSchema schema = CsvSchema.builder()
-					.addColumn("event_type")
-					.addColumn("event_ts")
-					.addColumn("json")
+			CsvSchema schema = CsvSchema.builder().addColumn("customer_id").addColumn("event_type").addColumn("event_ts").addColumn("json")
 					.build().withHeader();
 			CsvMapper mapper = new CsvMapper();
 			mapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
-			//here is some problem
+			// here is some problem
 			mapper.writerFor(CSVModel.class).with(schema).writeValues(outputDir).writeAll(models);
 		} catch (IOException e) {
 			e.printStackTrace();
