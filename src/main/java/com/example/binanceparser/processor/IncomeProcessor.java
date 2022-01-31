@@ -43,5 +43,4 @@ public class IncomeProcessor extends Processor<IncomeConfig> {
         }
         return null;
     }
-
 }

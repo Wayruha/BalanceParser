@@ -15,10 +15,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class IncomeBalanceState extends BalanceState {
     private FuturesIncomeType incomeType;
-
+    private BigDecimal availableBalance;
+    
     public IncomeBalanceState(LocalDateTime dateTime, BigDecimal availableBalance, FuturesIncomeType incomeType) {
         super(dateTime);
+        this.availableBalance = availableBalance;
         this.incomeType = incomeType;
     }
-
 }
