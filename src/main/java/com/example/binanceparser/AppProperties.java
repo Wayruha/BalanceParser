@@ -24,6 +24,7 @@ public class AppProperties {
 	private String outputPath;
 	private List<String> assetsToTrack;
 	private DatasourceType dataSourceType;
+	private HistoryItemSourceType historyItemSourceType;
 
 	public AppProperties(Properties props) {
 		this.trackedPersons = personsTotrack(props);
@@ -35,6 +36,7 @@ public class AppProperties {
 		this.outputPath = props.getProperty("config.file_output_path");
 		this.assetsToTrack = assetsToTrack(props);
 		this.dataSourceType = DatasourceType.forName(props.getProperty("config.event_source_type"));
+		this.historyItemSourceType = HistoryItemSourceType.forName(props.getProperty("config.history_item_source_type"));
 	}
 
 	private static List<String> assetsToTrack(Properties props) {
@@ -61,6 +63,20 @@ public class AppProperties {
 		}
 
 		public static DatasourceType forName(String str) {
+			return Arrays.stream(values()).filter(t -> t.name.equals(str)).findFirst().orElseThrow();
+		}
+	}
+
+	public enum HistoryItemSourceType {
+		LOGS("logs"), BINANCE("binance");
+
+		private final String name;
+
+		HistoryItemSourceType(String name) {
+			this.name = name;
+		}
+
+		public static HistoryItemSourceType forName(String str) {
 			return Arrays.stream(values()).filter(t -> t.name.equals(str)).findFirst().orElseThrow();
 		}
 	}

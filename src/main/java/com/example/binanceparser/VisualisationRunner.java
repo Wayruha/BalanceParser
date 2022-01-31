@@ -17,7 +17,7 @@ public class VisualisationRunner {
 		try {
 			appProperties = ConfigUtil.loadAppProperties("src/main/resources/application.properties");
 			users = appProperties.getTrackedPersons();
-			config = ConfigUtil.loadConfig(appProperties);
+			config = ConfigUtil.loadVisualizerConfig(appProperties);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -26,16 +26,20 @@ public class VisualisationRunner {
 	public static void main(String[] args) throws IOException {
 		SpotBalanceStateVisualizer spotVisualizer = new SpotBalanceStateVisualizer(appProperties);
 		FuturesBalanceStateVisualizer futuresVisualizer = new FuturesBalanceStateVisualizer(appProperties);
+		FuturesIncomeVisualizerApp incomeVisualizer = new FuturesIncomeVisualizerApp(appProperties);
 		if(users.isEmpty()) {
 			users = new CSVEventSource(new File(config.getInputFilepath()), "").getuserIds();
 		}
 		for (String user : users) {
 			BalanceReport spotReport = spotVisualizer.spotStateChangeFromLogs(user, config);
 			BalanceReport futuresReport = futuresVisualizer.futuresStateChangeFromLogs(user, config);
+			BalanceReport incomeReport = incomeVisualizer.loadData(user, ConfigUtil.loadIncomeConfig(appProperties));
 			System.out.println("Spot report for " + user + ":");
 			System.out.println(spotReport.toPrettyString());
 			System.out.println("Futures report for " + user + ":");
 			System.out.println(futuresReport.toPrettyString());
+			System.out.println("Income report for " + user + ":");
+			System.out.println(incomeReport.toPrettyString());
 		}
 	}
 }

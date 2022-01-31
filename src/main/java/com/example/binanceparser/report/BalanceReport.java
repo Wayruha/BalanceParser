@@ -1,7 +1,9 @@
 package com.example.binanceparser.report;
 
-import com.example.binanceparser.domain.Transaction;
 import com.example.binanceparser.domain.TransactionX;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,5 +41,9 @@ public class BalanceReport {
                 .append("Total transactions:")//.append(transactions.size()).append("\n")
                 .append("Chart: ").append(outputPath).append("\n")
                 .toString();
+    }
+    
+    public String json() throws JsonProcessingException {
+    	return new ObjectMapper().writer().writeValueAsString(this);
     }
 }
