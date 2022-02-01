@@ -2,7 +2,7 @@ package com.example.binanceparser.report;
 
 import com.example.binanceparser.config.IncomeConfig;
 import com.example.binanceparser.domain.IncomeBalanceState;
-import com.example.binanceparser.plot.IncomeChartBuilder;
+import com.example.binanceparser.plot.FuturesIncomeChartBuilder;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import java.io.File;
@@ -13,14 +13,14 @@ import java.util.stream.Collectors;
 
 public class IncomeReportGenerator extends AbstractBalanceReportGenerator<IncomeBalanceState, IncomeConfig> {
 
-	private final IncomeChartBuilder incomeChartBuilder = new IncomeChartBuilder();
+	private final FuturesIncomeChartBuilder futuresIncomeChartBuilder = new FuturesIncomeChartBuilder();
 
 	public IncomeReportGenerator(IncomeConfig config) {
 		super(config);
 	}
 
 	public BalanceReport getBalanceReport(List<IncomeBalanceState> balanceStates) throws IOException {
-		final JFreeChart lineChart = incomeChartBuilder.buildLineChart(balanceStates);
+		final JFreeChart lineChart = futuresIncomeChartBuilder.buildLineChart(balanceStates);
 
 		final List<BigDecimal> balances = balanceStates.stream().map(IncomeBalanceState::getAvailableBalance)
 				.collect(Collectors.toList());

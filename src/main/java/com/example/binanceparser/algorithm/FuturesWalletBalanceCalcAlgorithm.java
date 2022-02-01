@@ -11,6 +11,7 @@ import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import static com.example.binanceparser.Constants.*;
 
@@ -20,6 +21,7 @@ import static com.example.binanceparser.Constants.*;
 public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalanceState> {
 	private final BalanceVisualizerConfig config;
 	private final Map<String, BigDecimal> currencyRate;
+	private static final Logger LOGGER = Logger.getLogger(FuturesWalletBalanceCalcAlgorithm.class.getName());
 
 	public FuturesWalletBalanceCalcAlgorithm(BalanceVisualizerConfig config, Map<String, BigDecimal> currencyRate) {
 		this.config = config;

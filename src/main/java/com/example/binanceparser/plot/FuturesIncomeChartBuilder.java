@@ -14,7 +14,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 import java.time.LocalDate;
 import java.util.List;
 
-public class IncomeChartBuilder extends ChartBuilder<IncomeBalanceState> {
+public class FuturesIncomeChartBuilder extends ChartBuilder<IncomeBalanceState> {
     @Override
     public JFreeChart buildLineChart(List<IncomeBalanceState> incomeBalanceStates) {
         JFreeChart chart = ChartFactory.createTimeSeriesChart(

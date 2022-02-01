@@ -16,13 +16,13 @@ import static com.example.binanceparser.Constants.VIRTUAL_USD;
 import static com.example.binanceparser.report.BalanceReportGenerator.saveChartToFile;
 import static java.util.Objects.isNull;
 
-public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<SpotIncomeState, BalanceVisualizerConfig> {
+public class SpotBalanceReportGenerator extends AbstractBalanceReportGenerator<SpotIncomeState, BalanceVisualizerConfig> {
     private static final String DEFAULT_CHART_NAME = "chart";
     private static final String CHART_FILE_EXT = ".jpg";
     private static final String CHART_PREFIX = "Spot_";
     private final ChartBuilder<SpotIncomeState> chartBuilder;
 
-    public TestBalanceReportGenerator(BalanceVisualizerConfig config, ChartBuilder<SpotIncomeState> chartBuilder) {
+    public SpotBalanceReportGenerator(BalanceVisualizerConfig config, ChartBuilder<SpotIncomeState> chartBuilder) {
         super(config);
         this.chartBuilder = chartBuilder;
     }

@@ -8,9 +8,9 @@ import com.example.binanceparser.domain.SpotIncomeState;
 import com.example.binanceparser.domain.TransactionType;
 import com.example.binanceparser.domain.TransactionX;
 import com.example.binanceparser.domain.events.AbstractEvent;
-import com.example.binanceparser.plot.TestAssetChartBuilder;
+import com.example.binanceparser.plot.SpotAssetChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
-import com.example.binanceparser.report.TestBalanceReportGenerator;
+import com.example.binanceparser.report.SpotBalanceReportGenerator;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -25,14 +25,14 @@ import static java.lang.String.format;
 
 public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
 	private final EventSource<AbstractEvent> eventSource;
-    private final TestBalanceReportGenerator balanceReportGenerator;
+    private final SpotBalanceReportGenerator balanceReportGenerator;
     private final SpotBalanceCalcAlgorithm algorithm;
 
     public SpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
         super(config);
         this.eventSource = eventSource;
-        final TestAssetChartBuilder chartBuilder = new TestAssetChartBuilder(config.getAssetsToTrack());
-        this.balanceReportGenerator = new TestBalanceReportGenerator(config, chartBuilder);
+        final SpotAssetChartBuilder chartBuilder = new SpotAssetChartBuilder(config.getAssetsToTrack());
+        this.balanceReportGenerator = new SpotBalanceReportGenerator(config, chartBuilder);
         this.algorithm = new SpotBalanceCalcAlgorithm();
     }
 

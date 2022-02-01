@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static java.time.LocalDateTime.parse;
@@ -26,6 +27,7 @@ public class AppProperties {
 	private List<String> assetsToTrack;
 	private DatasourceType dataSourceType;
 	private HistoryItemSourceType historyItemSourceType;
+	private Level algorithmLoggerLevel;
 
 	public AppProperties(Properties props) {
 		this.trackedPersons = personsTotrack(props);
@@ -38,6 +40,7 @@ public class AppProperties {
 		this.assetsToTrack = assetsToTrack(props);
 		this.dataSourceType = DatasourceType.forName(props.getProperty("config.event_source_type"));
 		this.historyItemSourceType = HistoryItemSourceType.forName(props.getProperty("config.income.source_type"));
+		this.algorithmLoggerLevel = Level.parse(props.getProperty("config.algorythm.logger_level"));
 	}
 
 	private static List<String> assetsToTrack(Properties props) {

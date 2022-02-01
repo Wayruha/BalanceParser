@@ -20,19 +20,19 @@ import lombok.NoArgsConstructor;
 
 import static com.example.binanceparser.Constants.*;
 
-public class TestAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
+public class SpotAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 	protected List<PointTime> specialPointTimes;
 	protected List<PointTime> intermediatePointTimes;
 	protected List<PointTime> withdrawPointTimes;
 
-	public TestAssetChartBuilder(List<String> assetsToTrack) {
+	public SpotAssetChartBuilder(List<String> assetsToTrack) {
 		super(assetsToTrack);
 		specialPointTimes = new ArrayList<>();
 		intermediatePointTimes = new ArrayList<>();
 		withdrawPointTimes = new ArrayList<>();
 	}
 
-	public TestAssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
+	public SpotAssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
 		super(assetsToTrack, config);
 		specialPointTimes = new ArrayList<>();
 		intermediatePoints = new ArrayList<>();

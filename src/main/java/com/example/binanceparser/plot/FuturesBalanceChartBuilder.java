@@ -11,12 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class AssetChartBuilder extends ChartBuilder<EventBalanceState> {
-	public AssetChartBuilder(List<String> assetsToTrack) {
+public class FuturesBalanceChartBuilder extends ChartBuilder<EventBalanceState> {
+	public FuturesBalanceChartBuilder(List<String> assetsToTrack) {
 		super(assetsToTrack);
 	}
 
-	public AssetChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
+	public FuturesBalanceChartBuilder(List<String> assetsToTrack, ChartBuilderConfig config) {
 		super(assetsToTrack, config);
 	}
 
@@ -43,21 +43,27 @@ public class AssetChartBuilder extends ChartBuilder<EventBalanceState> {
 
 	private TimeSeries createTimeSeries(List<EventBalanceState> eventStates, String trackedAsset, int row) {
 		final TimeSeries series = new TimeSeries(trackedAsset + " balance (USD)");
+		int numberOfPoints = 0;
 		for (int n = 0; n < eventStates.size(); n++) {
 			EventBalanceState eventBalanceState = eventStates.get(n);
-			if (eventBalanceState.getTransactions().stream().anyMatch(transaction -> isTransfer(trackedAsset, transaction))
+			if (eventBalanceState.getTransactions().stream()
+					.anyMatch(transaction -> isTransfer(trackedAsset, transaction))
 					|| (trackedAsset.equals(VIRTUAL_USD) && anyTransfers(eventBalanceState.getTransactions()))) {
-				withdrawPoints.add(new Point(row, n));
-				withdrawPoints.add(new Point(0, n));
+				withdrawPoints.add(new Point(row, numberOfPoints));
+				withdrawPoints.add(new Point(0, numberOfPoints));
 			}
-			series.addOrUpdate(dateTimeToSecond(eventBalanceState.getDateTime()), eventBalanceState.getAssetBalance(trackedAsset));
+			if (series.addOrUpdate(dateTimeToSecond(eventBalanceState.getDateTime()),
+					eventBalanceState.getAssetBalance(trackedAsset)) == null) {
+				numberOfPoints++;
+			}
 		}
 		return series;
 	}
 
 	private List<String> listAssetsInvolved(EventBalanceState lastIncomeState) {
 		return assetsToTrack.isEmpty()
-				? new ArrayList<>(lastIncomeState.getAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
+				? new ArrayList<>(
+						lastIncomeState.getAssets().stream().map(Asset::getAsset).collect(Collectors.toList()))
 				: assetsToTrack;
 	}
 }
