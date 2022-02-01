@@ -3,7 +3,6 @@ package com.example.binanceparser.report;
 import com.example.binanceparser.domain.TransactionX;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,9 +23,10 @@ public class BalanceReport {
     private BigDecimal min;
     private String outputPath;
     private BigDecimal balanceDifference;
+    private int totalTxCount;
+    private int totalTradeTxCount;
 
-    private String user; //TODO юзер, або налл якщо не вказано
-    //TODO проставити всі транзакції які відбулися для цього юзера в заданому проміжку
+    private String user;
     private List<TransactionX> transactions;
 
     public String toPrettyString() {
@@ -38,12 +38,13 @@ public class BalanceReport {
                 .append("Min balance: ").append(min).append("\n")
                 .append("Max balance: ").append(max).append("\n")
                 .append("Balance Delta: ").append(balanceDifference).append("\n")
-                .append("Total transactions:")//.append(transactions.size()).append("\n")
+                .append("Total transactions: ").append(totalTxCount).append("\n")
+                .append("Total trade transactions: ").append(totalTradeTxCount).append("\n")
                 .append("Chart: ").append(outputPath).append("\n")
                 .toString();
     }
-    
+
     public String json() throws JsonProcessingException {
-    	return new ObjectMapper().writer().writeValueAsString(this);
+        return new ObjectMapper().writer().writeValueAsString(this);
     }
 }

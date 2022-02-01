@@ -1,5 +1,6 @@
 package com.example.binanceparser.domain.events;
 
+import com.binance.api.client.domain.OrderSide;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -33,6 +34,8 @@ public class FuturesOrderTradeUpdateEvent extends AbstractEvent {
     private Double price;
 
     private Double accumulatedQuantity;
+
+    private OrderSide side;
 
     public boolean isReduceOnly() {
         return isReduceOnly;

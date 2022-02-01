@@ -30,7 +30,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
     private final SpotBalanceReportGenerator balanceReportGenerator;
     private final SpotBalanceCalcAlgorithm algorithm;
     private static final Logger LOGGER = Logger.getLogger(SpotBalanceProcessor.class.getName());
-    
+
     public SpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
         super(config);
         this.eventSource = eventSource;
@@ -42,18 +42,15 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
     @Override
     public BalanceReport process() throws IOException {
         final List<AbstractEvent> events = eventSource.getData();
-        if (events.size() == 0)
+        if (events.size() == 0) {
             throw new RuntimeException("Can't find any relevant events");
-        // retrieve balance changes
-        List<SpotIncomeState> balanceStates = algorithm.processEvents(events).stream()
+        }
+
+        final List<SpotIncomeState> balanceStates = algorithm.processEvents(events).stream()
                 .filter(state -> inRange(state.getDateTime(), config.getStartTrackDate(), config.getFinishTrackDate()))
                 .collect(Collectors.toList());
 
         final BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
-        final List<AbstractEvent> periodRelevantEvents = events.stream().filter(e -> inRange(e.getDateTime(), config.getStartTrackDate(), config.getFinishTrackDate()))
-                .collect(Collectors.toList());
-//        System.out.println("Transferred to Futures total: " + FuturesBalanceStateProcessor.calculateDepositDelta(periodRelevantEvents));
-        
         LOGGER.log(Level.INFO, "More detailed log:");
         balanceStates.forEach(this::logTransaction);
         System.out.println("Processor done for config: " + config);

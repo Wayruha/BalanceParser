@@ -1,22 +1,20 @@
 package com.example.binanceparser.report;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
-import com.example.binanceparser.domain.Asset;
-import com.example.binanceparser.domain.EventBalanceState;
+import com.example.binanceparser.domain.*;
 import com.example.binanceparser.plot.ChartBuilder;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import static com.example.binanceparser.Constants.*;
 import static java.util.Objects.isNull;
 
 public class BalanceReportGenerator extends AbstractBalanceReportGenerator<EventBalanceState, BalanceVisualizerConfig> {
+	private static EnumSet<TransactionType> tradeTransactionTypes = EnumSet.of(TransactionType.BUY, TransactionType.SELL, TransactionType.CONVERT);
 	private static final String DEFAULT_CHART_NAME = "chart";
 	private static final String CHART_FILE_EXT = ".jpg";
 	private static final String CHART_PREFIX = "Futures_";
@@ -39,18 +37,28 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 		final String subject = !isNull(config.getSubject()) ? config.getSubject().get(0) : DEFAULT_CHART_NAME;
 		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + subject + CHART_FILE_EXT;
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
-		
-		//final BigDecimal delta = calculateBalanceDelta(assetDataList);
+
 		final BigDecimal balanceUpdateDelta = findBalanceUpdateDelta(balanceStates);
-		System.out.println(balanceUpdateDelta);
-		return BalanceReport.builder().startTrackDate(config.getStartTrackDate())
+		final List<TransactionX> transactions = getTransactions(balanceStates);
+		return BalanceReport.builder()
+				.user(config.getSubject().get(0))
+				.transactions(transactions)
+				.totalTxCount(transactions.size())
+				.totalTradeTxCount((int) transactions.stream().filter(tx -> tradeTransactionTypes.contains(tx.getType())).count())
+				.startTrackDate(config.getStartTrackDate())
 				.finishTrackDate(config.getFinishTrackDate())
 				.balanceAtStart(balanceStates.size() != 0 ? balanceStates.get(0).getAssetBalance(VIRTUAL_USD) : BigDecimal.ZERO)
-				.balanceAtEnd(
-						balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getAssetBalance(VIRTUAL_USD)
-								: BigDecimal.ZERO)
-				.min(findMinBalance(assetDataList)).max(findMaxBalance(assetDataList)).outputPath(generatedPlotPath)
+				.balanceAtEnd(balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getAssetBalance(VIRTUAL_USD) : BigDecimal.ZERO)
+				.min(findMinBalance(assetDataList))
+				.max(findMaxBalance(assetDataList))
+				.outputPath(generatedPlotPath)
 				.balanceDifference(balanceUpdateDelta).build();
+	}
+
+	private List<TransactionX> getTransactions(List<EventBalanceState> balanceStates) {
+		return balanceStates.stream()
+				.flatMap(st -> st.getTXs().stream())
+				.collect(Collectors.toList());
 	}
 
 	private BigDecimal findBalanceUpdateDelta(List<EventBalanceState> balanceStates) {
