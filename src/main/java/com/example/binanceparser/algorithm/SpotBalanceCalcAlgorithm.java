@@ -11,6 +11,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.*;
@@ -20,7 +22,8 @@ import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncomeState> {
     private final int MAX_SECONDS_DELAY_FOR_VALID_EVENTS = 1;
-
+    private static final Logger LOGGER = Logger.getLogger(SpotBalanceCalcAlgorithm.class.getName());
+    
     public SpotBalanceCalcAlgorithm() {
     }
 
@@ -371,7 +374,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
                 : TransactionType.WITHDRAW;
         final String str = String.format("%s %s %s %s", balanceEvent.getDateTime().format(ISO_DATE_TIME),
                 transactionType, balanceEvent.getBalances(), balanceEvent.getBalanceDelta().abs());
-        System.out.println(str);
+        LOGGER.log(Level.INFO, str);
     }
 
     private void logTrade(OrderTradeUpdateEvent orderEvent, SpotIncomeState prevState) {
@@ -389,6 +392,6 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
                 str += ". Profit:" + quoteAssetQty.subtract(lockedState.get().getStableValue()).toPlainString();
             }
         }
-        System.out.println(str);
+        LOGGER.log(Level.INFO, str);
     }
 }

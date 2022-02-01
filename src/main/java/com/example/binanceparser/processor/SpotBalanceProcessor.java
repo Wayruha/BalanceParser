@@ -18,6 +18,8 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.VIRTUAL_USD;
@@ -27,7 +29,8 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
 	private final EventSource<AbstractEvent> eventSource;
     private final SpotBalanceReportGenerator balanceReportGenerator;
     private final SpotBalanceCalcAlgorithm algorithm;
-
+    private static final Logger LOGGER = Logger.getLogger(SpotBalanceProcessor.class.getName());
+    
     public SpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
         super(config);
         this.eventSource = eventSource;
@@ -50,7 +53,8 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         final List<AbstractEvent> periodRelevantEvents = events.stream().filter(e -> inRange(e.getDateTime(), config.getStartTrackDate(), config.getFinishTrackDate()))
                 .collect(Collectors.toList());
 //        System.out.println("Transferred to Futures total: " + FuturesBalanceStateProcessor.calculateDepositDelta(periodRelevantEvents));
-        System.out.println("More detailed log:");
+        
+        LOGGER.log(Level.INFO, "More detailed log:");
         balanceStates.forEach(this::logTransaction);
         System.out.println("Processor done for config: " + config);
         return balanceReport;
@@ -69,7 +73,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
             final String str = format("%s: %s %s %s. Profit=%s, balance=%s. USD=%s", formatDateTime(tx.getDate()), tx.getType(), formatNumber(asset.getTxQty()),
                     asset.getAssetName(), formatNumber(tx.getValueIncome()), formatNumber(asset.getFullBalance()),
                     formatNumber(usdBalance.setScale(1, RoundingMode.HALF_EVEN)));
-            System.out.println(str);
+            LOGGER.log(Level.INFO, str);
         } else {
             final TransactionX.Trade tx = (TransactionX.Trade) _tx;
             final TransactionX.Asset2 base = tx.getBaseAsset();
@@ -78,7 +82,7 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
                     tx.getType(), formatNumber(base.getTxQty()), base.getAssetName(), formatNumber(quote.getTxQty()), quote.getAssetName(),
                     formatNumber(tx.getValueIncome()), formatNumber(base.getFullBalance()),
                     formatNumber(quote.getFullBalance()), formatNumber(usdBalance.setScale(1, RoundingMode.HALF_EVEN)));
-            System.out.println(str);
+            LOGGER.log(Level.INFO, str);
         }
     }
 

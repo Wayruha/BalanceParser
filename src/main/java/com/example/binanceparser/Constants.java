@@ -26,9 +26,7 @@ public class Constants {
     //...
 
     public static final ExchangeInfo EXCHANGE_INFO = new BinanceClient(BINANCE_API_KEY, BINANCE_SECRET_KEY).loadExchangeInfo();
-
     public static final MathContext MATH_CONTEXT = MathContext.DECIMAL32;
-
     public static final Map<String, BigDecimal> STABLECOIN_RATE = new HashMap<>();
 
     static {

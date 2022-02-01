@@ -1,13 +1,18 @@
 package com.example.binanceparser;
 
+import com.example.binanceparser.algorithm.FuturesWalletBalanceCalcAlgorithm;
+import com.example.binanceparser.algorithm.SpotBalanceCalcAlgorithm;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.datasource.CSVEventSource;
+import com.example.binanceparser.processor.FuturesBalanceStateProcessor;
+import com.example.binanceparser.processor.SpotBalanceProcessor;
 import com.example.binanceparser.report.BalanceReport;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class VisualisationRunner {
     private AppProperties appProperties;
@@ -23,6 +28,9 @@ public class VisualisationRunner {
         appProperties = ConfigUtil.loadAppProperties(propertyFile);
         users = appProperties.getTrackedPersons();
         config = ConfigUtil.loadVisualizerConfig(appProperties);
+        
+        
+        
     }
 
     public void run() throws IOException {
@@ -33,10 +41,14 @@ public class VisualisationRunner {
             users = new CSVEventSource(new File(config.getInputFilepath()), "").getuserIds();
         }
         for (String user : users) {
+        	Logger.getLogger(SpotBalanceCalcAlgorithm.class.getName()).setLevel(appProperties.getLoggerLevel());
+        	Logger.getLogger(SpotBalanceProcessor.class.getName()).setLevel(appProperties.getLoggerLevel());
             BalanceReport spotReport = spotVisualizer.spotBalanceVisualisation(user, config);
             System.out.println("Spot report for " + user + ":");
             System.out.println(spotReport.toPrettyString());
 
+            Logger.getLogger(FuturesWalletBalanceCalcAlgorithm.class.getName()).setLevel(appProperties.getLoggerLevel());
+            Logger.getLogger(FuturesBalanceStateProcessor.class.getName()).setLevel(appProperties.getLoggerLevel());
             BalanceReport futuresReport = futuresVisualiser.futuresBalanceVisualisation(user, config);
             System.out.println("Futures report for " + user + ":");
             System.out.println(futuresReport.toPrettyString());

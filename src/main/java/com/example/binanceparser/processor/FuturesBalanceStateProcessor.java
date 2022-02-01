@@ -21,6 +21,8 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.STABLECOIN_RATE;
@@ -32,7 +34,8 @@ public class FuturesBalanceStateProcessor extends Processor<BalanceVisualizerCon
     final EventSource<AbstractEvent> eventSource;
     final BalanceReportGenerator balanceReportGenerator;
     final FuturesWalletBalanceCalcAlgorithm algorithm;
-
+    private static final Logger LOGGER = Logger.getLogger(FuturesBalanceStateProcessor.class.getName());
+    
     public FuturesBalanceStateProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
         super(config);
         this.eventSource = eventSource;
@@ -64,12 +67,11 @@ public class FuturesBalanceStateProcessor extends Processor<BalanceVisualizerCon
                 .filter(e -> e.getReasonType() == DEPOSIT || e.getReasonType() == WITHDRAW)
                 .collect(Collectors.toList());
 
-        System.out.println("Logging all Futures DEPOSITs and WITHDRAWs");
-
+        LOGGER.log(Level.INFO, "Logging all Futures DEPOSITs and WITHDRAWs");
         relevantEvents.forEach(e->{
             final String str = String.format("%s Futures %s %s", e.getDateTime().format(ISO_DATE_TIME),
                     e.getReasonType(), e.getBalances().get(0).getBalanceChange());
-            System.out.println(str);
+            LOGGER.log(Level.INFO, str);
         });
 
         return relevantEvents.stream()
