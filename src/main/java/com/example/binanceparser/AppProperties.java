@@ -1,6 +1,7 @@
 package com.example.binanceparser;
 
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,7 +37,7 @@ public class AppProperties {
 		this.outputPath = props.getProperty("config.file_output_path");
 		this.assetsToTrack = assetsToTrack(props);
 		this.dataSourceType = DatasourceType.forName(props.getProperty("config.event_source_type"));
-		this.historyItemSourceType = HistoryItemSourceType.forName(props.getProperty("config.history_item_source_type"));
+		this.historyItemSourceType = HistoryItemSourceType.forName(props.getProperty("config.income.source_type"));
 	}
 
 	private static List<String> assetsToTrack(Properties props) {
@@ -48,7 +49,9 @@ public class AppProperties {
 
 	private static List<String> personsTotrack(Properties props) {
 		List<String> personsTotrack = Arrays.asList(props.getProperty("config.persons").split(","));
-		personsTotrack = personsTotrack.stream().map(String::trim).filter((person) -> !person.equals(""))
+		personsTotrack = personsTotrack.stream()
+				.map(String::trim)
+				.filter(StringUtils::isNotEmpty)
 				.collect(Collectors.toList());
 		return personsTotrack;
 	}

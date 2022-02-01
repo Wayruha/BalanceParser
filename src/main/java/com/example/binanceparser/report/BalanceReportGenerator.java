@@ -19,6 +19,7 @@ import static java.util.Objects.isNull;
 public class BalanceReportGenerator extends AbstractBalanceReportGenerator<EventBalanceState, BalanceVisualizerConfig> {
 	private static final String DEFAULT_CHART_NAME = "chart";
 	private static final String CHART_FILE_EXT = ".jpg";
+	private static final String CHART_PREFIX = "Futures_";
 
 	private ChartBuilder<EventBalanceState> chartBuilder;
 
@@ -36,7 +37,7 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 				.collect(Collectors.toList());
 
 		final String subject = !isNull(config.getSubject()) ? config.getSubject().get(0) : DEFAULT_CHART_NAME;
-		final String chartPath = config.getOutputDir() + "/" + subject + CHART_FILE_EXT;
+		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + subject + CHART_FILE_EXT;
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 		
 		//final BigDecimal delta = calculateBalanceDelta(assetDataList);

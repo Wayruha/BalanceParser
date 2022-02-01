@@ -19,6 +19,7 @@ import static java.util.Objects.isNull;
 public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<SpotIncomeState, BalanceVisualizerConfig> {
     private static final String DEFAULT_CHART_NAME = "chart";
     private static final String CHART_FILE_EXT = ".jpg";
+    private static final String CHART_PREFIX = "Spot_";
     private final ChartBuilder<SpotIncomeState> chartBuilder;
 
     public TestBalanceReportGenerator(BalanceVisualizerConfig config, ChartBuilder<SpotIncomeState> chartBuilder) {
@@ -32,7 +33,7 @@ public class TestBalanceReportGenerator extends AbstractBalanceReportGenerator<S
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
 
         final String subject = !isNull(config.getSubject()) ? config.getSubject().get(0) : DEFAULT_CHART_NAME;
-        final String chartPath = config.getOutputDir() + "/" + "TEST_" + subject + CHART_FILE_EXT;
+        final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + subject + CHART_FILE_EXT;
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
         List<BigDecimal> values = balanceStates.stream().map(state -> state.findAsset(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO))
