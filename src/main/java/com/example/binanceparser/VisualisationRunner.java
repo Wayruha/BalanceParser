@@ -52,10 +52,10 @@ public class VisualisationRunner {
             BalanceReport futuresReport = futuresVisualiser.futuresBalanceVisualisation(user, config);
             System.out.println("Futures report for " + user + ":");
             System.out.println(futuresReport.toPrettyString());
-
-            /*BalanceReport incomeReport = incomeVisualizer.futuresIncomeVisualisation(user, ConfigUtil.loadIncomeConfig(appProperties));
-            System.out.println("Income report for " + user + ":");
-            System.out.println(incomeReport.toPrettyString());*/
+//we only have one user (RDiachuk)
+//            BalanceReport incomeReport = incomeVisualizer.futuresIncomeVisualisation(user, ConfigUtil.loadIncomeConfig(appProperties));
+//            System.out.println("Income report for " + user + ":");
+//            System.out.println(incomeReport.toPrettyString());
         }
     }
 }
