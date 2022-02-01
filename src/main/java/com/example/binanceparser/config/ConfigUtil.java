@@ -37,7 +37,7 @@ public class ConfigUtil {
         LocalDateTime start = appProperties.getStartTrackDate();
         LocalDateTime finish = appProperties.getEndTrackDate();
         String outputPath = appProperties.getOutputPath();
-        String inputPath = appProperties.getInputFilePath();
+        String inputPath = appProperties.getIncomeInputFilePath();
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
         config.setOutputDir(outputPath);

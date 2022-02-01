@@ -23,6 +23,7 @@ public class AppProperties {
 	private LocalDateTime startTrackDate;
 	private LocalDateTime endTrackDate;
 	private String inputFilePath;
+	private String incomeInputFilePath;
 	private String outputPath;
 	private List<String> assetsToTrack;
 	private DatasourceType dataSourceType;
@@ -36,6 +37,7 @@ public class AppProperties {
 		this.startTrackDate = parse(props.getProperty("config.start_track_date"), formatter);
 		this.endTrackDate = parse(props.getProperty("config.finish_track_date"), formatter);
 		this.inputFilePath = props.getProperty("config.file_input_path");
+		this.incomeInputFilePath = props.getProperty("config.income.file_input_path");
 		this.outputPath = props.getProperty("config.file_output_path");
 		this.assetsToTrack = assetsToTrack(props);
 		this.dataSourceType = DatasourceType.forName(props.getProperty("config.event_source_type"));
