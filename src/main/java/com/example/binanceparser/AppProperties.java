@@ -28,7 +28,6 @@ public class AppProperties {
 	private List<String> assetsToTrack;
 	private DatasourceType dataSourceType;
 	private HistoryItemSourceType historyItemSourceType;
-	private Level loggerLevel;
 
 	public AppProperties(Properties props) {
 		this.trackedPersons = personsTotrack(props);
@@ -42,7 +41,6 @@ public class AppProperties {
 		this.assetsToTrack = assetsToTrack(props);
 		this.dataSourceType = DatasourceType.forName(props.getProperty("config.event_source_type"));
 		this.historyItemSourceType = HistoryItemSourceType.forName(props.getProperty("config.income.source_type"));
-		this.loggerLevel = Level.parse(props.getProperty("config.logger_level"));
 	}
 
 	private static List<String> assetsToTrack(Properties props) {

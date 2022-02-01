@@ -10,8 +10,6 @@ import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -23,8 +21,8 @@ import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
  * this algorithm just uses AccUpdate.walletBalance, without any calculations
  */
 public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalanceState> {
-    private final BalanceVisualizerConfig config;
     private static final Logger LOGGER = Logger.getLogger(FuturesWalletBalanceCalcAlgorithm.class.getName());
+    private final BalanceVisualizerConfig config;
 
     public FuturesWalletBalanceCalcAlgorithm(BalanceVisualizerConfig config, Map<String, BigDecimal> currencyRate) {
         this.config = config;
@@ -83,7 +81,7 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<E
                     .append(", entry price:").append(pos.getEntryPrice());
         }
         sb.append("}");
-		LOGGER.log(Level.INFO, sb.toString());
+		LOGGER.fine(sb.toString());
     }
 
     /**
