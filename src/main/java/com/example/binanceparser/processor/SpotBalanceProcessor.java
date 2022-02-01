@@ -26,10 +26,10 @@ import static com.example.binanceparser.Constants.VIRTUAL_USD;
 import static java.lang.String.format;
 
 public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
-	private final EventSource<AbstractEvent> eventSource;
+    private static final Logger LOGGER = Logger.getLogger(SpotBalanceProcessor.class.getName());
+    private final EventSource<AbstractEvent> eventSource;
     private final SpotBalanceReportGenerator balanceReportGenerator;
     private final SpotBalanceCalcAlgorithm algorithm;
-    private static final Logger LOGGER = Logger.getLogger(SpotBalanceProcessor.class.getName());
 
     public SpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
         super(config);

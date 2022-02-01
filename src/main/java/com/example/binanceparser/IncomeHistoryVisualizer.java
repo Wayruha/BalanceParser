@@ -1,3 +1,4 @@
+/*
 package com.example.binanceparser;
 
 import com.example.binanceparser.config.Config;
@@ -66,3 +67,4 @@ public class IncomeHistoryVisualizer {
         }
     }
 }
+*/
