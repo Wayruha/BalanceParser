@@ -1,7 +1,11 @@
 package com.example.binanceparser.algorithm;
 
+import com.binance.api.client.domain.OrderStatus;
 import com.example.binanceparser.domain.*;
 import com.example.binanceparser.domain.events.*;
+import com.example.binanceparser.domain.balance.SpotBalanceState;
+import com.example.binanceparser.domain.transaction.Transaction;
+import com.example.binanceparser.domain.transaction.TransactionType;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -11,30 +15,31 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static com.binance.api.client.domain.OrderSide.BUY;
+import static com.binance.api.client.domain.OrderSide.SELL;
 import static com.example.binanceparser.Constants.*;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
-public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncomeState> {
+public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotBalanceState> {
     private final int MAX_SECONDS_DELAY_FOR_VALID_EVENTS = 1;
-    private static final Logger LOGGER = Logger.getLogger(SpotBalanceCalcAlgorithm.class.getName());
+    private static final Logger log = Logger.getLogger(SpotBalanceCalcAlgorithm.class.getName());
     
     public SpotBalanceCalcAlgorithm() {
     }
 
     @Override
-    public List<SpotIncomeState> processEvents(List<AbstractEvent> events) {
+    public List<SpotBalanceState> processEvents(List<AbstractEvent> events) {
         return processEvents(events, null);
     }
 
     @Override
-    public List<SpotIncomeState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {
-        final List<SpotIncomeState> spotIncomeStates = new ArrayList<>();
+    public List<SpotBalanceState> processEvents(List<AbstractEvent> events, List<String> assetsToTrack) {
+        final List<SpotBalanceState> spotBalanceStates = new ArrayList<>();
         for (int i = 0; i < events.size() - 1; i++) {
             final AbstractEvent currentEvent = events.get(i);
             final AbstractEvent nextEvent = events.get(i + 1);
@@ -48,33 +53,33 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
                 continue;
             }
 
-            final SpotIncomeState incomeState = spotIncomeStates.size() == 0
-                    ? new SpotIncomeState(currentEvent.getDateTime())
-                    : new SpotIncomeState(currentEvent.getDateTime(),
-                    spotIncomeStates.get(spotIncomeStates.size() - 1));
+            final SpotBalanceState incomeState = spotBalanceStates.size() == 0
+                    ? new SpotBalanceState(currentEvent.getDateTime())
+                    : new SpotBalanceState(currentEvent.getDateTime(),
+                    spotBalanceStates.get(spotBalanceStates.size() - 1));
 
             if (currentEvent.getEventType() == EventType.BALANCE_UPDATE) {
                 BalanceUpdateEvent balanceEvent = (BalanceUpdateEvent) currentEvent;
                 logBalanceUpdate(balanceEvent);
                 processBalanceUpdate(incomeState, balanceEvent, (AccountPositionUpdateEvent) nextEvent);
-                spotIncomeStates.add(incomeState);
+                spotBalanceStates.add(incomeState);
                 continue;
             }
 
             final OrderTradeUpdateEvent orderEvent = (OrderTradeUpdateEvent) currentEvent;
             final AccountPositionUpdateEvent accEvent = (AccountPositionUpdateEvent) nextEvent;
 
-            if (!orderEvent.getOrderStatus().equals("FILLED")) {
+            if (orderEvent.getOrderStatus() != OrderStatus.FILLED) {
                 continue;
             }
             logTrade(orderEvent, incomeState);
             processOrder(incomeState, orderEvent, accEvent);
-            spotIncomeStates.add(incomeState);
+            spotBalanceStates.add(incomeState);
         }
-        return spotIncomeStates;
+        return spotBalanceStates;
     }
 
-    public void processBalanceUpdate(SpotIncomeState state, BalanceUpdateEvent balanceEvent,
+    public void processBalanceUpdate(SpotBalanceState state, BalanceUpdateEvent balanceEvent,
                                      AccountPositionUpdateEvent accEvent) {
         final BigDecimal balanceDelta = balanceEvent.getBalanceDelta();
 
@@ -86,16 +91,16 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
         state.findAsset(VIRTUAL_USD).get().setBalance(state.calculateVirtualUSDBalance());
     }
 
-    public void processOrder(SpotIncomeState state, OrderTradeUpdateEvent orderEvent,
+    public void processOrder(SpotBalanceState state, OrderTradeUpdateEvent orderEvent,
                              AccountPositionUpdateEvent accEvent) {
         final String baseAsset = orderEvent.getBaseAsset();
         final String quote = orderEvent.getQuoteAsset();
 
         if (isStableCoin(baseAsset) && isStableCoin(quote)) {
             handleConvertStables(state, orderEvent, accEvent);
-        } else if (orderEvent.getSide().equals("BUY") && isStableCoin(quote)) {
+        } else if (orderEvent.getSide() == BUY && isStableCoin(quote)) {
             handleBuy(state, orderEvent, accEvent);
-        } else if (orderEvent.getSide().equals("SELL") && isStableCoin(quote)) {
+        } else if (orderEvent.getSide() == SELL && isStableCoin(quote)) {
             handleSell(state, orderEvent, accEvent);
         } else {
             handleConvertOperation(state, orderEvent, accEvent);
@@ -109,7 +114,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
      * (baseAsset), яку можемо оплатити "легальними" коштами. Решта монети не
      * враховується
      **/
-    public void handleConvertOperation(SpotIncomeState state, OrderTradeUpdateEvent orderEvent,
+    public void handleConvertOperation(SpotBalanceState state, OrderTradeUpdateEvent orderEvent,
                                        AccountPositionUpdateEvent accEvent) {
         final String baseAssetName = orderEvent.getBaseAsset();
         final String quoteAssetName = orderEvent.getQuoteAsset();
@@ -119,12 +124,12 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
         final String boughtAsset;
         final BigDecimal soldOrderQty;
         final BigDecimal boughtOrderQty;
-        if (orderEvent.getSide().equals("BUY")) {
+        if (orderEvent.getSide() == BUY) {
             soldAsset = quoteAssetName;
             boughtAsset = baseAssetName;
             soldOrderQty = quoteOrderQty;
             boughtOrderQty = orderQty;
-        } else if (orderEvent.getSide().equals("SELL")) {
+        } else if (orderEvent.getSide() == SELL) {
             soldAsset = baseAssetName;
             boughtAsset = quoteAssetName;
             soldOrderQty = orderQty;
@@ -156,18 +161,18 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
         final Optional<Asset> quoteAsset = state.findAsset(quoteAssetName);
         final Optional<LockedAsset> lockedBase = state.findLockedAsset(baseAssetName);
         final Optional<LockedAsset> lockedQuote = state.findLockedAsset(quoteAssetName);
-        TransactionX.Asset2 base = TransactionX.Asset2.builder().assetName(baseAssetName)
+        Transaction.Asset2 base = Transaction.Asset2.builder().assetName(baseAssetName)
                 .txQty(orderEvent.getActualBaseQty()).fullBalance(baseAsset.map(Asset::getBalance).orElse(ZERO))
                 .valuableBalance(lockedBase.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(lockedBase.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-        TransactionX.Asset2 quote = TransactionX.Asset2.builder().assetName(quoteAssetName).txQty(quoteOrderQty)
+        Transaction.Asset2 quote = Transaction.Asset2.builder().assetName(quoteAssetName).txQty(quoteOrderQty)
                 .fullBalance(quoteAsset.map(Asset::getBalance).orElse(ZERO))
                 .valuableBalance(lockedQuote.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(lockedQuote.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-        state.getTXs().add(TransactionX.convertTx(state.getDateTime(), base, quote, orderQty));
+        state.getTXs().add(Transaction.convertTx(state.getDateTime(), base, quote, orderQty));
     }
 
-    public void handleConvertStables(SpotIncomeState state, OrderTradeUpdateEvent order,
+    public void handleConvertStables(SpotBalanceState state, OrderTradeUpdateEvent order,
                                      AccountPositionUpdateEvent accUpdate) {
         final String baseAssetName = order.getBaseAsset();
         final String quoteAssetName = order.getQuoteAsset();
@@ -179,23 +184,21 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
         final Optional<Asset> quoteAsset = state.findAsset(quoteAssetName);
         final Optional<LockedAsset> lockedBase = state.findLockedAsset(baseAssetName);
         final Optional<LockedAsset> lockedQuote = state.findLockedAsset(quoteAssetName);
-        TransactionX.Asset2 base = TransactionX.Asset2.builder().assetName(baseAssetName).txQty(order.getActualBaseQty())
+        Transaction.Asset2 base = Transaction.Asset2.builder().assetName(baseAssetName).txQty(order.getActualBaseQty())
                 .fullBalance(baseAsset.map(Asset::getBalance).orElse(ZERO))
                 .valuableBalance(lockedBase.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(lockedBase.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-        TransactionX.Asset2 quote = TransactionX.Asset2.builder().assetName(quoteAssetName)
+        Transaction.Asset2 quote = Transaction.Asset2.builder().assetName(quoteAssetName)
                 .txQty(order.getQuoteAssetQty()).fullBalance(quoteAsset.map(Asset::getBalance).orElse(ZERO))
                 .valuableBalance(lockedQuote.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(lockedQuote.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-        state.getTXs().add(TransactionX.convertTx(state.getDateTime(), base, quote, baseQty));
+        state.getTXs().add(Transaction.convertTx(state.getDateTime(), base, quote, baseQty));
     }
-
-    // TODO ми платимо комісію за операцію, мабуть потрібно тут її вказувати в income
 
     /**
      * просто збільшуємо баланс/stableValue LockedAsset'у якщо він вже існує.
      */
-    public void handleBuy(SpotIncomeState state, OrderTradeUpdateEvent orderEvent,
+    public void handleBuy(SpotBalanceState state, OrderTradeUpdateEvent orderEvent,
                           AccountPositionUpdateEvent accEvent) {
         final String baseAssetName = orderEvent.getBaseAsset();
         final String quoteAssetName = orderEvent.getQuoteAsset();
@@ -210,15 +213,15 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
         final Optional<Asset> baseAsset = state.findAsset(baseAssetName);
         final Optional<Asset> quoteAsset = state.findAsset(quoteAssetName);
         final Optional<LockedAsset> quoteLocked = state.findLockedAsset(quoteAssetName);
-        TransactionX.Asset2 base = TransactionX.Asset2.builder().assetName(baseAssetName).txQty(baseQty)
+        Transaction.Asset2 base = Transaction.Asset2.builder().assetName(baseAssetName).txQty(baseQty)
                 .fullBalance(baseAsset.map(Asset::getBalance).orElse(ZERO)).valuableBalance(baseLocked.getBalance())
                 .stableValue(baseLocked.getStableValue()).build();
-        TransactionX.Asset2 quote = TransactionX.Asset2.builder().assetName(quoteAssetName).txQty(quoteQty)
+        Transaction.Asset2 quote = Transaction.Asset2.builder().assetName(quoteAssetName).txQty(quoteQty)
                 .fullBalance(quoteAsset.map(Asset::getBalance).orElse(ZERO))
                 .valuableBalance(quoteLocked.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(quoteLocked.map(LockedAsset::getStableValue).orElse(ZERO)).build();
 
-        state.getTXs().add(TransactionX.buyTx(state.getDateTime(), base, quote,
+        state.getTXs().add(Transaction.buyTx(state.getDateTime(), base, quote,
                 orderEvent.getQuoteAssetCommission().negate(), baseQty));
     }
 
@@ -230,7 +233,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
      * lockedQty.stableValue -= {proportionally to balance change in prev. line}
      * income = {what we got selling 'valuable' asset - stableValue of that asset}
      */
-    private void handleSell(SpotIncomeState state, OrderTradeUpdateEvent orderEvent,
+    private void handleSell(SpotBalanceState state, OrderTradeUpdateEvent orderEvent,
                             AccountPositionUpdateEvent accEvent) {
         final String baseAssetName = orderEvent.getBaseAsset();
         final String quoteAssetName = orderEvent.getQuoteAsset();
@@ -262,7 +265,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 
         final Asset baseAsset = state.findAsset(baseAssetName).get(); // not null because we CAN sell it
         final Optional<Asset> quoteAsset = state.findAsset(quoteAssetName);
-        TransactionX.Asset2 base = TransactionX.Asset2.builder()
+        Transaction.Asset2 base = Transaction.Asset2.builder()
                 .assetName(baseAssetName)
                 .txQty(baseQty)
                 .fullBalance(baseAsset.getBalance())
@@ -270,7 +273,7 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
                 .stableValue(baseAssetLocked.map(LockedAsset::getStableValue).orElse(ZERO)).build();
         final BigDecimal quoteAssetBalance = quoteAsset.map(Asset::getBalance).orElse(ZERO); // quoteAsset is always stablecoin
 
-        TransactionX.Asset2 quote = TransactionX.Asset2.builder()
+        Transaction.Asset2 quote = Transaction.Asset2.builder()
                 .assetName(quoteAssetName)
                 .txQty(quoteAssetQty)
                 .fullBalance(quoteAssetBalance)
@@ -278,11 +281,11 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
                 .stableValue(quoteAssetBalance)
                 .build();
 
-        state.getTXs().add(TransactionX.sellTx(state.getDateTime(), base, quote,
+        state.getTXs().add(Transaction.sellTx(state.getDateTime(), base, quote,
                 income.subtract(orderEvent.getQuoteAssetCommission()), baseQtyCapped));
     }
 
-    private void handleDeposit(SpotIncomeState state, BalanceUpdateEvent balanceEvent,
+    private void handleDeposit(SpotBalanceState state, BalanceUpdateEvent balanceEvent,
                                AccountPositionUpdateEvent accEvent) {
         final String assetName = balanceEvent.getBalances();
         final BigDecimal assetQty = balanceEvent.getBalanceDelta();
@@ -291,16 +294,16 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 
         final Optional<Asset> existingAsset = state.findAsset(assetName);
         final Optional<LockedAsset> lockedAsset = state.findLockedAsset(assetName);
-        TransactionX.Asset2 txAsset = TransactionX.Asset2.builder().assetName(assetName).txQty(assetQty)
+        Transaction.Asset2 txAsset = Transaction.Asset2.builder().assetName(assetName).txQty(assetQty)
                 .fullBalance(existingAsset.map(Asset::getBalance).orElse(ZERO))
                 .valuableBalance(lockedAsset.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(lockedAsset.map(LockedAsset::getStableValue).orElse(ZERO)).build();
 
         final BigDecimal transactionStableValue = STABLECOIN_RATE.getOrDefault(assetName, ZERO).multiply(assetQty);
-        state.getTXs().add(TransactionX.depositTx(state.getDateTime(), txAsset, transactionStableValue));
+        state.getTXs().add(Transaction.depositTx(state.getDateTime(), txAsset, transactionStableValue));
     }
 
-    public void handleWithdraw(SpotIncomeState state, BalanceUpdateEvent balanceEvent,
+    public void handleWithdraw(SpotBalanceState state, BalanceUpdateEvent balanceEvent,
                                AccountPositionUpdateEvent accEvent) {
         final String assetName = balanceEvent.getBalances();
         final BigDecimal qty = balanceEvent.getBalanceDelta().abs();
@@ -337,28 +340,28 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
 
         updateAssetsBalance(state, balanceEvent, accEvent);
         optLocked = state.findLockedAsset(assetName);
-        TransactionX.Asset2 txAsset = TransactionX.Asset2.builder().assetName(assetName).txQty(qty)
+        Transaction.Asset2 txAsset = Transaction.Asset2.builder().assetName(assetName).txQty(qty)
                 .fullBalance(state.findAsset(assetName).map(Asset::getBalance).orElse(ZERO))
                 .valuableBalance(optLocked.map(LockedAsset::getBalance).orElse(ZERO))
                 .stableValue(optLocked.map(LockedAsset::getStableValue).orElse(ZERO)).build();
-        state.getTXs().add(TransactionX.withdrawTx(state.getDateTime(), txAsset, stableValueDiff));
+        state.getTXs().add(Transaction.withdrawTx(state.getDateTime(), txAsset, stableValueDiff));
     }
 
-    private void updateAssetsBalance(SpotIncomeState state, BalanceUpdateEvent balanceEvent,
+    private void updateAssetsBalance(SpotBalanceState state, BalanceUpdateEvent balanceEvent,
                                      AccountPositionUpdateEvent accEvent) {
         final String baseAsset = balanceEvent.getBalances();
         final LocalDateTime dateTime = balanceEvent.getDateTime();
         updateAssetsBalance(state, accEvent, baseAsset, dateTime);
     }
 
-    private void updateAssetsBalance(SpotIncomeState state, OrderTradeUpdateEvent orderEvent,
+    private void updateAssetsBalance(SpotBalanceState state, OrderTradeUpdateEvent orderEvent,
                                      AccountPositionUpdateEvent accEvent) {
         final String baseAsset = orderEvent.getBaseAsset();
         final LocalDateTime dateTime = orderEvent.getDateTime();
         updateAssetsBalance(state, accEvent, baseAsset, dateTime);
     }
 
-    private void updateAssetsBalance(SpotIncomeState state, AccountPositionUpdateEvent accEvent, String baseAsset,
+    private void updateAssetsBalance(SpotBalanceState state, AccountPositionUpdateEvent accEvent, String baseAsset,
                                      LocalDateTime dateTime) {
         final AssetMetadata assetMetadata = AssetMetadata.builder().dateOfLastTransaction(dateTime).build();
         final List<Asset> assetsInvolved = accEvent.getBalances().stream()
@@ -374,10 +377,10 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
                 : TransactionType.WITHDRAW;
         final String str = String.format("%s %s %s %s", balanceEvent.getDateTime().format(ISO_DATE_TIME),
                 transactionType, balanceEvent.getBalances(), balanceEvent.getBalanceDelta().abs());
-        LOGGER.log(Level.INFO, str);
+        log.fine(str);
     }
 
-    private void logTrade(OrderTradeUpdateEvent orderEvent, SpotIncomeState prevState) {
+    private void logTrade(OrderTradeUpdateEvent orderEvent, SpotBalanceState prevState) {
         final BigDecimal quoteAssetQty = orderEvent.getOriginalQuantity()
                 .multiply(orderEvent.getPriceOfLastFilledTrade());
         String str = String.format("%s %s %s %s for total of %s quoteAsset",
@@ -385,13 +388,13 @@ public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotIncome
                 orderEvent.getOriginalQuantity().stripTrailingZeros().doubleValue(), orderEvent.getSymbol(),
                 quoteAssetQty.setScale(1, RoundingMode.HALF_EVEN).toPlainString());
 
-        if (orderEvent.getSide().equals("SELL")) {
+        if (orderEvent.getSide() == SELL) {
             final String baseAsset = EXCHANGE_INFO.getSymbolInfo(orderEvent.getSymbol()).getBaseAsset();
             final Optional<LockedAsset> lockedState = prevState.findLockedAsset(baseAsset);
             if (lockedState.isPresent()) {
                 str += ". Profit:" + quoteAssetQty.subtract(lockedState.get().getStableValue()).toPlainString();
             }
         }
-        LOGGER.log(Level.INFO, str);
+        log.fine(str);
     }
 }

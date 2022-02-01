@@ -26,7 +26,6 @@ public class ConfigUtil {
 		config.setFinishTrackDate(finish);
 		config.setInputFilepath(inputPath);
 		config.setOutputDir(outputPath);
-		// config.setAssetsToTrack(List.of(USDT, BUSD, BTC, ETH, AXS));
 		config.setAssetsToTrack(appProperties.getAssetsToTrack());
 		config.setConvertToUSD(true);
 		return config;
@@ -42,6 +41,7 @@ public class ConfigUtil {
         config.setFinishTrackDate(finish);
         config.setOutputDir(outputPath);
         config.setInputFilepath(inputPath);
+        config.setIncomeTypes(appProperties.getIncomeTypes());
         return config;
 	}
 }

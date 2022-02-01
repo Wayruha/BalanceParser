@@ -1,4 +1,4 @@
-package com.example.binanceparser.domain;
+package com.example.binanceparser.domain.balance;
 
 import com.binance.api.client.FuturesIncomeType;
 import lombok.AllArgsConstructor;

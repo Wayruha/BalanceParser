@@ -6,15 +6,15 @@ import java.io.FileReader;
 import java.util.List;
 import com.opencsv.bean.CsvToBeanBuilder;
 
-public class CSVIncomeSource {
+public class CSVUserDataSource {
 	private File csvDir;
 	
-	public CSVIncomeSource(String filepath) {
+	public CSVUserDataSource(String filepath) {
 		csvDir = new File(filepath);
 	}
 	
-	public List<CSVIncomeModel> getIncomeModels() throws IllegalStateException, FileNotFoundException {
-		final List<CSVIncomeModel> csvPojo = new CsvToBeanBuilder<CSVIncomeModel>(new FileReader(csvDir)).withType(CSVIncomeModel.class)
+	public List<UserApiData> getUsersData() throws IllegalStateException, FileNotFoundException {
+		final List<UserApiData> csvPojo = new CsvToBeanBuilder<UserApiData>(new FileReader(csvDir)).withType(UserApiData.class)
 				.withSkipLines(1).build().parse();
 		return csvPojo;
 	}

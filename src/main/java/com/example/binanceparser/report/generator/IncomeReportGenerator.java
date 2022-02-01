@@ -1,8 +1,9 @@
-package com.example.binanceparser.report;
+package com.example.binanceparser.report.generator;
 
 import com.example.binanceparser.config.IncomeConfig;
-import com.example.binanceparser.domain.IncomeBalanceState;
+import com.example.binanceparser.domain.balance.IncomeBalanceState;
 import com.example.binanceparser.plot.FuturesIncomeChartBuilder;
+import com.example.binanceparser.report.BalanceReport;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import java.io.File;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class IncomeReportGenerator extends AbstractBalanceReportGenerator<IncomeBalanceState, IncomeConfig> {
+	private static String CHART_PREFIX = "FuturesIncome_";
 
 	private final FuturesIncomeChartBuilder futuresIncomeChartBuilder = new FuturesIncomeChartBuilder();
 
@@ -24,7 +26,7 @@ public class IncomeReportGenerator extends AbstractBalanceReportGenerator<Income
 
 		final List<BigDecimal> balances = balanceStates.stream().map(IncomeBalanceState::getAvailableBalance)
 				.collect(Collectors.toList());
-		final String chartPath = config.getOutputDir() + "/" + config.getSubject().get(0) + ".jpg";
+		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + config.getSubject().get(0) + ".jpg";
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
 		final IncomeBalanceState first = balanceStates.get(0);

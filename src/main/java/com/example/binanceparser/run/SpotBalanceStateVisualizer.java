@@ -1,5 +1,6 @@
-package com.example.binanceparser;
+package com.example.binanceparser.run;
 
+import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.domain.events.AbstractEvent;

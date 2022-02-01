@@ -1,6 +1,9 @@
-package com.example.binanceparser.domain;
+package com.example.binanceparser.domain.balance;
 
 import com.example.binanceparser.Constants;
+import com.example.binanceparser.domain.Asset;
+import com.example.binanceparser.domain.LockedAsset;
+import com.example.binanceparser.domain.transaction.Transaction;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,25 +24,25 @@ import static java.util.Optional.ofNullable;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-public class SpotIncomeState extends BalanceState {
+public class SpotBalanceState extends BalanceState {
     private Map<String, Asset> currentAssets;
     private Map<String, LockedAsset> lockedAssets;
-    private List<TransactionX> TXs;
+    private List<Transaction> TXs;
 
-    public SpotIncomeState(LocalDateTime dateTime) {
+    public SpotBalanceState(LocalDateTime dateTime) {
         super(dateTime);
         currentAssets = List.of(new Asset(VIRTUAL_USD, ZERO)).stream().collect(Collectors.toMap(Asset::getAsset, Function.identity()));
         lockedAssets = new HashMap<>();
         TXs = new ArrayList<>();
     }
 
-    public SpotIncomeState(Set<Asset> currentAssets, Set<LockedAsset> lockedAssets, List<Transaction> transactions, List<TransactionX> TXs) {
+    public SpotBalanceState(Set<Asset> currentAssets, Set<LockedAsset> lockedAssets, List<Transaction> TXs) {
         this.currentAssets = currentAssets.stream().collect(Collectors.toMap(Asset::getAsset, Function.identity()));
         this.lockedAssets = lockedAssets.stream().collect(Collectors.toMap(Asset::getAsset, Function.identity()));
         this.TXs = TXs;
     }
 
-    public SpotIncomeState(LocalDateTime dateTime, SpotIncomeState incomeState) {
+    public SpotBalanceState(LocalDateTime dateTime, SpotBalanceState incomeState) {
         super(dateTime);
         this.currentAssets = incomeState.getCurrentAssets().stream().map(Asset::clone).collect(Collectors.toMap(Asset::getAsset, Function.identity()));
         this.lockedAssets = incomeState.getLockedAssets().stream().map(LockedAsset::clone).collect(Collectors.toMap(Asset::getAsset, Function.identity()));

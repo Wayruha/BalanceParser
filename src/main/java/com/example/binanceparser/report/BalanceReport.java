@@ -1,7 +1,6 @@
 package com.example.binanceparser.report;
 
-import com.example.binanceparser.domain.TransactionX;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.example.binanceparser.domain.transaction.Transaction;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,12 +24,16 @@ public class BalanceReport {
     private BigDecimal balanceDifference;
     private int totalTxCount;
     private int totalTradeTxCount;
+    private int totalTradeTxCount_2;
 
     private String user;
-    private List<TransactionX> transactions;
+    private List<Transaction> transactions;
+
+    public BalanceReport() {
+    }
 
     public String toPrettyString() {
-        final StringBuilder bldr = new StringBuilder("Result for ").append(user).append(":\n");
+        final StringBuilder bldr = new StringBuilder("Report for ").append(user).append(":\n");
         return bldr.append("Start date: ").append(startTrackDate).append("\n")
                 .append("FinishDate: ").append(finishTrackDate).append("\n")
                 .append("Balance at start: ").append(balanceAtStart).append("\n")
@@ -40,11 +43,16 @@ public class BalanceReport {
                 .append("Balance Delta: ").append(balanceDifference).append("\n")
                 .append("Total transactions: ").append(totalTxCount).append("\n")
                 .append("Total trade transactions: ").append(totalTradeTxCount).append("\n")
+                .append("Total trade transactions (2): ").append(totalTradeTxCount_2).append("\n")
                 .append("Chart: ").append(outputPath).append("\n")
                 .toString();
     }
 
-    public String json() throws JsonProcessingException {
-        return new ObjectMapper().writer().writeValueAsString(this);
+    public String json() {
+        try {
+            return new ObjectMapper().writer().writeValueAsString(this);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

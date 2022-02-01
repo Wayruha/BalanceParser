@@ -1,7 +1,6 @@
 package com.example.binanceparser.plot;
 
-import com.binance.api.client.FuturesIncomeType;
-import com.example.binanceparser.domain.IncomeBalanceState;
+import com.example.binanceparser.domain.balance.IncomeBalanceState;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
@@ -38,7 +37,6 @@ public class FuturesIncomeChartBuilder extends ChartBuilder<IncomeBalanceState> 
         XYLineAndShapeRenderer renderer;
 
         for (IncomeBalanceState incomeBalanceState : incomeBalanceStates) {
-            if (incomeBalanceState.getIncomeType() == FuturesIncomeType.COMMISSION) continue;
             series.addOrUpdate(dateTimeToDay(incomeBalanceState.getDate()),
                     incomeBalanceState.getAvailableBalance());
         }

@@ -4,13 +4,13 @@ import com.example.binanceparser.algorithm.SpotBalanceCalcAlgorithm;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.domain.Asset;
-import com.example.binanceparser.domain.SpotIncomeState;
-import com.example.binanceparser.domain.TransactionType;
-import com.example.binanceparser.domain.TransactionX;
+import com.example.binanceparser.domain.balance.SpotBalanceState;
+import com.example.binanceparser.domain.transaction.TransactionType;
+import com.example.binanceparser.domain.transaction.Transaction;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.plot.SpotAssetChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
-import com.example.binanceparser.report.SpotBalanceReportGenerator;
+import com.example.binanceparser.report.generator.SpotBalanceReportGenerator;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -18,7 +18,6 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -26,7 +25,7 @@ import static com.example.binanceparser.Constants.VIRTUAL_USD;
 import static java.lang.String.format;
 
 public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
-    private static final Logger LOGGER = Logger.getLogger(SpotBalanceProcessor.class.getName());
+    private static final Logger log = Logger.getLogger(SpotBalanceProcessor.class.getName());
     private final EventSource<AbstractEvent> eventSource;
     private final SpotBalanceReportGenerator balanceReportGenerator;
     private final SpotBalanceCalcAlgorithm algorithm;
@@ -46,14 +45,14 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
             throw new RuntimeException("Can't find any relevant events");
         }
 
-        final List<SpotIncomeState> balanceStates = algorithm.processEvents(events).stream()
+        final List<SpotBalanceState> balanceStates = algorithm.processEvents(events).stream()
                 .filter(state -> inRange(state.getDateTime(), config.getStartTrackDate(), config.getFinishTrackDate()))
                 .collect(Collectors.toList());
 
         final BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
-        LOGGER.log(Level.INFO, "More detailed log:");
+        log.fine("More detailed log:");
         balanceStates.forEach(this::logTransaction);
-        System.out.println("Processor done for config: " + config);
+        log.info("SpotProcessor done for config: " + config);
         return balanceReport;
     }
     
@@ -61,25 +60,25 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
         return date.compareTo(rangeStart) >= 0 && date.compareTo(rangeEnd) <= 0;
     }
 
-    private void logTransaction(SpotIncomeState state){
-        final TransactionX _tx = state.getTXs().get(0);
+    private void logTransaction(SpotBalanceState state){
+        final Transaction _tx = state.getTXs().get(0);
         final BigDecimal usdBalance = state.findAsset(VIRTUAL_USD).map(Asset::getBalance).orElse(BigDecimal.ZERO);
         if(_tx.getType() == TransactionType.DEPOSIT || _tx.getType() == TransactionType.WITHDRAW){
-            final TransactionX.Update tx = (TransactionX.Update) _tx;
-            final TransactionX.Asset2 asset = tx.getAsset();
+            final Transaction.Update tx = (Transaction.Update) _tx;
+            final Transaction.Asset2 asset = tx.getAsset();
             final String str = format("%s: %s %s %s. Profit=%s, balance=%s. USD=%s", formatDateTime(tx.getDate()), tx.getType(), formatNumber(asset.getTxQty()),
                     asset.getAssetName(), formatNumber(tx.getValueIncome()), formatNumber(asset.getFullBalance()),
                     formatNumber(usdBalance.setScale(1, RoundingMode.HALF_EVEN)));
-            LOGGER.log(Level.INFO, str);
+            log.fine(str);
         } else {
-            final TransactionX.Trade tx = (TransactionX.Trade) _tx;
-            final TransactionX.Asset2 base = tx.getBaseAsset();
-            final TransactionX.Asset2 quote = tx.getQuoteAsset();
+            final Transaction.Trade tx = (Transaction.Trade) _tx;
+            final Transaction.Asset2 base = tx.getBaseAsset();
+            final Transaction.Asset2 quote = tx.getQuoteAsset();
             final String str = format("%s: %s %s %s for %s %s. Profit=%s, baseBalance=%s, quoteBalance=%s. USD=%s", formatDateTime(tx.getDate()),
                     tx.getType(), formatNumber(base.getTxQty()), base.getAssetName(), formatNumber(quote.getTxQty()), quote.getAssetName(),
                     formatNumber(tx.getValueIncome()), formatNumber(base.getFullBalance()),
                     formatNumber(quote.getFullBalance()), formatNumber(usdBalance.setScale(1, RoundingMode.HALF_EVEN)));
-            LOGGER.log(Level.INFO, str);
+            log.fine(str);
         }
     }
 

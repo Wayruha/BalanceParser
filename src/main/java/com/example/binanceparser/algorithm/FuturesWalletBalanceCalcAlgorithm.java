@@ -2,7 +2,7 @@ package com.example.binanceparser.algorithm;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.Asset;
-import com.example.binanceparser.domain.EventBalanceState;
+import com.example.binanceparser.domain.balance.EventBalanceState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent.Position;

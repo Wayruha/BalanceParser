@@ -3,9 +3,11 @@ package com.example.binanceparser.plot;
 import static com.example.binanceparser.Constants.*;
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
-import com.example.binanceparser.domain.EventBalanceState;
+import com.example.binanceparser.domain.balance.EventBalanceState;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItemSource;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.time.TimeSeries;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,8 @@ public class FuturesBalanceChartBuilder extends ChartBuilder<EventBalanceState> 
 		if (config.isDrawPoints()) {
 			chart.getXYPlot().setRenderer(getRenderer());
 		}
+		final LegendItemSource legendSource = formLegend(usdTransferLegendItem());
+		chart.addLegend(new LegendTitle(legendSource));
 		return chart;
 	}
 
@@ -46,9 +50,9 @@ public class FuturesBalanceChartBuilder extends ChartBuilder<EventBalanceState> 
 		int numberOfPoints = 0;
 		for (int n = 0; n < eventStates.size(); n++) {
 			EventBalanceState eventBalanceState = eventStates.get(n);
-			if (eventBalanceState.getTransactions().stream()
+			if (eventBalanceState.getTXs().stream()
 					.anyMatch(transaction -> isTransfer(trackedAsset, transaction))
-					|| (trackedAsset.equals(VIRTUAL_USD) && anyTransfers(eventBalanceState.getTransactions()))) {
+					|| (trackedAsset.equals(VIRTUAL_USD) && anyTransfer(eventBalanceState.getTXs()))) {
 				withdrawPoints.add(new Point(row, numberOfPoints));
 				withdrawPoints.add(new Point(0, numberOfPoints));
 			}

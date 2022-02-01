@@ -1,8 +1,12 @@
-package com.example.binanceparser.domain;
+package com.example.binanceparser.domain.balance;
 
 import com.binance.api.client.domain.OrderSide;
+import com.binance.api.client.domain.OrderStatus;
+import com.example.binanceparser.domain.AccountUpdateReasonType;
+import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
+import com.example.binanceparser.domain.transaction.Transaction;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,21 +29,17 @@ import static java.math.BigDecimal.valueOf;
 @NoArgsConstructor
 public class EventBalanceState extends BalanceState {
     private Set<Asset> assets;
-    private List<Transaction> transactions;
-    private List<TransactionX> TXs;
+    private List<Transaction> TXs;
 
     public EventBalanceState(LocalDateTime dateTime) {
         super(dateTime);
-        // TODO add virtual usd
         this.assets = new LinkedHashSet<>();
-        this.transactions = new ArrayList<>();
         this.TXs = new ArrayList<>();
     }
 
     public EventBalanceState(LocalDateTime dateTime, EventBalanceState balanceState) {
         super(dateTime);
         this.assets = new LinkedHashSet<>(balanceState.getAssets());
-        this.transactions = new ArrayList<>();
         this.TXs = new ArrayList<>();
     }
 
@@ -54,7 +54,7 @@ public class EventBalanceState extends BalanceState {
         final AccountUpdateReasonType reason = accEvent.getReasonType();
         accEvent.getBalances()
                 .forEach(bal -> {
-                    TransactionX.Asset2 txAsset = TransactionX.Asset2.builder()
+                    Transaction.Asset2 txAsset = Transaction.Asset2.builder()
                             .assetName(bal.getAsset())
                             .txQty(valueOf(bal.getBalanceChange()))
                             .fullBalance(valueOf(bal.getWalletBalance()))
@@ -63,41 +63,31 @@ public class EventBalanceState extends BalanceState {
                             .build();
                     switch (reason) {
                         case DEPOSIT:
-                            TXs.add(TransactionX.depositTx(accEvent.getDateTime(), txAsset, valueOf(bal.getBalanceChange())));
+                            TXs.add(Transaction.depositTx(accEvent.getDateTime(), txAsset, valueOf(bal.getBalanceChange())));
                             break;
                         case WITHDRAW:
-                            TXs.add(TransactionX.withdrawTx(accEvent.getDateTime(), txAsset, valueOf(bal.getBalanceChange())));
+                            TXs.add(Transaction.withdrawTx(accEvent.getDateTime(), txAsset, valueOf(bal.getBalanceChange())));
                             break;
                     }
-
-                    //TODO old part - remove it.
-                    if (reason.equals(AccountUpdateReasonType.WITHDRAW)) {
-                        transactions.add(new Transaction(TransactionType.WITHDRAW, bal.getAsset(), "", valueOf(bal.getBalanceChange()), null, null));
-                    } else if (reason.equals(AccountUpdateReasonType.DEPOSIT)) {
-                        transactions.add(new Transaction(TransactionType.DEPOSIT, bal.getAsset(), "", valueOf(bal.getBalanceChange()), null, null));
-                    } else {
-                        transactions.add(new Transaction());
-                    }
-                });
+               });
     }
 
     // Futures does not fully support transactions yet
     public void processTradeEvent(FuturesOrderTradeUpdateEvent event) {
-        if (!event.getOrderStatus().equals("FILLED")) return;
-        TransactionX.Asset2 txAsset = TransactionX.Asset2.builder()
+        if (event.getOrderStatus() != OrderStatus.FILLED) return;
+        Transaction.Asset2 txAsset = Transaction.Asset2.builder()
                 .assetName(event.getSymbol())
-                .txQty(valueOf(event.getOriginalQuantity()))
+                .txQty(event.getOriginalQuantity())
                 .fullBalance(null).valuableBalance(null).stableValue(null)
                 .build();
 
         if (event.getSide() == OrderSide.BUY) {
-            TXs.add(TransactionX.buyTx(event.getDateTime(), txAsset, null, null, null));
+            TXs.add(Transaction.buyTx(event.getDateTime(), txAsset, null, null, null));
         } else {
-            TXs.add(TransactionX.sellTx(event.getDateTime(), txAsset, null, null, null));
+            TXs.add(Transaction.sellTx(event.getDateTime(), txAsset, null, null, null));
         }
     }
 
-    // will be re-written entirely
     public BigDecimal calculateVirtualUSDBalance() {
         BigDecimal virtualBalance = BigDecimal.ZERO;
         // works for quoteAsset = USD
@@ -114,7 +104,6 @@ public class EventBalanceState extends BalanceState {
     }
 
     public BigDecimal getAssetBalance(String assetName) {
-        // this will be removed later
         if (assetName.equals(VIRTUAL_USD)) {
             return calculateVirtualUSDBalance();
         }

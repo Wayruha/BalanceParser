@@ -1,10 +1,8 @@
-package com.example.binanceparser.domain;
+package com.example.binanceparser.domain.balance;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -16,10 +14,5 @@ public abstract class BalanceState {
     
     public LocalDate getDate(){
         return dateTime != null ? dateTime.toLocalDate() : null;
-    }
-    
-    //TODO delete after refactor
-    public BigDecimal getBalanceState() {
-    	throw new UnsupportedOperationException("should not use this method");
     }
 }

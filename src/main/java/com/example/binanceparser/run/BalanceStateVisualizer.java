@@ -1,9 +1,10 @@
-package com.example.binanceparser;
+package com.example.binanceparser.run;
 
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.CSVEventSource;
 import com.example.binanceparser.datasource.EventSource;
@@ -26,7 +27,7 @@ public abstract class BalanceStateVisualizer {
 		return filters;
 	}
 
-	protected EventSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
+	public static EventSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
 		final File logsDir = new File(config.getInputFilepath());
 		EventSource<AbstractEvent> eventSource;
 		switch (datasourceType) {

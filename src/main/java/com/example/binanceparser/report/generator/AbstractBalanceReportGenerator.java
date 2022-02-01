@@ -1,9 +1,10 @@
-package com.example.binanceparser.report;
+package com.example.binanceparser.report.generator;
 
 import java.io.IOException;
 import java.util.List;
 import com.example.binanceparser.config.Config;
-import com.example.binanceparser.domain.BalanceState;
+import com.example.binanceparser.domain.balance.BalanceState;
+import com.example.binanceparser.report.BalanceReport;
 
 public abstract class AbstractBalanceReportGenerator<T extends BalanceState, V extends Config> {
 

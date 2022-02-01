@@ -1,8 +1,9 @@
 package com.example.binanceparser.algorithm;
 
+import com.binance.api.client.domain.OrderStatus;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.events.AbstractEvent;
-import com.example.binanceparser.domain.EventBalanceState;
+import com.example.binanceparser.domain.balance.EventBalanceState;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 
@@ -36,7 +37,7 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm<EventBalan
             final FuturesAccountUpdateEvent accUpdate = (FuturesAccountUpdateEvent) events.get(i);
             final FuturesOrderTradeUpdateEvent nextOrderEvent = (FuturesOrderTradeUpdateEvent) events.get(i + 1);
 
-            if (accUpdate.getReasonType().name().equals("ORDER") && !nextOrderEvent.getOrderStatus().equals("FILLED"))
+            if (accUpdate.getReasonType().name().equals("ORDER") && nextOrderEvent.getOrderStatus() != OrderStatus.FILLED)
                 continue;
 
             Double currentBalance = accUpdate.getBalances().stream()
@@ -45,7 +46,7 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm<EventBalan
                     .getCrossWalletBalance();
 
             if (!nextOrderEvent.isReduceOnly()) {
-                final double positionQty = nextOrderEvent.getOriginalQuantity() * nextOrderEvent.getPrice();
+                final double positionQty = nextOrderEvent.getOriginalQuantity().multiply(nextOrderEvent.getPrice()).doubleValue();
                 System.out.println(accUpdate.getDateTime() + " open position: " + positionQty);
                 currentBalance += positionQty;
             }

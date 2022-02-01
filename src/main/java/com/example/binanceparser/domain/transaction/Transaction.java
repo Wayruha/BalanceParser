@@ -1,4 +1,4 @@
-package com.example.binanceparser.domain;
+package com.example.binanceparser.domain.transaction;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -9,16 +9,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static com.example.binanceparser.Utils.format;
-import static com.example.binanceparser.domain.TransactionType.*;
+import static com.example.binanceparser.domain.transaction.TransactionType.*;
 
 @Getter
 @Setter
-public abstract class TransactionX {
+public abstract class Transaction {
     protected final TransactionType type;
     protected final BigDecimal valueIncome;
     protected LocalDateTime date;
 
-    public TransactionX(TransactionType type, LocalDateTime date, BigDecimal valueIncome) {
+    public Transaction(TransactionType type, LocalDateTime date, BigDecimal valueIncome) {
         this.type = type;
         this.valueIncome = valueIncome;
         this.date = date;
@@ -76,7 +76,7 @@ public abstract class TransactionX {
     @Getter
     @Setter
     @ToString(callSuper = true)
-    public static class Trade extends TransactionX {
+    public static class Trade extends Transaction {
         Asset2 baseAsset;
         Asset2 quoteAsset;
         BigDecimal valuableBaseQtyInvolved;
@@ -92,7 +92,7 @@ public abstract class TransactionX {
     @Getter
     @Setter
     @ToString(callSuper = true)
-    public static class Update extends TransactionX {
+    public static class Update extends Transaction {
         Asset2 asset;
 
         protected Update(TransactionType type, LocalDateTime date, Asset2 asset, BigDecimal income) {

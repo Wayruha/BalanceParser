@@ -8,19 +8,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItemSource;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
-import com.example.binanceparser.domain.SpotIncomeState;
+import com.example.binanceparser.domain.balance.SpotBalanceState;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import static com.example.binanceparser.Constants.*;
 
-public class SpotAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
+public class SpotAssetChartBuilder extends ChartBuilder<SpotBalanceState> {
 	protected List<PointTime> specialPointTimes;
 	protected List<PointTime> intermediatePointTimes;
 	protected List<PointTime> withdrawPointTimes;
@@ -40,17 +41,18 @@ public class SpotAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 	}
 
 	@Override
-	public JFreeChart buildLineChart(List<SpotIncomeState> incomeStates) {
+	public JFreeChart buildLineChart(List<SpotBalanceState> incomeStates) {
 		addSeriesForEveryAsset(incomeStates);
 		JFreeChart chart = ChartFactory.createTimeSeriesChart("Account balance", "Date", "Balance", dataSeries);
 		if (config.isDrawPoints()) {
 			chart.getXYPlot().setRenderer(getRenderer());
 		}
-		chart.addLegend(new LegendTitle(getlegendItemSource()));
+		final LegendItemSource legendSource = formLegend(usdTransferLegendItem(), coinTransferLegendItem());
+		chart.addLegend(new LegendTitle(legendSource));
 		return chart;
 	}
 
-	private void addSeriesForEveryAsset(List<SpotIncomeState> incomeStates) {
+	private void addSeriesForEveryAsset(List<SpotBalanceState> incomeStates) {
 		if (incomeStates.size() != 0) {
 			final List<String> assetsToTrack = listAssetsInvolved(incomeStates.get(incomeStates.size() - 1));
 			assetsToTrack.forEach((assetTotrack) -> {
@@ -63,11 +65,11 @@ public class SpotAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 		}
 	}
 
-	private void fillTimeSeries(List<SpotIncomeState> incomeStates, String trackedAsset, int row) {
+	private void fillTimeSeries(List<SpotBalanceState> incomeStates, String trackedAsset, int row) {
 		final TimeSeries series = dataSeries.getSeries(trackedAsset + " balance (USD)");
 		Second previousSecValue = null;
 		for (int n = 0; n < incomeStates.size(); n++) {
-			SpotIncomeState incomeState = incomeStates.get(n);
+			SpotBalanceState incomeState = incomeStates.get(n);
 			LocalDateTime currentDateTime = incomeState.getDateTime();
 			Second currentSecValue = dateTimeToSecond(currentDateTime);
 			Map<String, BigDecimal> nonValuableAssetTradeParts = getNonValuableAssetTradeParts(trackedAsset, incomeState.getTXs());
@@ -101,12 +103,12 @@ public class SpotAssetChartBuilder extends ChartBuilder<SpotIncomeState> {
 		}
 	}
 
-	private boolean isWithdrawOrDeposit(String trackedAsset, SpotIncomeState incomeState) {
+	private boolean isWithdrawOrDeposit(String trackedAsset, SpotBalanceState incomeState) {
 		return incomeState.getTXs().stream().anyMatch(transaction -> isTransfer(trackedAsset, transaction))
 				|| (trackedAsset.equals(VIRTUAL_USD) && anyTransfer(incomeState.getTXs()));
 	}
 
-	private List<String> listAssetsInvolved(SpotIncomeState lastIncomeState) {
+	private List<String> listAssetsInvolved(SpotBalanceState lastIncomeState) {
 		return assetsToTrack.isEmpty()
 				? lastIncomeState.getCurrentAssets().stream().map(Asset::getAsset).collect(Collectors.toList())
 				: assetsToTrack;

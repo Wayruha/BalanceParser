@@ -3,6 +3,7 @@ package com.example.binanceparser.datasource;
 import com.example.binanceparser.domain.events.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.bean.CsvToBeanBuilder;
+import lombok.Setter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,7 +19,8 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
 	private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	private final ObjectMapper objectMapper;
 	private final File csvDir;
-	private final String trackedPerson;
+	@Setter
+	private String trackedPerson;
 
 	public CSVEventSource(File csvDir, String trackedPerson) {
 		this.objectMapper = new ObjectMapper();
@@ -71,7 +73,7 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
 			}
 			event.setDateTime(LocalDateTime.parse(model.getEvent_ts(), dateFormat));
 			event.setEventType(EventType.valueOf(model.getEvent_type()));
-			event.setSource(trackedPerson);
+			event.setSource(model.getCustomer_id());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

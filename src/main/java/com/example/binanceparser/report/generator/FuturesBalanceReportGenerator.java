@@ -1,8 +1,12 @@
-package com.example.binanceparser.report;
+package com.example.binanceparser.report.generator;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.*;
+import com.example.binanceparser.domain.balance.EventBalanceState;
+import com.example.binanceparser.domain.transaction.Transaction;
+import com.example.binanceparser.domain.transaction.TransactionType;
 import com.example.binanceparser.plot.ChartBuilder;
+import com.example.binanceparser.report.BalanceReport;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import java.io.File;
@@ -13,7 +17,7 @@ import java.util.stream.Collectors;
 import static com.example.binanceparser.Constants.*;
 import static java.util.Objects.isNull;
 
-public class BalanceReportGenerator extends AbstractBalanceReportGenerator<EventBalanceState, BalanceVisualizerConfig> {
+public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerator<EventBalanceState, BalanceVisualizerConfig> {
 	private static EnumSet<TransactionType> tradeTransactionTypes = EnumSet.of(TransactionType.BUY, TransactionType.SELL, TransactionType.CONVERT);
 	private static final String DEFAULT_CHART_NAME = "chart";
 	private static final String CHART_FILE_EXT = ".jpg";
@@ -21,7 +25,7 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 
 	private ChartBuilder<EventBalanceState> chartBuilder;
 
-	public BalanceReportGenerator(BalanceVisualizerConfig config, ChartBuilder<EventBalanceState> chartBuilder) {
+	public FuturesBalanceReportGenerator(BalanceVisualizerConfig config, ChartBuilder<EventBalanceState> chartBuilder) {
 		super(config);
 		this.chartBuilder = chartBuilder;
 	}
@@ -39,7 +43,7 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
 		final BigDecimal balanceUpdateDelta = findBalanceUpdateDelta(balanceStates);
-		final List<TransactionX> transactions = getTransactions(balanceStates);
+		final List<Transaction> transactions = getTransactions(balanceStates);
 		return BalanceReport.builder()
 				.user(config.getSubject().get(0))
 				.transactions(transactions)
@@ -55,7 +59,7 @@ public class BalanceReportGenerator extends AbstractBalanceReportGenerator<Event
 				.balanceDifference(balanceUpdateDelta).build();
 	}
 
-	private List<TransactionX> getTransactions(List<EventBalanceState> balanceStates) {
+	private List<Transaction> getTransactions(List<EventBalanceState> balanceStates) {
 		return balanceStates.stream()
 				.flatMap(st -> st.getTXs().stream())
 				.collect(Collectors.toList());

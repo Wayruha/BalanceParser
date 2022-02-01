@@ -41,7 +41,6 @@ public class CSVEventWriter implements EventWriter<AbstractEvent> {
 					.build().withHeader();
 			CsvMapper mapper = new CsvMapper();
 			mapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
-			// here is some problem
 			mapper.writerFor(CSVModel.class).with(schema).writeValues(outputDir).writeAll(models);
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CSVIncomeModel {
+public class UserApiData {
 	@CsvBindByPosition(position = 0)
 	private String userId;
 	@CsvBindByPosition(position = 1)

@@ -48,7 +48,6 @@ public class LockedAsset extends Asset {
         if (qty.signum() == 0) return;
         if (balance.compareTo(qty) < 0)
             System.out.println("Deducting more than exists. qty=" + qty.toPlainString() + ". " + toString());
-        //TODO BigDecimal має final state - він незмінний. операції типу subtract не змінюють об'єкт на якому викликаються
         final BigDecimal balanceBefore = balance;
         balance = balance.subtract(qty);
         //value -= value * (qty/balance)
