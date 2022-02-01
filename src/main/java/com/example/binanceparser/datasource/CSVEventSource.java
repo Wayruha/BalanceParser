@@ -10,32 +10,29 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class CSVEventSource implements EventSource<AbstractEvent> {
 	private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	private final ObjectMapper objectMapper;
 	private final File csvDir;
-	private final String sourceTag;
+	private final String trackedPerson;
 
-	public CSVEventSource(File csvDir, String sourceTag) {
+	public CSVEventSource(File csvDir, String trackedPerson) {
 		this.objectMapper = new ObjectMapper();
 		this.csvDir = csvDir;
-		this.sourceTag = sourceTag;
+		this.trackedPerson = trackedPerson;
 	}
 
 	@Override
 	public List<AbstractEvent> getData() {
 		try {
 			final List<CSVModel> csvPojo = getCsvPojo();
-			return csvPojo.stream().filter((model) -> model.getCustomer_id().equals(sourceTag)).map(this::modelToEvent)
+			return csvPojo.stream()
+					.filter(model -> model.getCustomer_id().equals(trackedPerson))
+					.map(this::modelToEvent)
 					.collect(Collectors.toList());
 		} catch (IOException exception) {
 			exception.printStackTrace();
@@ -44,7 +41,10 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
 	}
 
 	public List<String> getuserIds() throws IllegalStateException, FileNotFoundException {
-		return getCsvPojo().stream().map((model) -> model.getCustomer_id()).distinct().collect(Collectors.toList());
+		return getCsvPojo().stream()
+				.map(CSVModel::getCustomer_id)
+				.distinct()
+				.collect(Collectors.toList());
 	}
 
 	private List<CSVModel> getCsvPojo() throws IllegalStateException, FileNotFoundException {
@@ -71,7 +71,7 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
 			}
 			event.setDateTime(LocalDateTime.parse(model.getEvent_ts(), dateFormat));
 			event.setEventType(EventType.valueOf(model.getEvent_type()));
-			event.setSource(sourceTag);
+			event.setSource(trackedPerson);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

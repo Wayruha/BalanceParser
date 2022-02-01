@@ -19,7 +19,7 @@ public class FuturesIncomeVisualizerApp {
 		this.appProperties = appProperties;
 	}
 	
-	public BalanceReport loadData(String user, IncomeConfig config) {
+	public BalanceReport futuresIncomeVisualisation(String user, IncomeConfig config) {
 		EventSource<IncomeHistoryItem> apiClientSource = getEventSource(user, config);
 		IncomeProcessor processor = new IncomeProcessor(apiClientSource, config);
 		return processor.process();

@@ -16,7 +16,7 @@ public class FuturesBalanceStateVisualizer extends BalanceStateVisualizer {
 		this.appProperties = properties;
 	}
 	
-	public BalanceReport futuresStateChangeFromLogs(String user, BalanceVisualizerConfig config) throws IOException {
+	public BalanceReport futuresBalanceVisualisation(String user, BalanceVisualizerConfig config) throws IOException {
 		config.setSubject(List.of(user));
 		final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
 		final FuturesBalanceStateProcessor processor = new FuturesBalanceStateProcessor(eventSource, config);

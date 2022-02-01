@@ -45,7 +45,6 @@ public class AssetChartBuilder extends ChartBuilder<EventBalanceState> {
 		final TimeSeries series = new TimeSeries(trackedAsset + " balance (USD)");
 		for (int n = 0; n < eventStates.size(); n++) {
 			EventBalanceState eventBalanceState = eventStates.get(n);
-			Asset asset = eventBalanceState.findAsset(trackedAsset);
 			if (eventBalanceState.getTransactions().stream().anyMatch(transaction -> isTransfer(trackedAsset, transaction))
 					|| (trackedAsset.equals(VIRTUAL_USD) && anyTransfers(eventBalanceState.getTransactions()))) {
 				withdrawPoints.add(new Point(row, n));

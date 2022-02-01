@@ -15,7 +15,7 @@ public class SpotBalanceStateVisualizer extends BalanceStateVisualizer {
 		this.appProperties = properties;
 	}
 
-	public BalanceReport spotStateChangeFromLogs(String user, BalanceVisualizerConfig config) throws IOException {
+	public BalanceReport spotBalanceVisualisation(String user, BalanceVisualizerConfig config) throws IOException {
 		config.setSubject(List.of(user));
 		final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
 		final SpotBalanceProcessor processor = new SpotBalanceProcessor(eventSource, config);
