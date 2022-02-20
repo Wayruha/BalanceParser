@@ -3,11 +3,15 @@ package com.example.binanceparser.config;
 import com.example.binanceparser.domain.events.EventType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.Collections;
 import java.util.List;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
+@ToString(callSuper = true)
 @AllArgsConstructor
 public class BalanceVisualizerConfig extends Config {
     private List<String> assetsToTrack;

@@ -10,18 +10,23 @@ public enum EventType {
     ORDER_TRADE_UPDATE("ORDER_TRADE_UPDATE"),
     FUTURES_ORDER_TRADE_UPDATE("FUTURES_ORDER_TRADE_UPDATE"),
     FUTURES_ACCOUNT_UPDATE("FUTURES_ACCOUNT_UPDATE"),
-    // монети які містить аккаунт і відкриті на даний момент позиції (про позиції пишу нижче).
-    // Містить інформацію по торговій парі: ціна, кількість, статус і т.д.
-    // Може мати різні orderStatus, нас цікавить лише orderStatus=FILLED (означає, що заявка на покупку/продажу виконана повністю) - інші можна ігнорувати.
     LISTEN_KEY_EXPIRED("LISTEN_KEY_EXPIRED"),
     ACCOUNT_CONFIG_UPDATE("ACCOUNT_CONFIG_UPDATE"),
     COIN_SWAP_ORDER("COIN_SWAP_ORDER"),
     MARGIN_CALL("MARGIN_CALL"),
+    OCO_TRADE_UPDATE("OCO_TRADE_UPDATE"),
 
     //custom types, Binance does not know about them
     TRANSFER("TRANSFER"),
     TRANSACTION("TRANSACTION"),
-    CONVERT_FUNDS("CONVERT_FUNDS");
+    CONVERT_FUNDS("CONVERT_FUNDS"),
+
+    //TODO temporary workaround to handle different event names coming from different event sources: logs and db (csv)
+    // only valid if we DO NOT reference these enum values in code
+    ACCOUNT_POSITION_UPDATE2("outboundAccountPosition"),
+    ORDER_TRADE_UPDATE2("executionReport"),
+    BALANCE_UPDATE2("balanceUpdate"),
+    ;
 
     private final String eventTypeId;
 

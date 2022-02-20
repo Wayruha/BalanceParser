@@ -7,10 +7,7 @@ import com.example.binanceparser.config.IncomeConfig;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.time.Instant.ofEpochMilli;
 import static java.util.Optional.ofNullable;
@@ -36,11 +33,13 @@ public class BinanceIncomeDataSource implements EventSource<IncomeHistoryItem> {
                 .map(d -> d.toInstant(ZoneOffset.of("+2")))
                 .orElse(null);
         final Set<IncomeHistoryItem> incomeList = new HashSet<>();
-        for (FuturesIncomeType type : config.getIncomeType()) {
+        for (FuturesIncomeType type : config.getIncomeTypes()) {
             final List<IncomeHistoryItem> items = fetchData(startTrackDate, finishTrackDate, type);
             incomeList.addAll(items);
         }
-        return new ArrayList<>(incomeList);
+        final ArrayList<IncomeHistoryItem> incomeItems = new ArrayList<>(incomeList);
+        incomeItems.sort(Comparator.comparing(IncomeHistoryItem::getTime));
+        return incomeItems;
     }
 
     /**

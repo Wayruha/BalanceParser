@@ -1,9 +1,11 @@
 package com.example.binanceparser.binance;
 
+import com.binance.api.client.ApiRestClient;
 import com.binance.api.client.BinanceApiClientFactory;
 import com.binance.api.client.FuturesIncomeType;
 import com.binance.api.client.FuturesRestClient;
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
+import com.binance.api.client.domain.general.ExchangeInfo;
 
 import java.time.Instant;
 import java.util.List;
@@ -25,5 +27,10 @@ public class BinanceClient {
     public List<IncomeHistoryItem> fetchFuturesIncomeHistory(String symbol, FuturesIncomeType incomeType, Instant startTime, Instant endTime, int limit) {
         final List<IncomeHistoryItem> incomeHistory = restClient.getIncomeHistory(symbol, incomeType, startTime, endTime, limit);
         return incomeHistory;
+    }
+
+    public ExchangeInfo loadExchangeInfo(){
+        final ApiRestClient dummyClient = new BinanceApiClientFactory(null, null, false).newRestClient();
+        return dummyClient.getExchangeInfo();
     }
 }

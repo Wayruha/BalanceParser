@@ -1,14 +1,14 @@
 package com.example.binanceparser.datasource;
 
+import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.EventType;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.example.binanceparser.domain.events.TypedEventJsonView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-
 import static com.example.binanceparser.datasource.ParserUtil.fromPlainToJson;
 import static com.example.binanceparser.domain.events.EventType.*;
 
@@ -26,7 +25,7 @@ import static com.example.binanceparser.domain.events.EventType.*;
  */
 public class LogsEventSource implements EventSource<AbstractEvent> {
     private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper().addMixIn(AbstractEvent.class, TypedEventJsonView.class);;
     private static final List<EventType> IGNORED_EVENTS = List.of(TRANSACTION, TRANSFER, ACCOUNT_CONFIG_UPDATE, CONVERT_FUNDS, MARGIN_CALL, COIN_SWAP_ORDER);
     private final File logsDir;
     private Set<Filter> filters;
@@ -79,7 +78,7 @@ public class LogsEventSource implements EventSource<AbstractEvent> {
     }
 
     private static void setCommons(LocalDateTime date, String source, AbstractEvent event, EventType eventType) {
-        event.setDate(date);
+        event.setDateTime(date);
         event.setSource(source);
         event.setEventType(eventType);
     }

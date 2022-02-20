@@ -1,8 +1,9 @@
 package com.example.binanceparser.algorithm;
 
+import com.binance.api.client.domain.OrderStatus;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.events.AbstractEvent;
-import com.example.binanceparser.domain.EventBalanceState;
+import com.example.binanceparser.domain.balance.EventBalanceState;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 
@@ -20,7 +21,7 @@ import static com.example.binanceparser.domain.events.EventType.FUTURES_ORDER_TR
  * One of the problems is that position qty, used to calculate balance, is created using leverage
  * Therefore, it does not represent the real amount of money spent
  */
-public class CalculationAlgorithmImpl implements CalculationAlgorithm {
+public class CalculationAlgorithmImpl implements CalculationAlgorithm<EventBalanceState> {
 
     final String assetToTrack;
 
@@ -36,7 +37,7 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
             final FuturesAccountUpdateEvent accUpdate = (FuturesAccountUpdateEvent) events.get(i);
             final FuturesOrderTradeUpdateEvent nextOrderEvent = (FuturesOrderTradeUpdateEvent) events.get(i + 1);
 
-            if (accUpdate.getReasonType().name().equals("ORDER") && !nextOrderEvent.getOrderStatus().equals("FILLED"))
+            if (accUpdate.getReasonType().name().equals("ORDER") && nextOrderEvent.getOrderStatus() != OrderStatus.FILLED)
                 continue;
 
             Double currentBalance = accUpdate.getBalances().stream()
@@ -45,13 +46,13 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
                     .getCrossWalletBalance();
 
             if (!nextOrderEvent.isReduceOnly()) {
-                final double positionQty = nextOrderEvent.getOriginalQuantity() * nextOrderEvent.getPrice();
-                System.out.println(accUpdate.getDate() + " open position: " + positionQty);
+                final double positionQty = nextOrderEvent.getOriginalQuantity().multiply(nextOrderEvent.getPrice()).doubleValue();
+                System.out.println(accUpdate.getDateTime() + " open position: " + positionQty);
                 currentBalance += positionQty;
             }
 
             EventBalanceState eventBalanceState = new EventBalanceState();
-            eventBalanceState.setDateTime(accUpdate.getDate());
+            eventBalanceState.setDateTime(accUpdate.getDateTime());
             Set<Asset> assetList = new HashSet<>();
             FuturesAccountUpdateEvent.Asset accUpdateAsset = accUpdate.getBalances().stream().filter(asset -> asset.getAsset().equals(assetToTrack))
                     .findFirst().orElseThrow(() -> new IllegalStateException("Balance not found"));
@@ -62,4 +63,10 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm {
         }
         return balances;
     }
+
+	@Override
+	public List<EventBalanceState> processEvents(List<AbstractEvent> events) {
+		// TODO Auto-generated method stub
+		return new ArrayList<EventBalanceState>();
+	}
 }

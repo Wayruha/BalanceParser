@@ -1,9 +1,8 @@
-package com.example.binanceparser.domain;
+package com.example.binanceparser.domain.balance;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -12,11 +11,7 @@ import java.time.LocalDateTime;
 @Data
 public abstract class BalanceState {
     private LocalDateTime dateTime;
-
-    public BalanceState(LocalDate date) {
-        this.dateTime = date.atStartOfDay();
-    }
-
+    
     public LocalDate getDate(){
         return dateTime != null ? dateTime.toLocalDate() : null;
     }
