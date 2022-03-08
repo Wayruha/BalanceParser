@@ -19,6 +19,7 @@ import static java.util.Objects.isNull;
 
 public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerator<EventBalanceState, BalanceVisualizerConfig> {
 	private static EnumSet<TransactionType> tradeTransactionTypes = EnumSet.of(TransactionType.BUY, TransactionType.SELL, TransactionType.CONVERT);
+	private static EnumSet<TransactionType> transferTxTypes = EnumSet.of(TransactionType.DEPOSIT, TransactionType.WITHDRAW);
 	private static final String DEFAULT_CHART_NAME = "chart";
 	private static final String CHART_FILE_EXT = ".jpg";
 	private static final String CHART_PREFIX = "Futures_";
@@ -42,17 +43,17 @@ public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerato
 		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + subject + CHART_FILE_EXT;
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
-		final BigDecimal balanceUpdateDelta = findBalanceUpdateDelta(balanceStates);
+		final BigDecimal balanceUpdateDelta = calculateBalanceDelta(balanceStates);
 		final List<Transaction> transactions = getTransactions(balanceStates);
 		return BalanceReport.builder()
 				.user(config.getSubject().get(0))
 				.transactions(transactions)
 				.totalTxCount(transactions.size())
-				.totalTradeTxCount((int) transactions.stream().filter(tx -> tradeTransactionTypes.contains(tx.getType())).count())
 				.startTrackDate(config.getStartTrackDate())
 				.finishTrackDate(config.getFinishTrackDate())
 				.balanceAtStart(balanceStates.size() != 0 ? balanceStates.get(0).getAssetBalance(VIRTUAL_USD) : BigDecimal.ZERO)
 				.balanceAtEnd(balanceStates.size() != 0 ? balanceStates.get(balanceStates.size() - 1).getAssetBalance(VIRTUAL_USD) : BigDecimal.ZERO)
+				.depositDelta(getDepositDelta(balanceStates))
 				.min(findMinBalance(assetDataList))
 				.max(findMaxBalance(assetDataList))
 				.outputPath(generatedPlotPath)
@@ -65,18 +66,19 @@ public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerato
 				.collect(Collectors.toList());
 	}
 
-	private BigDecimal findBalanceUpdateDelta(List<EventBalanceState> balanceStates) {
+	private BigDecimal calculateBalanceDelta(List<EventBalanceState> balanceStates) {
 		return balanceStates.size() != 0
 				? balanceStates.get(balanceStates.size() - 1).getAssetBalance(VIRTUAL_USD)
 				.subtract(balanceStates.get(0).getAssetBalance(VIRTUAL_USD))
 				: BigDecimal.ZERO;
 	}
 
-	private BigDecimal calculateBalanceDelta(List<Asset> assetList) {
-		if(assetList.size() == 0) return BigDecimal.ZERO;
-		final Asset lastAsset = assetList.get(assetList.size() - 1);
-		final Asset firstAsset = assetList.get(0);
-		return lastAsset.getBalance().subtract(firstAsset.getBalance());
+	private BigDecimal getDepositDelta(List<EventBalanceState> balanceStates){
+		return balanceStates.stream().flatMap(state -> state.getTXs().stream())
+				.filter(tx -> transferTxTypes.contains(tx.getType()))
+				.map(Transaction::getValueIncome)
+				.reduce(BigDecimal::add)
+				.orElse(BigDecimal.ZERO);
 	}
 
 	public static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {

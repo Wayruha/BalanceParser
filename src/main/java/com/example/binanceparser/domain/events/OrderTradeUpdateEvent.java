@@ -4,6 +4,7 @@ import com.binance.api.client.domain.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
@@ -17,6 +18,7 @@ import static com.example.binanceparser.Constants.MATH_CONTEXT;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@NoArgsConstructor
 public class OrderTradeUpdateEvent extends OrderEvent {
 
     protected BigDecimal commission;

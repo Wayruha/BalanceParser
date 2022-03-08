@@ -44,8 +44,8 @@ public class EventBalanceState extends BalanceState {
     }
 
     public void updateAssets(List<Asset> newAssets) {
-        newAssets.stream().forEach((updatedAsset) -> {
-            assets.removeIf((currentAsset) -> currentAsset.getAsset().equals(updatedAsset.getAsset()));
+        newAssets.forEach(updatedAsset -> {
+            assets.removeIf(currentAsset -> currentAsset.getAsset().equals(updatedAsset.getAsset()));
             assets.add(updatedAsset);
         });
     }

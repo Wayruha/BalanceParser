@@ -1,7 +1,10 @@
 package com.example.binanceparser.report;
 
+import com.example.binanceparser.Utils;
 import com.example.binanceparser.domain.transaction.Transaction;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,10 +17,13 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class BalanceReport {
+    @JsonSerialize(using = Utils.LocalDateTimeSerializer.class)
     private LocalDateTime startTrackDate;
+    @JsonSerialize(using = Utils.LocalDateTimeSerializer.class)
     private LocalDateTime finishTrackDate;
     private BigDecimal balanceAtStart;
     private BigDecimal balanceAtEnd;
+    private BigDecimal depositDelta;
     private BigDecimal max;
     private BigDecimal min;
     private String outputPath;
@@ -27,6 +33,7 @@ public class BalanceReport {
     private int totalTradeTxCount_2;
 
     private String user;
+    @JsonIgnore
     private List<Transaction> transactions;
 
     public BalanceReport() {

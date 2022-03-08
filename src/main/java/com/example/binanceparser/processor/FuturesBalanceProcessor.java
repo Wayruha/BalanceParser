@@ -11,12 +11,12 @@ import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.balance.EventBalanceState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
-import com.example.binanceparser.plot.FuturesBalanceChartBuilder;
 import com.example.binanceparser.plot.ChartBuilder;
+import com.example.binanceparser.plot.FuturesBalanceChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
-import com.example.binanceparser.report.generator.FuturesBalanceReportGenerator;
 import com.example.binanceparser.report.enricher.ReportEnricher;
 import com.example.binanceparser.report.enricher.TradeCountReportEnricher;
+import com.example.binanceparser.report.generator.FuturesBalanceReportGenerator;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -56,7 +56,7 @@ public class FuturesBalanceProcessor extends Processor<BalanceVisualizerConfig> 
         // retrieve balance changes
         final List<EventBalanceState> balanceStates = algorithm.processEvents(events, config.getAssetsToTrack());
         BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
-        for (ReportEnricher<AbstractEvent> enricher: enrichers) {
+        for (ReportEnricher<AbstractEvent> enricher : enrichers) {
             balanceReport = enricher.enrichReport(balanceReport, events);
         }
         log.info("FuturesProcessor done for config: " + config);
@@ -64,7 +64,7 @@ public class FuturesBalanceProcessor extends Processor<BalanceVisualizerConfig> 
         return balanceReport;
     }
 
-    public static BigDecimal calculateFuturesTransferDelta(List<AbstractEvent> events){
+    public static BigDecimal calculateFuturesTransferDelta(List<AbstractEvent> events) {
         final List<FuturesAccountUpdateEvent> relevantEvents = events.stream()
                 .filter(e -> e instanceof FuturesAccountUpdateEvent)
                 .map(e -> (FuturesAccountUpdateEvent) e)
@@ -72,7 +72,7 @@ public class FuturesBalanceProcessor extends Processor<BalanceVisualizerConfig> 
                 .collect(Collectors.toList());
 
         log.fine("Logging all Futures DEPOSITs and WITHDRAWs");
-        relevantEvents.forEach(e->{
+        relevantEvents.forEach(e -> {
             final String str = String.format("%s Futures %s %s", e.getDateTime().format(ISO_DATE_TIME),
                     e.getReasonType(), e.getBalances().get(0).getBalanceChange());
             log.fine(str);
@@ -86,7 +86,7 @@ public class FuturesBalanceProcessor extends Processor<BalanceVisualizerConfig> 
 
     //TODO refactor. 1. it should not rely on balanceReportGenerator here.
     // 2- cast to different Asset does not look good
-    public static BigDecimal totalFuturesTransfers(List<FuturesAccountUpdateEvent.Asset> balances){
+    public static BigDecimal totalFuturesTransfers(List<FuturesAccountUpdateEvent.Asset> balances) {
         final Set<Asset> assets = balances.stream()
                 .map(asset -> new Asset(asset.getAsset(), BigDecimal.valueOf(asset.getBalanceChange())))
                 .collect(Collectors.toSet());

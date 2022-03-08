@@ -2,6 +2,7 @@ package com.example.binanceparser.run;
 
 import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
+import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.processor.SpotBalanceProcessor;
@@ -16,7 +17,8 @@ public class SpotBalanceStateVisualizer extends BalanceStateVisualizer {
 		this.appProperties = properties;
 	}
 
-	public BalanceReport spotBalanceVisualisation(String user, BalanceVisualizerConfig config) throws IOException {
+	public BalanceReport spotBalanceVisualisation(String user) throws IOException {
+		final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(appProperties);
 		config.setSubject(List.of(user));
 		final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
 		final SpotBalanceProcessor processor = new SpotBalanceProcessor(eventSource, config);

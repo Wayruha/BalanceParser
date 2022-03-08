@@ -2,6 +2,7 @@ package com.example.binanceparser.run;
 
 import com.binance.api.client.domain.ExecutionType;
 import com.example.binanceparser.AppProperties;
+import com.example.binanceparser.Utils;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.datasource.EventSource;
@@ -27,14 +28,16 @@ import java.util.stream.Collectors;
 public class TradeListComparatorRunner {
     private static final Logger log = Logger.getLogger(TradeListComparatorRunner.class.getName());
 
+    private static final String CLONED_ORDER_ENDING = "_cln";
     private final AppProperties appProperties;
     private final BalanceVisualizerConfig config;
     private final EventSource<AbstractEvent> eventSource;
     private String trader;
     private List<String> followers;
 
+
     public static void main(String[] args) throws IOException {
-        final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/application.properties");
+        final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/trades-comparator.properties");
         final TradeListComparatorRunner inst = new TradeListComparatorRunner(appProperties);
         inst.compareTradeLists();
     }
@@ -66,11 +69,13 @@ public class TradeListComparatorRunner {
             final Set<String> userOrders = extractOrderIds(userEvents);
             Report report = new Report(follower, trader);
             report.setOrderIds(userOrders);
+            report.setOrderCount(userOrders.size());
             report.setExtraOrders(SetUtils.difference(userOrders, traderOrders));
-            report.setMissingOrders(SetUtils.disjunction(traderOrders, userOrders));
+            report.setMissingOrders(SetUtils.difference(traderOrders, userOrders));
             reports.add(report);
         }
-        reports.forEach(r -> log.info(r.json()));
+
+        log.info(Utils.toJson(reports));
     }
 
     public List<FuturesOrderTradeUpdateEvent> getUserEvents(String user, List<FuturesOrderTradeUpdateEvent> events) {
@@ -82,7 +87,7 @@ public class TradeListComparatorRunner {
     public Set<String> extractOrderIds(List<FuturesOrderTradeUpdateEvent> events) {
         return events.stream()
                 .filter(trade -> trade.getExecutionType() == ExecutionType.TRADE)
-                .map(FuturesOrderTradeUpdateEvent::getNewClientOrderId)
+                .map(e -> e.getNewClientOrderId().replace(CLONED_ORDER_ENDING,""))
                 .collect(Collectors.toSet());
     }
 
@@ -103,6 +108,7 @@ public class TradeListComparatorRunner {
         private String follower;
         private String trader;
         private Set<String> orderIds;
+        private int orderCount;
         private Set<String> missingOrders;
         private Set<String> extraOrders;
 

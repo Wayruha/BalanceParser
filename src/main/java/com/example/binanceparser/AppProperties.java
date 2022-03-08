@@ -6,12 +6,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.time.LocalDateTime.parse;
+import static java.util.Optional.ofNullable;
 
 @Data
 public class AppProperties {
@@ -31,39 +30,41 @@ public class AppProperties {
 	private List<FuturesIncomeType> incomeTypes;
 
 	public AppProperties(Properties props) {
-		this.trackedPersons = personsTotrack(props);
+		this.trackedPersons = personsToTrack(props);
 		this.futuresAccountPrefix = props.getProperty("config.futures_prefix");
 		this.spotAccountPrefix = props.getProperty("config.spot_prefix");
 		this.startTrackDate = parse(props.getProperty("config.start_track_date"), formatter);
 		this.endTrackDate = parse(props.getProperty("config.finish_track_date"), formatter);
 		this.inputFilePath = props.getProperty("config.file_input_path");
-		this.incomeInputFilePath = props.getProperty("config.income.file_input_path");
+		this.incomeInputFilePath = props.getProperty("config.income.keys");
 		this.outputPath = props.getProperty("config.file_output_path");
 		this.assetsToTrack = assetsToTrack(props);
-		this.dataSourceType = DatasourceType.forName(props.getProperty("config.event_source_type"));
-		this.historyItemSourceType = HistoryItemSourceType.forName(props.getProperty("config.income.source_type"));
+		this.dataSourceType = ofNullable(props.getProperty("config.event_source_type")).map(DatasourceType::forName).orElse(null);
+		this.historyItemSourceType = ofNullable(props.getProperty("config.income.source_type")).map(HistoryItemSourceType::forName).orElse(null);
 		this.incomeTypes = parseIncomeTypes(props.getProperty("config.income.income_types"));
 	}
 
 	private List<FuturesIncomeType> parseIncomeTypes(String property) {
+		if(property == null) return Collections.emptyList();
 		return Arrays.stream(property.split(","))
 				.map(type -> FuturesIncomeType.valueOf(type.trim())).collect(Collectors.toList());
 	}
 
 	private static List<String> assetsToTrack(Properties props) {
+		if(props.getProperty("config.assets_to_track") == null) return null;
 		List<String> assetsToTrack = Arrays.asList(props.getProperty("config.assets_to_track").split(","));
 		assetsToTrack = assetsToTrack.stream().map(String::trim).filter((asset) -> !asset.equals(""))
 				.collect(Collectors.toList());
 		return assetsToTrack;
 	}
 
-	private static List<String> personsTotrack(Properties props) {
-		List<String> personsTotrack = Arrays.asList(props.getProperty("config.persons").split(","));
-		personsTotrack = personsTotrack.stream()
+	private static List<String> personsToTrack(Properties props) {
+		List<String> personsToTrack = Arrays.asList(props.getProperty("config.persons").split(","));
+		personsToTrack = personsToTrack.stream()
 				.map(String::trim)
 				.filter(StringUtils::isNotEmpty)
 				.collect(Collectors.toList());
-		return personsTotrack;
+		return personsToTrack;
 	}
 
 	public enum DatasourceType {

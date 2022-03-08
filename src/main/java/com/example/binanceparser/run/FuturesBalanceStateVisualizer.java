@@ -22,14 +22,14 @@ public class FuturesBalanceStateVisualizer extends BalanceStateVisualizer {
 	}
 
 	public static void main(String[] args) throws IOException {
-		final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/application.properties");
+		final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/futures-balance.properties");
 		FuturesBalanceStateVisualizer visualizer = new FuturesBalanceStateVisualizer(appProperties);
 		final String trackedPerson = appProperties.getTrackedPersons().get(0);
-		final BalanceReport report = visualizer.futuresBalanceVisualisation(trackedPerson, null);
+		final BalanceReport report = visualizer.futuresBalanceVisualisation(trackedPerson);
 		System.out.println(report.toPrettyString());
 	}
 	
-	public BalanceReport futuresBalanceVisualisation(String user, BalanceVisualizerConfig _config) throws IOException {
+	public BalanceReport futuresBalanceVisualisation(String user) throws IOException {
 		final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(appProperties);
 		config.setSubject(List.of(user));
 		final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);

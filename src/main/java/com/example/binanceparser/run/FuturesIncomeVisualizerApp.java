@@ -31,7 +31,7 @@ public class FuturesIncomeVisualizerApp {
 	private Map<String, UserApiData> userApiKeys;
 
 	public static void main(String[] args) throws IOException {
-		final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/application.properties");
+		final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/futures-income.properties");
 		FuturesIncomeVisualizerApp visualizer = new FuturesIncomeVisualizerApp(appProperties);
 		final String trackedPerson = appProperties.getTrackedPersons().get(0);
 		final BalanceReport report = visualizer.futuresIncomeVisualisation(trackedPerson, null);

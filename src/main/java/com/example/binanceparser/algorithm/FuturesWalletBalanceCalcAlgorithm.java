@@ -81,7 +81,7 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<E
                     .append(", entry price:").append(pos.getEntryPrice());
         }
         sb.append("}");
-		LOGGER.fine(sb.toString());
+        LOGGER.fine(sb.toString());
     }
 
     /**

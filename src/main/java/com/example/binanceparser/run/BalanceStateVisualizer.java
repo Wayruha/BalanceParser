@@ -32,7 +32,7 @@ public abstract class BalanceStateVisualizer {
 		EventSource<AbstractEvent> eventSource;
 		switch (datasourceType) {
 			case CSV:
-				eventSource = new CSVEventSource(logsDir, config.getSubject().get(0));
+				eventSource = new CSVEventSource(logsDir, config.getSubject());
 				break;
 			case LOGS:
 				eventSource = new LogsEventSource(logsDir, filters(config));
