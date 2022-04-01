@@ -5,7 +5,7 @@ import com.example.binanceparser.config.StatsVisualizerConfig;
 import com.example.binanceparser.domain.Stats;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.report.StatsReport;
-import com.example.binanceparser.report.StatsReportGenerator;
+import com.example.binanceparser.report.generator.StatsReportGenerator;
 
 import java.io.IOException;
 import java.util.List;

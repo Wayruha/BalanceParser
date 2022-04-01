@@ -15,6 +15,10 @@ public class StatsReport {
     private String incomeChartPath;
 
     public String toPrettyString() {
-        return "";
+        StringBuilder str = new StringBuilder();
+        str.append("priceChartPath").append(":").append(priceChartPath)
+                .append("delayChartPath").append(":").append(delayChartPath)
+                .append("incomeChartPath").append(":").append(incomeChartPath);
+        return str.toString();
     }
 }

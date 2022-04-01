@@ -1,16 +1,16 @@
-package com.example.binanceparser.report;
+package com.example.binanceparser.report.generator;
 
 import com.example.binanceparser.config.StatsVisualizerConfig;
 import com.example.binanceparser.domain.Stats;
 import com.example.binanceparser.plot.StatsChartBuilder;
-import com.example.binanceparser.report.generator.FuturesBalanceReportGenerator;
+import com.example.binanceparser.report.StatsReport;
 import org.jfree.chart.JFreeChart;
 
 import java.io.IOException;
 
 public class StatsReportGenerator {
-    private StatsChartBuilder chartBuilder;
-    private StatsVisualizerConfig config;
+    private final StatsChartBuilder chartBuilder;
+    private final StatsVisualizerConfig config;
     private static final String FORMAT = ".jpg";
 
     public StatsReportGenerator(StatsVisualizerConfig config) {
