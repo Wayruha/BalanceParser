@@ -4,6 +4,7 @@ import com.example.binanceparser.AppProperties;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.MathContext;
 import java.time.LocalDateTime;
 import java.util.Properties;
 
@@ -34,14 +35,29 @@ public class ConfigUtil {
 	public static IncomeConfig loadIncomeConfig(AppProperties appProperties) {
 		IncomeConfig config = new IncomeConfig();
         LocalDateTime start = appProperties.getStartTrackDate();
-        LocalDateTime finish = appProperties.getEndTrackDate();
-        String outputPath = appProperties.getOutputPath();
-        String inputPath = appProperties.getIncomeInputFilePath();
-        config.setStartTrackDate(start);
-        config.setFinishTrackDate(finish);
-        config.setOutputDir(outputPath);
-        config.setInputFilepath(inputPath);
-        config.setIncomeTypes(appProperties.getIncomeTypes());
-        return config;
+		LocalDateTime finish = appProperties.getEndTrackDate();
+		String outputPath = appProperties.getOutputPath();
+		String inputPath = appProperties.getIncomeInputFilePath();
+		config.setStartTrackDate(start);
+		config.setFinishTrackDate(finish);
+		config.setOutputDir(outputPath);
+		config.setInputFilepath(inputPath);
+		config.setIncomeTypes(appProperties.getIncomeTypes());
+		return config;
+	}
+
+	public static StatsVisualizerConfig loadStatsConfig(AppProperties appProperties) {
+		StatsVisualizerConfig config = new StatsVisualizerConfig();
+		LocalDateTime start = appProperties.getStartTrackDate();
+		LocalDateTime finish = appProperties.getEndTrackDate();
+		String inputPath = appProperties.getInputFilePath();
+		String outputPath = appProperties.getOutputPath();
+		config.setStartTrackDate(start);
+		config.setFinishTrackDate(finish);
+		config.setInputFilepath(inputPath);
+		config.setOutputDir(outputPath);
+		config.setDelayPrecision(appProperties.getDelayPrecision());
+		config.setRelativeContext(new MathContext(appProperties.getPercentagePrecision(), appProperties.getRoundingMode()));
+		return config;
 	}
 }

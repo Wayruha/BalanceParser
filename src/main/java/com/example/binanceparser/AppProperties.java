@@ -4,6 +4,7 @@ import com.binance.api.client.FuturesIncomeType;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -28,6 +29,9 @@ public class AppProperties {
 	private DatasourceType dataSourceType;
 	private HistoryItemSourceType historyItemSourceType;
 	private List<FuturesIncomeType> incomeTypes;
+	private Integer delayPrecision;
+	private Integer percentagePrecision;
+	private RoundingMode roundingMode;
 
 	public AppProperties(Properties props) {
 		this.trackedPersons = personsToTrack(props);
@@ -42,6 +46,10 @@ public class AppProperties {
 		this.dataSourceType = ofNullable(props.getProperty("config.event_source_type")).map(DatasourceType::forName).orElse(null);
 		this.historyItemSourceType = ofNullable(props.getProperty("config.income.source_type")).map(HistoryItemSourceType::forName).orElse(null);
 		this.incomeTypes = parseIncomeTypes(props.getProperty("config.income.income_types"));
+		this.delayPrecision = ofNullable(props.getProperty("config.delay_precision")).map(Integer::valueOf).orElse(null);
+		this.percentagePrecision = ofNullable(props.getProperty("config.percentage_precision")).map(Integer::valueOf).orElse(null);
+		this.roundingMode = ofNullable(props.getProperty("config.rounding_mode")).map(RoundingMode::valueOf).orElse(null);
+
 	}
 
 	private List<FuturesIncomeType> parseIncomeTypes(String property) {
@@ -59,7 +67,7 @@ public class AppProperties {
 	}
 
 	private static List<String> personsToTrack(Properties props) {
-		List<String> personsToTrack = Arrays.asList(props.getProperty("config.persons").split(","));
+		List<String> personsToTrack = Arrays.asList(ofNullable(props.getProperty("config.persons")).orElse("").split(","));
 		personsToTrack = personsToTrack.stream()
 				.map(String::trim)
 				.filter(StringUtils::isNotEmpty)

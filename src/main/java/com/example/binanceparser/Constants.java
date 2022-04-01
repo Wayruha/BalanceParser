@@ -14,6 +14,7 @@ public class Constants {
     public static final String BINANCE_API_KEY = "KKroawNIP67Om6zT4kP8AEBQRKSDaGHFNQrn9oi7FQ20e4oZHLLvFhGyBajRJEu7";
     public static final String BINANCE_SECRET_KEY = "VIn9YBUN107QLJznKeFXmNnxY6kgmY0i7ol4JbwIXmCi6wDCD24z5kBGjHe3poQf";
     public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final String CLONE_POSTFIX = "_cln";
     //coins
     public static final String USD = "USD";
     public static final String USDT = "USDT";

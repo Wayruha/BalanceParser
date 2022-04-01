@@ -6,6 +6,7 @@ import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.datasource.CSVEventSource;
 import com.example.binanceparser.report.BalanceReport;
+import com.example.binanceparser.report.StatsReport;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,24 +21,29 @@ public class VisualisationRunner {
     private static final Logger log = Logger.getLogger(VisualisationRunner.class.getName());
     private AppProperties spotBalanceProperties;
     private AppProperties futuresBalanceProperties;
+    private AppProperties statsProperties;
     private List<String> users;
     private BalanceVisualizerConfig config;
 
     public static void main(String[] args) throws IOException {
         configureLogger("src/main/resources/jul-logger.properties");
-        VisualisationRunner runner = new VisualisationRunner("src/main/resources/spot-balance.properties", "src/main/resources/futures-balance.properties");
-        runner.runBalancesVisualisation();
+        VisualisationRunner runner = new VisualisationRunner("src/main/resources/spot-balance.properties", "src/main/resources/futures-balance.properties", "src/main/resources/stats-visualisation.properties");
+        //runner.runBalancesVisualisation();
 //        runner.runIncomeVisualization();
+        runner.runStatsVisualization();
     }
 
-    public VisualisationRunner(String spotBalancePropertyFile, String futuresBalancePropertyFile) throws IOException {
+    public VisualisationRunner(String spotBalancePropertyFile, String futuresBalancePropertyFile, String statsVisualisationPropertyFile) throws IOException {
         this.spotBalanceProperties = ConfigUtil.loadAppProperties(spotBalancePropertyFile);
         this.futuresBalanceProperties = ConfigUtil.loadAppProperties(futuresBalancePropertyFile);
-        this.users = spotBalanceProperties.getTrackedPersons();
-        this.config = ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
+        this.statsProperties = ConfigUtil.loadAppProperties(statsVisualisationPropertyFile);
+//        this.users = spotBalanceProperties.getTrackedPersons();
+//        this.config = ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
     }
 
     public void runBalancesVisualisation() throws IOException {
+        users = spotBalanceProperties.getTrackedPersons();
+        config = ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
         SpotBalanceStateVisualizer spotVisualizer = new SpotBalanceStateVisualizer(spotBalanceProperties);
         FuturesBalanceStateVisualizer futuresVisualiser = new FuturesBalanceStateVisualizer(futuresBalanceProperties);
         if (users.isEmpty()) {
@@ -61,6 +67,8 @@ public class VisualisationRunner {
     }
 
     public void runIncomeVisualization() {
+        users = spotBalanceProperties.getTrackedPersons();
+        config = ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
         FuturesIncomeVisualizerApp incomeVisualizer = new FuturesIncomeVisualizerApp(spotBalanceProperties);
         if (users.isEmpty()) {
             users = new ArrayList<>(incomeVisualizer.getUserApiKeys().keySet());
@@ -72,6 +80,18 @@ public class VisualisationRunner {
             log.info("Income report for " + user + ":");
             log.info(incomeReport.toPrettyString());
         }
+    }
+
+    public void runStatsVisualization() throws IOException {
+        users = statsProperties.getTrackedPersons();
+        config = ConfigUtil.loadVisualizerConfig(statsProperties);
+        StatsVisualizer visualizer = new StatsVisualizer(statsProperties);
+        if (users.isEmpty()) {
+            users = new CSVEventSource(new File(config.getInputFilepath()), Collections.emptyList()).getuserIds();
+        }
+
+        StatsReport report = visualizer.visualizeStats(users);
+        log.info(report.toPrettyString());
     }
 
     public static void configureLogger(String loggingConfig) {

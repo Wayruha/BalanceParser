@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 @Data
 @SuperBuilder
@@ -21,6 +22,7 @@ public class FuturesOrderTradeUpdateEvent extends OrderEvent {
 
     @JsonDeserialize(using = NumericBooleanDeserializer.class)
     protected boolean isReduceOnly;
+    protected BigDecimal realizedTradeProfit;
 
     public boolean isReduceOnly() {
         return isReduceOnly;
