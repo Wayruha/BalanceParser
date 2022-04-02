@@ -1,3 +1,4 @@
+/*
 package com.example.binanceparser.domain;
 
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
@@ -8,8 +9,7 @@ import java.util.List;
 
 import static com.example.binanceparser.Constants.*;
 
-@Data
-public class FuturesStats implements Stats {
+public class FuturesStats extends Stats {
     private FuturesOrderTradeUpdateEvent originalEvent;
     private List<FuturesOrderTradeUpdateEvent> clonedEvents;
 
@@ -66,3 +66,4 @@ public class FuturesStats implements Stats {
         return null;
     }
 }
+*/

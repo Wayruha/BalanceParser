@@ -1,3 +1,4 @@
+/*
 package com.example.binanceparser;
 
 import com.example.binanceparser.algorithm.FuturesStatsGenerationAlgorithm;
@@ -23,7 +24,7 @@ public class StatsVisualizer {
     public void visualizeStats(String trader) throws IOException {
         StatsVisualizerConfig config = configure();
         File logsDir = new File(config.getInputFilepath());
-        CSVEventSource eventSource = new CSVEventSource(logsDir, trader);
+        CSVEventSource eventSource = new CSVEventSource(logsDir, List.of(trader));
         StatsProcessor processor = new StatsProcessor(config);
         StatsReport report = processor.process();
         System.out.println("Report....");
@@ -36,3 +37,4 @@ public class StatsVisualizer {
         return config;
     }
 }
+*/

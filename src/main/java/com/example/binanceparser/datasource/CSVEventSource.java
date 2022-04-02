@@ -33,7 +33,7 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
         try {
             final List<CSVModel> csvPojo = getCsvPojo();
             return csvPojo.stream()
-                    .filter(model -> trackedPersons.contains(model.getCustomer_id()))
+                    .filter(model -> trackedPersons.isEmpty() || trackedPersons.contains(model.getCustomer_id()))
                     .map(this::modelToEvent)
                     .collect(Collectors.toList());
         } catch (IOException exception) {
