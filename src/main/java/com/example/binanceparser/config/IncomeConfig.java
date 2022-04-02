@@ -9,8 +9,8 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper=false)
-public class IncomeConfig extends Config {
+public class IncomeConfig extends Config{
     private int limit;
     private String symbol;
-    private List<FuturesIncomeType> incomeType;
+    private List<FuturesIncomeType> incomeTypes;
 }

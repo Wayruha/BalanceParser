@@ -1,7 +1,8 @@
 package com.example.binanceparser.algorithm;
 
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
-import com.example.binanceparser.domain.*;
+import com.example.binanceparser.domain.balance.IncomeBalanceState;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;

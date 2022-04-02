@@ -1,5 +1,6 @@
 package com.example.binanceparser.datasource;
 
+import com.binance.api.client.domain.OrderStatus;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 import org.junit.jupiter.api.Test;
@@ -20,9 +21,9 @@ public class LogsEventSourceTest {
         final FuturesOrderTradeUpdateEvent event = (FuturesOrderTradeUpdateEvent) _event;
         System.out.println(event.isReduceOnly());
         assertEquals("BTCUSDT", event.getSymbol());
-        assertEquals(0.12, event.getOriginalQuantity());
-        assertEquals("EXPIRED", event.getOrderStatus());
-        assertEquals(1.3, event.getPrice());
+        assertEquals(0.12, event.getOriginalQuantity().doubleValue());
+        assertEquals(OrderStatus.EXPIRED, event.getOrderStatus());
+        assertEquals(1.3, event.getPrice().doubleValue());
         assertTrue(event.isReduceOnly());
     }
 }

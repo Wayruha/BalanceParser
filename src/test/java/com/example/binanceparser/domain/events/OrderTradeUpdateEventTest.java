@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static com.binance.api.client.domain.OrderSide.*;
+import static com.binance.api.client.domain.OrderStatus.*;
 import static com.example.binanceparser.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -18,14 +20,14 @@ public class OrderTradeUpdateEventTest {
                 .commission(new BigDecimal("1"))
                 .commissionAsset(USDT)
                 .build();
-        assertEquals(new BigDecimal("0.001"), orderEvent.getAcquiredQuantity());
+        assertEquals(new BigDecimal("0.001"), orderEvent.getActualBaseQty());
         orderEvent = OrderTradeUpdateEvent.builder()
                 .symbol(BTC + USDT)
                 .originalQuantity(new BigDecimal("0.0011"))
                 .commission(new BigDecimal("0.0001"))
                 .commissionAsset(BTC)
                 .build();
-        assertEquals(new BigDecimal("0.0010"), orderEvent.getAcquiredQuantity());
+        assertEquals(new BigDecimal("0.0010"), orderEvent.getActualBaseQty());
     }
 
     @Test
@@ -36,8 +38,8 @@ public class OrderTradeUpdateEventTest {
                 .dateTime(dateTime)
                 .eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(BTC + USDT)
-                .orderStatus("NEW")
-                .side("BUY").price(new BigDecimal("45000"))
+                .orderStatus(NEW)
+                .side(BUY).price(new BigDecimal("45000"))
                 .priceOfLastFilledTrade(new BigDecimal("45000"))
                 .originalQuantity(new BigDecimal("0.001"))
                 .commission(new BigDecimal("0.5"))
@@ -47,8 +49,8 @@ public class OrderTradeUpdateEventTest {
                 .dateTime(dateTime)
                 .eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(BTC + USDT)
-                .orderStatus("FILLED")
-                .side("BUY").price(new BigDecimal("45000"))
+                .orderStatus(FILLED)
+                .side(BUY).price(new BigDecimal("45000"))
                 .priceOfLastFilledTrade(new BigDecimal("45000"))
                 .originalQuantity(new BigDecimal("0.001"))
                 .commission(new BigDecimal("0.5"))
@@ -58,8 +60,8 @@ public class OrderTradeUpdateEventTest {
                 .dateTime(dateTime)
                 .eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(BTC + USDT)
-                .orderStatus("FILLED")
-                .side("BUY").price(new BigDecimal("45000"))
+                .orderStatus(FILLED)
+                .side(BUY).price(new BigDecimal("45000"))
                 .priceOfLastFilledTrade(new BigDecimal("45000"))
                 .originalQuantity(new BigDecimal("0.0011"))
                 .commission(new BigDecimal("0.0001"))
@@ -69,8 +71,8 @@ public class OrderTradeUpdateEventTest {
                 .dateTime(dateTime)
                 .eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(BTC + USDT)
-                .orderStatus("FILLED")
-                .side("BUY").price(new BigDecimal("45000"))
+                .orderStatus(FILLED)
+                .side(BUY).price(new BigDecimal("45000"))
                 .priceOfLastFilledTrade(new BigDecimal("45000"))
                 .originalQuantity(new BigDecimal("0.001"))
                 .commission(new BigDecimal("0.1"))
@@ -80,8 +82,8 @@ public class OrderTradeUpdateEventTest {
                 .dateTime(dateTime)
                 .eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(BTC + USDT)
-                .orderStatus("FILLED")
-                .side("SELL").price(new BigDecimal("45000"))
+                .orderStatus(FILLED)
+                .side(SELL).price(new BigDecimal("45000"))
                 .priceOfLastFilledTrade(new BigDecimal("45000"))
                 .originalQuantity(new BigDecimal("0.001"))
                 .commission(new BigDecimal("0.5"))
@@ -91,19 +93,19 @@ public class OrderTradeUpdateEventTest {
                 .dateTime(dateTime)
                 .eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(BTC + USDT)
-                .orderStatus("FILLED")
-                .side("SELL").price(new BigDecimal("45000"))
+                .orderStatus(FILLED)
+                .side(SELL).price(new BigDecimal("45000"))
                 .priceOfLastFilledTrade(new BigDecimal("45000"))
                 .originalQuantity(new BigDecimal("0.0011"))
                 .commission(new BigDecimal("0.0001"))
                 .commissionAsset(BTC).build();
-        assertEquals(new BigDecimal("40909.090"), orderEvent.getPriceIncludingCommission());
+        assertEquals(new BigDecimal("40909.09"), orderEvent.getPriceIncludingCommission());
         orderEvent = OrderTradeUpdateEvent.builder()
                 .dateTime(dateTime)
                 .eventType(EventType.ORDER_TRADE_UPDATE)
                 .symbol(BTC + USDT)
-                .orderStatus("FILLED")
-                .side("SELL").price(new BigDecimal("45000"))
+                .orderStatus(FILLED)
+                .side(SELL).price(new BigDecimal("45000"))
                 .priceOfLastFilledTrade(new BigDecimal("45000"))
                 .originalQuantity(new BigDecimal("0.001"))
                 .commission(new BigDecimal("0.1"))

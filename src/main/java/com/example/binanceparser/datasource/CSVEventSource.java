@@ -3,8 +3,10 @@ package com.example.binanceparser.datasource;
 import com.example.binanceparser.domain.events.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.bean.CsvToBeanBuilder;
+import lombok.Setter;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -17,27 +19,40 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
     private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final ObjectMapper objectMapper;
     private final File csvDir;
-    private final String sourceTag;
+    @Setter
+    private List<String> trackedPersons;
 
-    public CSVEventSource(File csvDir, String sourceTag) {
+    public CSVEventSource(File csvDir, List<String> trackedPersons) {
         this.objectMapper = new ObjectMapper();
         this.csvDir = csvDir;
-        this.sourceTag = sourceTag;
+        this.trackedPersons = trackedPersons;
     }
 
     @Override
     public List<AbstractEvent> getData() {
         try {
-            final List<CSVModel> csvPojo = new CsvToBeanBuilder<CSVModel>(new FileReader(csvDir))
-                    .withType(CSVModel.class)
-                    .withSkipLines(1)
-                    .build()
-                    .parse();
-            return csvPojo.stream().map(this::modelToEvent).collect(Collectors.toList());
+            final List<CSVModel> csvPojo = getCsvPojo();
+            return csvPojo.stream()
+                    .filter(model -> trackedPersons.contains(model.getCustomer_id()))
+                    .map(this::modelToEvent)
+                    .collect(Collectors.toList());
         } catch (IOException exception) {
             exception.printStackTrace();
         }
         return Collections.emptyList();
+    }
+
+    public List<String> getuserIds() throws IllegalStateException, FileNotFoundException {
+        return getCsvPojo().stream()
+                .map(CSVModel::getCustomer_id)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private List<CSVModel> getCsvPojo() throws IllegalStateException, FileNotFoundException {
+        final List<CSVModel> csvPojo = new CsvToBeanBuilder<CSVModel>(new FileReader(csvDir)).withType(CSVModel.class)
+                .withSkipLines(1).build().parse();
+        return csvPojo;
     }
 
     private AbstractEvent modelToEvent(CSVModel model) {
@@ -58,7 +73,7 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
             }
             event.setDateTime(LocalDateTime.parse(model.getEvent_ts(), dateFormat));
             event.setEventType(EventType.valueOf(model.getEvent_type()));
-            event.setSource(sourceTag);
+            event.setSource(model.getCustomer_id());
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -5,34 +5,24 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 @Data
 @SuperBuilder
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
-@AllArgsConstructor
-public class FuturesOrderTradeUpdateEvent extends AbstractEvent {
-
-    private String symbol;
+public class FuturesOrderTradeUpdateEvent extends OrderEvent {
 
     @JsonDeserialize(using = NumericBooleanDeserializer.class)
-    private boolean isReduceOnly;
-
-    private String orderStatus;
-
-    private Double originalQuantity;
-
-    private Double price;
-
-    private Double accumulatedQuantity;
+    protected boolean isReduceOnly;
+    protected BigDecimal realizedTradeProfit;
 
     public boolean isReduceOnly() {
         return isReduceOnly;

@@ -14,6 +14,7 @@ public enum EventType {
     ACCOUNT_CONFIG_UPDATE("ACCOUNT_CONFIG_UPDATE"),
     COIN_SWAP_ORDER("COIN_SWAP_ORDER"),
     MARGIN_CALL("MARGIN_CALL"),
+    OCO_TRADE_UPDATE("OCO_TRADE_UPDATE"),
 
     //custom types, Binance does not know about them
     TRANSFER("TRANSFER"),
