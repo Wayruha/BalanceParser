@@ -29,9 +29,9 @@ public class VisualisationRunner {
     public static void main(String[] args) throws IOException {
         configureLogger("src/main/resources/jul-logger.properties");
         VisualisationRunner runner = new VisualisationRunner("src/main/resources/spot-balance.properties", "src/main/resources/futures-balance.properties", "src/main/resources/stats-visualisation.properties");
-        runner.runBalancesVisualisation();
+//        runner.runBalancesVisualisation();
 //        runner.runIncomeVisualization();
-//        runner.runStatsVisualization();
+        runner.runStatsVisualization();
     }
 
     public VisualisationRunner(String spotBalancePropertyFile, String futuresBalancePropertyFile, String statsVisualisationPropertyFile) throws IOException {
@@ -47,7 +47,7 @@ public class VisualisationRunner {
         futuresUsers = spotBalanceProperties.getTrackedPersons();
         config = ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
         if (futuresUsers.isEmpty()) {
-            futuresUsers = new CSVEventSource(new File(config.getInputFilepath()), Collections.emptyList()).getuserIds();
+            futuresUsers = new CSVEventSource(new File(config.getInputFilepath()), Collections.emptyList()).getUserIds();
         }
         List<BalanceReport> reports = runFuturesVisualization();
 
@@ -100,7 +100,7 @@ public class VisualisationRunner {
         config = ConfigUtil.loadVisualizerConfig(statsProperties);
         StatsVisualizer visualizer = new StatsVisualizer(statsProperties);
         if (futuresUsers.isEmpty()) {
-            futuresUsers = new CSVEventSource(new File(config.getInputFilepath()), Collections.emptyList()).getuserIds();
+            futuresUsers = new CSVEventSource(new File(config.getInputFilepath()), statsProperties.getTrackedPersons()).getUserIds();
         }
 
         StatsReport report = visualizer.visualizeStats(futuresUsers);

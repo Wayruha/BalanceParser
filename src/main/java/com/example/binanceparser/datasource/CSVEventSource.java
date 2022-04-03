@@ -42,7 +42,7 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
         return Collections.emptyList();
     }
 
-    public List<String> getuserIds() throws IllegalStateException, FileNotFoundException {
+    public List<String> getUserIds() throws IllegalStateException, FileNotFoundException {
         return getCsvPojo().stream()
                 .map(CSVModel::getCustomer_id)
                 .distinct()

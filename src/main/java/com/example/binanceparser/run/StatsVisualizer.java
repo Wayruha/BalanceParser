@@ -2,6 +2,7 @@ package com.example.binanceparser.run;
 
 import com.binance.api.client.domain.OrderStatus;
 import com.example.binanceparser.AppProperties;
+import com.example.binanceparser.config.Config;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.config.StatsVisualizerConfig;
 import com.example.binanceparser.datasource.CSVEventSource;
@@ -29,10 +30,14 @@ public class StatsVisualizer {
         this.appProperties = appProperties;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, Exception {
         final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/stats-visualisation.properties");
         StatsVisualizer visualizer = new StatsVisualizer(appProperties);
-        final StatsReport report = visualizer.visualizeStats(appProperties.getTrackedPersons());
+        List<String> users = appProperties.getTrackedPersons();
+        if (users.isEmpty()) {
+            users = new CSVEventSource(new File(appProperties.getInputFilePath()), appProperties.getTrackedPersons()).getUserIds();
+        }
+        final StatsReport report = visualizer.visualizeStats(users);
         log.info(report.toPrettyString());
     }
 
@@ -50,12 +55,12 @@ public class StatsVisualizer {
 
     private static Set<Filter> filters() {
         Set<Filter> filters = new HashSet<>();
-        filters.add(new FuturesOrderStatusFilter(OrderStatus.FILLED));
+        filters.add(new FuturesOrderStatusFilter(List.of(OrderStatus.FILLED, OrderStatus.PARTIALLY_FILLED)));
         filters.add(new ReduceOnlyFilter(true));
         return filters;
     }
 
-    public static EventSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, StatsVisualizerConfig config) {
+    public static EventSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, Config config) {
         final File logsDir = new File(config.getInputFilepath());
         EventSource<AbstractEvent> eventSource;
         switch (datasourceType) {

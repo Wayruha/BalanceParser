@@ -2,6 +2,7 @@ package com.example.binanceparser.datasource;
 
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.File;
 import java.io.IOException;

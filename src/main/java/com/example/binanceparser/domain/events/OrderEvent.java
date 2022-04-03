@@ -28,6 +28,12 @@ public abstract class OrderEvent extends AbstractEvent {
     protected OrderSide side;
     protected Long orderId;
     protected String newClientOrderId;
+    protected String actualOrderId;
     protected BigDecimal accumulatedQuantity;
-
+    //protected OrderType type;
+    //protected TimeInForce timeInForce;
+    protected String quantityLastFilledTrade;
+    protected String commissionAsset;
+    protected BigDecimal commission;
+    protected Long tradeId;
 }

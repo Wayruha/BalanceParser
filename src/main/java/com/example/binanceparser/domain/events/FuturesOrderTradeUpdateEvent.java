@@ -19,10 +19,20 @@ import java.math.BigDecimal;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
 public class FuturesOrderTradeUpdateEvent extends OrderEvent {
-
     @JsonDeserialize(using = NumericBooleanDeserializer.class)
     protected boolean isReduceOnly;
     protected BigDecimal realizedTradeProfit;
+    private BigDecimal averagePrice;
+    private String stopPrice;
+    private String bidsNotional;
+    private String askNotional;
+    private Boolean isMaker;
+    //private WorkingType stopPriceWorkingType;
+    //private OrderType originalOrderType;
+    //private PositionSide positionSide;
+    private Boolean isCloseAll;
+    private String activationPrice;
+    private String callbackRate;
 
     public boolean isReduceOnly() {
         return isReduceOnly;
@@ -34,5 +44,4 @@ public class FuturesOrderTradeUpdateEvent extends OrderEvent {
             return !"0".equals(parser.getText());
         }
     }
-
 }

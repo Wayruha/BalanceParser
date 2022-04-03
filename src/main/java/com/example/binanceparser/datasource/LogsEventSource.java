@@ -1,6 +1,5 @@
 package com.example.binanceparser.datasource;
 
-import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.EventType;
@@ -9,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import static com.example.binanceparser.datasource.ParserUtil.fromPlainToJson;
 import static com.example.binanceparser.domain.events.EventType.*;
 
@@ -59,6 +61,10 @@ public class LogsEventSource implements EventSource<AbstractEvent> {
             throw new RuntimeException(ex);
         }
         return allEvents;
+    }
+
+    public List<String> getUserIds() throws Exception {
+        return getData().stream().map((event) -> event.getSource()).distinct().collect(Collectors.toList());
     }
 
     private boolean fitsToAllFilters(AbstractEvent event, Set<Filter> filters) {

@@ -20,11 +20,6 @@ import static com.example.binanceparser.Constants.MATH_CONTEXT;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @NoArgsConstructor
 public class OrderTradeUpdateEvent extends OrderEvent {
-
-    protected BigDecimal commission;
-
-    protected String commissionAsset;
-
     public BigDecimal getActualBaseQty() {
         return commissionAsset != null && commissionAsset.equals(getBaseAsset()) ? originalQuantity.subtract(commission)
                 : originalQuantity;
