@@ -21,15 +21,15 @@ public class Stats {
 
     public Stats(StatsVisualizerConfig config) {
         this.config = config;
-        data = new HashMap<>();
+        this.data = new HashMap<>();
     }
 
     public Map<BigDecimal, Integer> getPriceDataset() {
         Map<BigDecimal, Integer> dataset = new HashMap<>();
-        data.keySet().forEach((originalEvent) ->
-                data.get(originalEvent).forEach((clonedEvent) -> {
-                    BigDecimal deviation = getRelativePriceDeviation(originalEvent.getFilledEvent(), clonedEvent.getFilledEvent());
-                    int occur = dataset.getOrDefault(deviation, 0);
+        data.keySet().forEach(originalEvent ->
+                data.get(originalEvent).forEach(clonedEvent -> {
+                    final BigDecimal deviation = getRelativePriceDeviation(originalEvent.getFilledEvent(), clonedEvent.getFilledEvent());
+                    final int occur = dataset.getOrDefault(deviation, 0);
                     dataset.put(deviation, occur + 1);
                 })
         );
@@ -118,16 +118,5 @@ public class Stats {
 
     public void insertRecord(ComplexEvent originalEvent, List<ComplexEvent> clonedEvents) {
         data.put(originalEvent, clonedEvents);
-    }
-
-    @Data
-    @AllArgsConstructor
-    public static class ComplexEvent {
-        private FuturesOrderTradeUpdateEvent filledEvent;
-        private List<FuturesOrderTradeUpdateEvent> partiallyFilledEvents;
-
-        public FuturesOrderTradeUpdateEvent getFirstValuableEvent() {
-            return partiallyFilledEvents.isEmpty() ? filledEvent : partiallyFilledEvents.get(0);
-        }
     }
 }

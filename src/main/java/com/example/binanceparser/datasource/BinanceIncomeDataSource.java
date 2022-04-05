@@ -4,7 +4,6 @@ import com.binance.api.client.FuturesIncomeType;
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.example.binanceparser.binance.BinanceClient;
 import com.example.binanceparser.config.IncomeConfig;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.time.Instant;
 import java.time.ZoneOffset;

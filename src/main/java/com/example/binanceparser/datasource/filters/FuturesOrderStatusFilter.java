@@ -8,15 +8,17 @@ import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 import java.util.List;
 
 public class FuturesOrderStatusFilter implements Filter {
-    private final List<OrderStatus> allowed;
+  private final List<OrderStatus> allowed;
 
-    public FuturesOrderStatusFilter(List<OrderStatus> allowed) {
-        this.allowed = allowed;
-    }
+  public FuturesOrderStatusFilter(List<OrderStatus> allowed) {
+    this.allowed = allowed;
+  }
 
-    @Override
-    public boolean filter(AbstractEvent event) {
-        return event.getEventType() == EventType.FUTURES_ORDER_TRADE_UPDATE
-                && allowed.stream().anyMatch((orderStatus) -> ((FuturesOrderTradeUpdateEvent) event).getOrderStatus().equals(orderStatus));
-    }
+  @Override
+  public boolean filter(AbstractEvent event) {
+    if (event.getEventType() != EventType.FUTURES_ORDER_TRADE_UPDATE)
+      return false;
+    FuturesOrderTradeUpdateEvent e = (FuturesOrderTradeUpdateEvent) event;
+    return allowed.contains(e.getOrderStatus());
+  }
 }

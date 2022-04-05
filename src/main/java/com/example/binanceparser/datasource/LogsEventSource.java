@@ -63,8 +63,11 @@ public class LogsEventSource implements EventSource<AbstractEvent> {
         return allEvents;
     }
 
-    public List<String> getUserIds() throws Exception {
-        return getData().stream().map((event) -> event.getSource()).distinct().collect(Collectors.toList());
+    public List<String> getUserIds() {
+        return getData().stream()
+            .map(AbstractEvent::getSource)
+            .distinct()
+            .collect(Collectors.toList());
     }
 
     private boolean fitsToAllFilters(AbstractEvent event, Set<Filter> filters) {
