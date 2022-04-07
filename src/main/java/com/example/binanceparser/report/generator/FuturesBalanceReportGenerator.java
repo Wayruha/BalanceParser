@@ -22,7 +22,8 @@ public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerato
 	private static EnumSet<TransactionType> transferTxTypes = EnumSet.of(TransactionType.DEPOSIT, TransactionType.WITHDRAW);
 	private static final String DEFAULT_CHART_NAME = "chart";
 	private static final String CHART_FILE_EXT = ".jpg";
-	private static final String CHART_PREFIX = "Futures_";
+	private static final String CHART_PREFIX = "";
+	private static final String CHART_SUFFIX = "_Futures";
 
 	private ChartBuilder<EventBalanceState> chartBuilder;
 
@@ -40,7 +41,7 @@ public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerato
 				.collect(Collectors.toList());
 
 		final String subject = !isNull(config.getSubject()) ? config.getSubject().get(0) : DEFAULT_CHART_NAME;
-		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + subject + CHART_FILE_EXT;
+		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + subject + CHART_SUFFIX  + CHART_FILE_EXT;
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
 		final BigDecimal balanceUpdateDelta = calculateBalanceDelta(balanceStates);
@@ -82,7 +83,10 @@ public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerato
 	}
 
 	public static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {
-		File file = new File(outputFileName);
+		return saveChartToFile(chart, new File(outputFileName));
+	}
+
+	public static String saveChartToFile(JFreeChart chart, File file) throws IOException {
 		ChartUtils.saveChartAsJPEG(file, chart, 2000, 1000);
 		return file.getPath();
 	}

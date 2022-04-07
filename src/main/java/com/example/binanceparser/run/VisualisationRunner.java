@@ -103,8 +103,11 @@ public class VisualisationRunner {
             futuresUsers = new CSVEventSource(new File(config.getInputFilepath()), statsProperties.getTrackedPersons()).getUserIds();
         }
 
-        StatsReport report = visualizer.visualizeStats(futuresUsers);
-        log.info(report.toPrettyString());
+        List<StatsReport> reports = visualizer.calculateStatistics(futuresUsers);
+        reports.forEach(report -> {
+            log.info("Report: " + report.getType());
+            log.info(report.toString());
+        });
     }
 
     public static void configureLogger(String loggingConfig) {

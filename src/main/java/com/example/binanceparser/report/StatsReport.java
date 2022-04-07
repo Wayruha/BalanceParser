@@ -10,15 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StatsReport {
-    private String priceChartPath;
-    private String delayChartPath;
-    private String incomeChartPath;
+    private StatisticType type;
+    private Statistics stats;
+    private String chartPath;
 
-    public String toPrettyString() {
-        StringBuilder str = new StringBuilder();
-        str.append("priceChartPath").append(":").append(priceChartPath)
-                .append("delayChartPath").append(":").append(delayChartPath)
-                .append("incomeChartPath").append(":").append(incomeChartPath);
-        return str.toString();
+    public StatsReport(StatisticType type) {
+        this.type = type;
     }
 }

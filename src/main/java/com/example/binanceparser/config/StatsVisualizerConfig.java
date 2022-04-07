@@ -16,5 +16,5 @@ import java.util.Set;
 public class StatsVisualizerConfig extends Config {
     private Set<Filter> filters;
     private int delayPrecision;
-    private MathContext relativeContext;
+    private MathContext relativeContext; //TODO not descriptive name
 }

@@ -28,7 +28,7 @@ public class CSVEventWriter implements EventWriter<AbstractEvent> {
 			CSVModel model = null;
 			try {
 				model = new CSVModel(personId, event.getEventType().toString(),
-						event.getDateTime().format(dateFormat).toString(),
+						event.getDateTime().format(dateFormat),
 						new ObjectMapper().writer().writeValueAsString(event));
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();

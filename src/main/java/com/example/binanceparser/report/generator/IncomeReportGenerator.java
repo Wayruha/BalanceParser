@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class IncomeReportGenerator extends AbstractBalanceReportGenerator<IncomeBalanceState, IncomeConfig> {
-	private static String CHART_PREFIX = "FuturesIncome_";
+	private static final String CHART_EXTENSIONS = ".jpg";
+	private static final String CHART_PREFIX = "";
+	private static final String CHART_SUFFIX = "_FuturesIncome";
 
 	private final FuturesIncomeChartBuilder futuresIncomeChartBuilder = new FuturesIncomeChartBuilder();
 
@@ -26,7 +28,7 @@ public class IncomeReportGenerator extends AbstractBalanceReportGenerator<Income
 
 		final List<BigDecimal> balances = balanceStates.stream().map(IncomeBalanceState::getAvailableBalance)
 				.collect(Collectors.toList());
-		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + config.getSubject().get(0) + ".jpg";
+		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + config.getSubject().get(0) + CHART_SUFFIX + CHART_EXTENSIONS;
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
 		final IncomeBalanceState first = balanceStates.get(0);

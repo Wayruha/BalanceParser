@@ -43,6 +43,7 @@ public class ConfigUtil {
 		config.setOutputDir(outputPath);
 		config.setInputFilepath(inputPath);
 		config.setIncomeTypes(appProperties.getIncomeTypes());
+		config.setAssetsToTrack(appProperties.getAssetsToTrack());
 		return config;
 	}
 

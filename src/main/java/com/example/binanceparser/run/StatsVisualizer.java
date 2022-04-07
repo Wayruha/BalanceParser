@@ -30,31 +30,32 @@ public class StatsVisualizer {
         this.appProperties = appProperties;
     }
 
-    public static void main(String[] args) throws IOException, Exception {
+    public static void main(String[] args) throws Exception {
         final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/stats-visualisation.properties");
-        StatsVisualizer visualizer = new StatsVisualizer(appProperties);
+        final StatsVisualizer visualizer = new StatsVisualizer(appProperties);
         List<String> users = appProperties.getTrackedPersons();
         if (users.isEmpty()) {
             users = new CSVEventSource(new File(appProperties.getInputFilePath()), appProperties.getTrackedPersons()).getUserIds();
         }
-        final StatsReport report = visualizer.visualizeStats(users);
-        log.info(report.toPrettyString());
+        final List<StatsReport> reports = visualizer.calculateStatistics(users);
+        reports.forEach(report -> {
+            log.info("Report: " + report.getType());
+            log.info(report.toString());
+        });
     }
 
-    public StatsReport visualizeStats(List<String> users) throws IOException {
-        StatsVisualizerConfig config = ConfigUtil.loadStatsConfig(appProperties);
+    public List<StatsReport> calculateStatistics(List<String> users) {
+        final StatsVisualizerConfig config = ConfigUtil.loadStatsConfig(appProperties);
         config.setFilters(filters());
         config.setSubject(users);
-        EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
-        StatsProcessor processor = new StatsProcessor(config, eventSource.getData());
-        StatsReport report = processor.process();
-        System.out.println("Report....");
-        System.out.println(report.toPrettyString());
-        return report;
+        final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
+        final StatsProcessor processor = new StatsProcessor(config, eventSource);
+        final List<StatsReport> reports = processor.process();
+        return reports;
     }
 
     private static Set<Filter> filters() {
-        Set<Filter> filters = new HashSet<>();
+        final Set<Filter> filters = new HashSet<>();
         filters.add(new FuturesOrderStatusFilter(List.of(OrderStatus.FILLED, OrderStatus.PARTIALLY_FILLED)));
         filters.add(new ReduceOnlyFilter(true));
         return filters;

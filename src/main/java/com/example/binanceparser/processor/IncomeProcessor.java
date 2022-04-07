@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class IncomeProcessor extends Processor<IncomeConfig> {
     private static final Logger log = Logger.getLogger(IncomeProcessor.class.getName());
@@ -33,7 +34,10 @@ public class IncomeProcessor extends Processor<IncomeConfig> {
     @Override
     public BalanceReport process() {
         try {
-            final List<IncomeHistoryItem> incomes = eventSource.getData();
+            List<IncomeHistoryItem> incomes = eventSource.getData();
+            incomes = incomes.stream()
+                    .filter(item -> config.getAssetsToTrack().contains(item.getAsset()))
+                    .collect(Collectors.toList());
             if (incomes.size() == 0) throw new RuntimeException("No data!");
             Collections.sort(incomes, Comparator.comparing(IncomeHistoryItem::getTime));
 

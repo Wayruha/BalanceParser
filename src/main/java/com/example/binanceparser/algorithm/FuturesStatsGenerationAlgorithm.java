@@ -3,7 +3,7 @@ package com.example.binanceparser.algorithm;
 import com.binance.api.client.domain.OrderStatus;
 import com.example.binanceparser.config.StatsVisualizerConfig;
 import com.example.binanceparser.domain.ComplexEvent;
-import com.example.binanceparser.domain.Stats;
+import com.example.binanceparser.domain.StatsDataHolder;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.CLONE_POSTFIX;
 
-public class FuturesStatsGenerationAlgorithm implements StatsGenerationAlgorithm<Stats> {
+public class FuturesStatsGenerationAlgorithm implements StatsGenerationAlgorithm<StatsDataHolder> {
   private final StatsVisualizerConfig config;
 
   public FuturesStatsGenerationAlgorithm(StatsVisualizerConfig config) {
@@ -22,9 +22,9 @@ public class FuturesStatsGenerationAlgorithm implements StatsGenerationAlgorithm
   }
 
   @Override
-  public Stats getStats(List<AbstractEvent> events) {
+  public StatsDataHolder getStats(List<AbstractEvent> events) {
     List<ComplexEvent> allEvents = groupToComplexEvents(filterRelevantEvents(events));
-    Stats stats = new Stats(config);
+    StatsDataHolder stats = new StatsDataHolder(config);
     findOnlyOriginalEvents(allEvents).forEach(originalEvent -> {
       List<ComplexEvent> clonedEvents = findAllClonedEvents(originalEvent, allEvents);
       if (!clonedEvents.isEmpty()) {

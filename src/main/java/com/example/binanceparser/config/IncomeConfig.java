@@ -12,5 +12,6 @@ import java.util.List;
 public class IncomeConfig extends Config{
     private int limit;
     private String symbol;
+    private List<String> assetsToTrack;
     private List<FuturesIncomeType> incomeTypes;
 }
