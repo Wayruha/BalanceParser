@@ -14,10 +14,12 @@ import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
 import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.plot.FuturesBalanceChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
-import com.example.binanceparser.report.enricher.ReportEnricher;
-import com.example.binanceparser.report.enricher.TradeCountReportEnricher;
+import com.example.binanceparser.report.processor.NamePostProcessor;
+import com.example.binanceparser.report.processor.PostProcessor;
+import com.example.binanceparser.report.processor.TradeCountPostProcessor;
 import com.example.binanceparser.report.generator.FuturesBalanceReportGenerator;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -33,17 +35,18 @@ import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class FuturesBalanceProcessor extends Processor<BalanceVisualizerConfig> {
     private static final Logger log = Logger.getLogger(FuturesBalanceProcessor.class.getName());
-    final EventSource<AbstractEvent> eventSource;
-    final FuturesBalanceReportGenerator balanceReportGenerator;
-    final FuturesWalletBalanceCalcAlgorithm algorithm;
-    final List<ReportEnricher<AbstractEvent>> enrichers = List.of(new TradeCountReportEnricher());
+    private final EventSource<AbstractEvent> eventSource;
+    private final FuturesBalanceReportGenerator balanceReportGenerator;
+    private final FuturesWalletBalanceCalcAlgorithm algorithm;
+    private final List<PostProcessor<AbstractEvent>> postProcessors;
 
-    public FuturesBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
+    public FuturesBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) throws FileNotFoundException {
         super(config);
         this.eventSource = eventSource;
         final ChartBuilder<EventBalanceState> chartBuilder = new FuturesBalanceChartBuilder(config.getAssetsToTrack());
         this.balanceReportGenerator = new FuturesBalanceReportGenerator(config, chartBuilder);
         this.algorithm = new FuturesWalletBalanceCalcAlgorithm(config, STABLECOIN_RATE);
+        this.postProcessors = List.of(new TradeCountPostProcessor(), new NamePostProcessor(config.getNamesFilePath()));
     }
 
     @Override
@@ -56,8 +59,8 @@ public class FuturesBalanceProcessor extends Processor<BalanceVisualizerConfig> 
         // retrieve balance changes
         final List<EventBalanceState> balanceStates = algorithm.processEvents(events, config.getAssetsToTrack());
         BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
-        for (ReportEnricher<AbstractEvent> enricher : enrichers) {
-            balanceReport = enricher.enrichReport(balanceReport, events);
+        for (PostProcessor<AbstractEvent> enricher : postProcessors) {
+            balanceReport = enricher.processReport(balanceReport, events);
         }
         log.info("FuturesProcessor done for config: " + config);
         log.info("Deposit delta: " + calculateFuturesTransferDelta(events));

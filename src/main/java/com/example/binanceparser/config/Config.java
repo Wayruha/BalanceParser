@@ -15,5 +15,6 @@ public abstract class Config {
     private LocalDateTime finishTrackDate;
     private String inputFilepath;
     private String outputDir;
+    private String namesFilePath;
     private List<String> subject;
 }

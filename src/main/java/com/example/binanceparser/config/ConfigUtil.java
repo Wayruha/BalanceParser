@@ -22,10 +22,12 @@ public class ConfigUtil {
 		LocalDateTime finish = appProperties.getEndTrackDate();
 		String inputPath = appProperties.getInputFilePath();
 		String outputPath = appProperties.getOutputPath();
+		String namesFilePath = appProperties.getNamesFilePath();
 		config.setStartTrackDate(start);
 		config.setFinishTrackDate(finish);
 		config.setInputFilepath(inputPath);
 		config.setOutputDir(outputPath);
+		config.setNamesFilePath(namesFilePath);
 		config.setAssetsToTrack(appProperties.getAssetsToTrack());
 		config.setConvertToUSD(true);
 		return config;
@@ -37,10 +39,12 @@ public class ConfigUtil {
         LocalDateTime finish = appProperties.getEndTrackDate();
         String outputPath = appProperties.getOutputPath();
         String inputPath = appProperties.getIncomeInputFilePath();
+		String namesFilePath = appProperties.getNamesFilePath();
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
         config.setOutputDir(outputPath);
         config.setInputFilepath(inputPath);
+		config.setNamesFilePath(namesFilePath);
         config.setIncomeTypes(appProperties.getIncomeTypes());
         return config;
 	}

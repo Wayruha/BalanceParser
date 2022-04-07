@@ -11,7 +11,10 @@ import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.plot.SpotAssetChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.generator.SpotBalanceReportGenerator;
+import com.example.binanceparser.report.processor.NamePostProcessor;
+import com.example.binanceparser.report.processor.PostProcessor;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -22,6 +25,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.VIRTUAL_USD;
+import static java.lang.String.copyValueOf;
 import static java.lang.String.format;
 
 public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
@@ -29,13 +33,15 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
     private final EventSource<AbstractEvent> eventSource;
     private final SpotBalanceReportGenerator balanceReportGenerator;
     private final SpotBalanceCalcAlgorithm algorithm;
+    private final List<PostProcessor<AbstractEvent>> postProcessors;
 
-    public SpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
+    public SpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) throws FileNotFoundException {
         super(config);
         this.eventSource = eventSource;
         final SpotAssetChartBuilder chartBuilder = new SpotAssetChartBuilder(config.getAssetsToTrack());
         this.balanceReportGenerator = new SpotBalanceReportGenerator(config, chartBuilder);
         this.algorithm = new SpotBalanceCalcAlgorithm();
+        postProcessors = List.of(new NamePostProcessor(config.getNamesFilePath()));
     }
 
     @Override
@@ -49,7 +55,10 @@ public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig> {
                 .filter(state -> inRange(state.getDateTime(), config.getStartTrackDate(), config.getFinishTrackDate()))
                 .collect(Collectors.toList());
 
-        final BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
+        BalanceReport balanceReport = balanceReportGenerator.getBalanceReport(balanceStates);
+        for (PostProcessor<AbstractEvent> processor : postProcessors) {
+            balanceReport = processor.processReport(balanceReport, events);
+        }
         log.fine("More detailed log:");
         balanceStates.forEach(this::logTransaction);
         log.info("SpotProcessor done for config: " + config);
