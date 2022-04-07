@@ -1,4 +1,4 @@
-package com.example.binanceparser.plot;
+package com.example.binanceparser.statistics;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class StatsChartBuilder {
+class StatsChartBuilder {
     public JFreeChart buildDelayChart(List<Integer> items, int precision) {
         final ChartConfig chartConfig = new ChartConfig("Cloning delay", "Delay", "Occur");
         final LegendItem legend = new LegendItem("Cloning delay, ms");

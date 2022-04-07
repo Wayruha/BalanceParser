@@ -1,22 +1,18 @@
-package com.example.binanceparser.processor;
+package com.example.binanceparser.statistics;
 
 import com.example.binanceparser.algorithm.FuturesStatsGenerationAlgorithm;
 import com.example.binanceparser.config.StatsVisualizerConfig;
 import com.example.binanceparser.datasource.EventSource;
-import com.example.binanceparser.domain.StatsDataHolder;
 import com.example.binanceparser.domain.events.AbstractEvent;
-import com.example.binanceparser.report.StatisticType;
-import com.example.binanceparser.report.StatsReport;
-import com.example.binanceparser.report.generator.StatsReportGenerator;
 
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.example.binanceparser.report.StatisticType.*;
+import static com.example.binanceparser.statistics.StatisticType.*;
 
-public class StatsProcessor {
+class StatsProcessor {
     private StatsVisualizerConfig config;
     private EventSource<AbstractEvent> eventSource;
     private StatsReportGenerator reportGenerator;

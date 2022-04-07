@@ -1,4 +1,4 @@
-package com.example.binanceparser.run;
+package com.example.binanceparser.statistics;
 
 import com.binance.api.client.domain.OrderStatus;
 import com.example.binanceparser.AppProperties;
@@ -12,11 +12,8 @@ import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.datasource.filters.FuturesOrderStatusFilter;
 import com.example.binanceparser.datasource.filters.ReduceOnlyFilter;
 import com.example.binanceparser.domain.events.AbstractEvent;
-import com.example.binanceparser.processor.StatsProcessor;
-import com.example.binanceparser.report.StatsReport;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

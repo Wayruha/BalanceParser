@@ -6,7 +6,8 @@ import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.datasource.CSVEventSource;
 import com.example.binanceparser.report.BalanceReport;
-import com.example.binanceparser.report.StatsReport;
+import com.example.binanceparser.statistics.StatsReport;
+import com.example.binanceparser.statistics.StatsVisualizer;
 
 import java.io.File;
 import java.io.FileInputStream;

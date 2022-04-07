@@ -1,4 +1,4 @@
-package com.example.binanceparser.report;
+package com.example.binanceparser.statistics;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

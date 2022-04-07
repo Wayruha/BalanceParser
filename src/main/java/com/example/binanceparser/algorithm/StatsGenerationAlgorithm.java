@@ -1,6 +1,6 @@
 package com.example.binanceparser.algorithm;
 
-import com.example.binanceparser.domain.StatsDataHolder;
+import com.example.binanceparser.statistics.StatsDataHolder;
 import com.example.binanceparser.domain.events.AbstractEvent;
 
 import java.util.List;

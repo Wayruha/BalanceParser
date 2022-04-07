@@ -1,6 +1,7 @@
-package com.example.binanceparser.domain;
+package com.example.binanceparser.statistics;
 
 import com.example.binanceparser.config.StatsVisualizerConfig;
+import com.example.binanceparser.domain.ComplexEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 import lombok.AllArgsConstructor;
 import lombok.Data;

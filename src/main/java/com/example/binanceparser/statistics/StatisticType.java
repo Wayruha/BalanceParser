@@ -1,6 +1,6 @@
-package com.example.binanceparser.report;
+package com.example.binanceparser.statistics;
 
-public enum StatisticType {
+enum StatisticType {
     DELAY,
     ORDER_PRICE_DEVIATION,
     POSITION_PROFIT_DEVIATION;

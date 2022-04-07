@@ -1,11 +1,11 @@
-package com.example.binanceparser.report.generator;
+package com.example.binanceparser.statistics;
 
 import com.example.binanceparser.config.StatsVisualizerConfig;
-import com.example.binanceparser.domain.StatsDataHolder;
-import com.example.binanceparser.plot.StatsChartBuilder;
-import com.example.binanceparser.report.StatisticType;
-import com.example.binanceparser.report.Statistics;
-import com.example.binanceparser.report.StatsReport;
+import com.example.binanceparser.statistics.StatsDataHolder;
+import com.example.binanceparser.statistics.StatsChartBuilder;
+import com.example.binanceparser.statistics.StatisticType;
+import com.example.binanceparser.statistics.Statistics;
+import com.example.binanceparser.statistics.StatsReport;
 import org.jfree.chart.JFreeChart;
 
 import java.io.File;
@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.example.binanceparser.report.generator.FuturesBalanceReportGenerator.saveChartToFile;
 
-public class StatsReportGenerator {
+class StatsReportGenerator {
     private static final String CHART_NAME_SUFFIX = ".jpg";
     private static final String CHART_NAME_PREFIX = "";
     private final StatsChartBuilder chartBuilder;

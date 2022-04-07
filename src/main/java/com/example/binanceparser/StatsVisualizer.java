@@ -6,9 +6,9 @@ import com.example.binanceparser.config.StatsVisualizerConfig;
 import com.example.binanceparser.datasource.CSVEventSource;
 import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
-import com.example.binanceparser.processor.StatsProcessor;
+import com.example.binanceparser.statistics.StatsProcessor;
 import com.example.binanceparser.report.BalanceReport;
-import com.example.binanceparser.report.StatsReport;
+import com.example.binanceparser.statistics.StatsReport;
 
 import java.io.File;
 import java.io.IOException;
