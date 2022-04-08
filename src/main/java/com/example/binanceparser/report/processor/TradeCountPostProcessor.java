@@ -1,4 +1,4 @@
-package com.example.binanceparser.report.enricher;
+package com.example.binanceparser.report.processor;
 
 import com.binance.api.client.domain.ExecutionType;
 import com.example.binanceparser.domain.events.AbstractEvent;
@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TradeCountReportEnricher implements ReportEnricher<AbstractEvent> {
+public class TradeCountPostProcessor extends PostProcessor<AbstractEvent> {
 
     @Override
-    public BalanceReport enrichReport(BalanceReport report, List<AbstractEvent> events) {
+    public void processReport(BalanceReport report, List<AbstractEvent> events) {
         final Set<String> tradeIds = events.stream()
                 .filter(event -> event instanceof FuturesOrderTradeUpdateEvent)
                 .map(event -> (FuturesOrderTradeUpdateEvent) event)
@@ -20,6 +20,5 @@ public class TradeCountReportEnricher implements ReportEnricher<AbstractEvent> {
                 .map(FuturesOrderTradeUpdateEvent::getNewClientOrderId)
                 .collect(Collectors.toSet());
         report.setTotalTradeTxCount_2(tradeIds.size());
-        return report;
     }
 }

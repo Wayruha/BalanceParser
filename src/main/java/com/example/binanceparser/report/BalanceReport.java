@@ -31,8 +31,8 @@ public class BalanceReport {
     private int totalTxCount;
     private int totalTradeTxCount;
     private int totalTradeTxCount_2;
-
     private String user;
+    private String name;
     @JsonIgnore
     private List<Transaction> transactions;
 

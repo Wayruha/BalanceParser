@@ -45,21 +45,11 @@ class StatsReportGenerator {
         }
         final StatsReport report = new StatsReport(type);
         final File chartPath = new File(config.getOutputDir(), CHART_NAME_PREFIX + type + CHART_NAME_SUFFIX);
-        saveChart(chart, chartPath);
+        saveChartToFile(chart, chartPath.getAbsolutePath());
 
         report.setChartPath(chartPath.getAbsolutePath());
         report.setStats(new Statistics(dataset));
 
         return report;
     }
-
-    //TODO це знак, що генерація графіку не повинна бути в генераторі репорту!
-    private void saveChart(JFreeChart chart, File chartPath) {
-        try {
-            saveChartToFile(chart, chartPath);
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
-    }
-
 }

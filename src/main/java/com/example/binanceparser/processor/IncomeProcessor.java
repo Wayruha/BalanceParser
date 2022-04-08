@@ -8,33 +8,27 @@ import com.example.binanceparser.domain.balance.IncomeBalanceState;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.generator.IncomeReportGenerator;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class IncomeProcessor extends Processor<IncomeConfig> {
+public class IncomeProcessor extends Processor<IncomeConfig, IncomeHistoryItem> {
     private static final Logger log = Logger.getLogger(IncomeProcessor.class.getName());
 
-    final EventSource<IncomeHistoryItem> eventSource;
     final IncomeReportGenerator reportGenerator;
     final IncomeCalculationAlgorithm algorithm;
-    final IncomeConfig config;
 
     public IncomeProcessor(EventSource<IncomeHistoryItem> eventSource, IncomeConfig config) {
-        super(config);
-        this.eventSource = eventSource;
-        this.config = config;
+        super(config, eventSource);
         this.reportGenerator = new IncomeReportGenerator(config);
         this.algorithm = new IncomeCalculationAlgorithm();
     }
 
     @Override
-    public BalanceReport process() {
+    protected BalanceReport process(List<IncomeHistoryItem> incomes) {
         try {
-            List<IncomeHistoryItem> incomes = eventSource.getData();
             incomes = incomes.stream()
                     .filter(item -> config.getAssetsToTrack().contains(item.getAsset()))
                     .collect(Collectors.toList());
@@ -42,7 +36,6 @@ public class IncomeProcessor extends Processor<IncomeConfig> {
             Collections.sort(incomes, Comparator.comparing(IncomeHistoryItem::getTime));
 
             final List<IncomeBalanceState> states = algorithm.calculateBalance(incomes);
-            final IncomeBalanceState emptyState = new IncomeBalanceState(config.getStartTrackDate(), BigDecimal.ZERO, config.getIncomeTypes().get(0));
             final BalanceReport balanceReport = reportGenerator.getBalanceReport(states);
             log.info("FuturesIncomeProcessor done for config: " + config);
             return balanceReport;

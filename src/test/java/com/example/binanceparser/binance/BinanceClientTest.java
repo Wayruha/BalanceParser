@@ -17,11 +17,11 @@ class BinanceClientTest {
     final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Test
-    public void testIncomeHistory(){
+    public void testIncomeHistory() {
         BinanceClient binanceClient = new BinanceClient(Constants.BINANCE_API_KEY, Constants.BINANCE_SECRET_KEY);
         Instant start = LocalDateTime.parse("2021-01-01 13:15:50", dateFormat).atZone(ZoneId.of("Europe/Paris")).toInstant();
         Instant end = LocalDateTime.parse("2021-11-30 13:15:50", dateFormat).atZone(ZoneId.of("Europe/Paris")).toInstant();
-        List<IncomeHistoryItem> items = binanceClient.fetchFuturesIncomeHistory(null, FuturesIncomeType.TRANSFER,  start, end, 1000);
+        List<IncomeHistoryItem> items = binanceClient.fetchFuturesIncomeHistory(null, FuturesIncomeType.TRANSFER, start, end, 1000);
         List<LocalDate> localDates = items.stream()
                 .map(income -> Instant.ofEpochMilli(income.getTime()).atZone(ZoneId.systemDefault()).toLocalDate()).collect(Collectors.toList());
         localDates.forEach(System.out::println);

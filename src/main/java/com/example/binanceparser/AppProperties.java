@@ -25,6 +25,7 @@ public class AppProperties {
 	private String inputFilePath;
 	private String incomeInputFilePath;
 	private String outputPath;
+	private String namesFilePath;
 	private List<String> assetsToTrack;
 	private DatasourceType dataSourceType;
 	private HistoryItemSourceType historyItemSourceType;
@@ -42,6 +43,7 @@ public class AppProperties {
 		this.inputFilePath = props.getProperty("config.file_input_path");
 		this.incomeInputFilePath = props.getProperty("config.income.keys");
 		this.outputPath = props.getProperty("config.file_output_path");
+		this.namesFilePath = props.getProperty("config.names_file_path");
 		this.assetsToTrack = assetsToTrack(props);
 		this.dataSourceType = ofNullable(props.getProperty("config.event_source_type")).map(DatasourceType::forName).orElse(null);
 		this.historyItemSourceType = ofNullable(props.getProperty("config.income.source_type")).map(HistoryItemSourceType::forName).orElse(null);
