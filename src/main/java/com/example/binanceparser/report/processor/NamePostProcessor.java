@@ -1,5 +1,6 @@
 package com.example.binanceparser.report.processor;
 
+import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.report.BalanceReport;
 import com.opencsv.bean.CsvBindByPosition;
@@ -17,20 +18,20 @@ import java.util.Map;
 
 import static java.util.Optional.ofNullable;
 
-public class NamePostProcessor implements PostProcessor<AbstractEvent> {
-    private Map<String, String> usersNames;
+public class NamePostProcessor extends PostProcessor<AbstractEvent> {
     private static final String DEFAULT_NAME = "unknown";
+    private final Map<String, String> usersNames;
 
-    public NamePostProcessor(String usersNamesInputFilePath) throws FileNotFoundException {
-        File namesFile = new File(usersNamesInputFilePath);
-        usersNames = getUsersNames(namesFile);
+    public NamePostProcessor(BalanceVisualizerConfig config) throws FileNotFoundException {
+        super(config);
+        final File namesFile = new File(config.getNamesFilePath());
+        this.usersNames = getUsersNames(namesFile);
     }
 
     @Override
-    public BalanceReport processReport(BalanceReport report, List<AbstractEvent> events) {
+    public void processReport(BalanceReport report, List<AbstractEvent> events) {
         String name = ofNullable(usersNames.get(report.getUser())).orElse(DEFAULT_NAME);
         report.setName(name);
-        return report;
     }
 
     private Map<String, String> getUsersNames(File inputFile) throws FileNotFoundException {
