@@ -35,7 +35,7 @@ public class SpotBalanceReportGenerator extends AbstractBalanceReportGenerator<S
     }
 
     @Override
-    public BalanceReport getBalanceReport(List<SpotBalanceState> balanceStates) throws IOException {
+    public BalanceReport getBalanceReport(List<SpotBalanceState> balanceStates) {
         balanceStates.sort(Comparator.comparing(SpotBalanceState::getDateTime));
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
 

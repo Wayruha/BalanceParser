@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TradeCountPostProcessor implements PostProcessor<AbstractEvent> {
+public class TradeCountPostProcessor extends PostProcessor<AbstractEvent> {
 
     @Override
-    public BalanceReport processReport(BalanceReport report, List<AbstractEvent> events) {
+    public void processReport(BalanceReport report, List<AbstractEvent> events) {
         final Set<String> tradeIds = events.stream()
                 .filter(event -> event instanceof FuturesOrderTradeUpdateEvent)
                 .map(event -> (FuturesOrderTradeUpdateEvent) event)
@@ -20,6 +20,5 @@ public class TradeCountPostProcessor implements PostProcessor<AbstractEvent> {
                 .map(FuturesOrderTradeUpdateEvent::getNewClientOrderId)
                 .collect(Collectors.toSet());
         report.setTotalTradeTxCount_2(tradeIds.size());
-        return report;
     }
 }

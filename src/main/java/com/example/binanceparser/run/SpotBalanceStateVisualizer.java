@@ -7,6 +7,8 @@ import com.example.binanceparser.datasource.EventSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.processor.SpotBalanceProcessor;
 import com.example.binanceparser.report.BalanceReport;
+import com.example.binanceparser.report.processor.NamePostProcessor;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -22,6 +24,7 @@ public class SpotBalanceStateVisualizer extends BalanceStateVisualizer {
 		config.setSubject(List.of(user));
 		final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
 		final SpotBalanceProcessor processor = new SpotBalanceProcessor(eventSource, config);
+		processor.registerPostProcessor(new NamePostProcessor(config));
 		final BalanceReport testReport = processor.process();
 		return testReport;
 	}

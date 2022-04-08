@@ -32,7 +32,7 @@ public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerato
 	}
 
 	@Override
-	public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) throws IOException {
+	public BalanceReport getBalanceReport(List<EventBalanceState> balanceStates) {
 		Collections.sort(balanceStates, Comparator.comparing(EventBalanceState::getDateTime));
 		final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
 
@@ -81,10 +81,14 @@ public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerato
 				.orElse(BigDecimal.ZERO);
 	}
 
-	public static String saveChartToFile(JFreeChart chart, String outputFileName) throws IOException {
-		File file = new File(outputFileName);
-		ChartUtils.saveChartAsJPEG(file, chart, 2000, 1000);
-		return file.getPath();
+	public static String saveChartToFile(JFreeChart chart, String outputFileName) {
+		try {
+			File file = new File(outputFileName);
+			ChartUtils.saveChartAsJPEG(file, chart, 2000, 1000);
+			return file.getPath();
+		} catch (IOException ex){
+			throw new RuntimeException(ex);
+		}
 	}
 
 	private static BigDecimal findMaxBalance(List<Asset> assetList) {
