@@ -35,7 +35,7 @@ public class NamePostProcessor implements PostProcessor<AbstractEvent> {
 
     private Map<String, String> getUsersNames(File inputFile) throws FileNotFoundException {
         Map<String, String> usersNames = new HashMap<>();
-        List<CSVModel> csvPojo = new CsvToBeanBuilder<CSVModel>(new FileReader(inputFile)).withType(CSVModel.class)
+        List<UserName> csvPojo = new CsvToBeanBuilder<UserName>(new FileReader(inputFile)).withType(UserName.class)
                 .withSkipLines(1).build().parse();
         csvPojo.stream().forEach((model) -> usersNames.put(model.getUser(), model.getName()));
         return usersNames;
@@ -44,7 +44,7 @@ public class NamePostProcessor implements PostProcessor<AbstractEvent> {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class CSVModel {
+    public static class UserName {
         @CsvBindByPosition(position = 0)
         private String user;
         @CsvBindByPosition(position = 1)
