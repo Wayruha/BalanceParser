@@ -6,6 +6,7 @@ import com.example.binanceparser.config.Config;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.config.StatsVisualizerConfig;
 import com.example.binanceparser.datasource.sources.CSVEventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.datasource.sources.EventSource;
 import com.example.binanceparser.datasource.sources.LogsEventSource;
 import com.example.binanceparser.datasource.filters.Filter;
@@ -45,7 +46,7 @@ public class StatsVisualizer {
         final StatsVisualizerConfig config = ConfigUtil.loadStatsConfig(appProperties);
         config.setFilters(filters());
         config.setSubject(users);
-        final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
+        final DataSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
         final StatsProcessor processor = new StatsProcessor(config, eventSource);
         final List<StatsReport> reports = processor.process();
         return reports;
@@ -58,9 +59,9 @@ public class StatsVisualizer {
         return filters;
     }
 
-    public static EventSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, Config config) {
+    public static DataSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, Config config) {
         final File logsDir = new File(config.getInputFilepath());
-        EventSource<AbstractEvent> eventSource;
+        DataSource<AbstractEvent> eventSource;
         switch (datasourceType) {
             case CSV:
                 eventSource = new CSVEventSource(logsDir, config.getSubject());

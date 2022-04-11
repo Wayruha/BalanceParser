@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.example.binanceparser.datasource.models.CSVModel;
+import com.example.binanceparser.datasource.models.EventCSVModel;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,10 +26,10 @@ public class CSVEventWriter implements EventWriter<AbstractEvent> {
 	@Override
 	public void writeEvents(List<AbstractEvent> items) {
 		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		List<CSVModel> models = items.stream().map((event) -> {
-			CSVModel model = null;
+		List<EventCSVModel> models = items.stream().map((event) -> {
+			EventCSVModel model = null;
 			try {
-				model = new CSVModel(personId, event.getEventType().toString(),
+				model = new EventCSVModel(personId, event.getEventType().toString(),
 						event.getDateTime().format(dateFormat),
 						new ObjectMapper().writer().writeValueAsString(event));
 			} catch (JsonProcessingException e) {
@@ -43,7 +43,7 @@ public class CSVEventWriter implements EventWriter<AbstractEvent> {
 					.build().withHeader();
 			CsvMapper mapper = new CsvMapper();
 			mapper.configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
-			mapper.writerFor(CSVModel.class).with(schema).writeValues(outputDir).writeAll(models);
+			mapper.writerFor(EventCSVModel.class).with(schema).writeValues(outputDir).writeAll(models);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -1,6 +1,6 @@
 package com.example.binanceparser.datasource.sources;
 
-import com.example.binanceparser.datasource.models.CSVModel;
+import com.example.binanceparser.datasource.models.EventCSVModel;
 import com.example.binanceparser.domain.events.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.bean.CsvToBeanBuilder;
@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -18,47 +17,43 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class CSVEventSource implements EventSource<AbstractEvent> {
+public class CSVEventSource implements DataSource<AbstractEvent> {
     private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final ObjectMapper objectMapper;
-    private final File csvDir;
+    private final File csvFile;
     @Setter
     private List<String> trackedPersons;
+    private CSVDataSource<EventCSVModel> csvSource;
 
-    public CSVEventSource(File csvDir, List<String> trackedPersons) {
+    public CSVEventSource(File csvFile, List<String> trackedPersons) {
         this.objectMapper = new ObjectMapper();
-        this.csvDir = csvDir;
+        this.csvFile = csvFile;
         this.trackedPersons = trackedPersons;
+        this.csvSource = new CSVDataSource<>(csvFile, 1, EventCSVModel.class);
     }
 
     @Override
     public List<AbstractEvent> getData() {
-        try {
-            final List<CSVModel> csvPojo = getCsvPojo();
-            return csvPojo.stream()
-                    .filter(model -> trackedPersons.isEmpty() || trackedPersons.contains(model.getCustomer_id()))
-                    .map(this::modelToEvent)
-                    .collect(Collectors.toList());
-        } catch (IOException exception) {
-            log.warn(exception.getMessage());
-        }
-        return Collections.emptyList();
+        final List<EventCSVModel> data = csvSource.getData();
+        return data.stream()
+                .filter(model -> trackedPersons.isEmpty() || trackedPersons.contains(model.getCustomer_id()))
+                .map(this::modelToEvent)
+                .collect(Collectors.toList());
     }
 
+    //TODO не розбирався до кінця, але цей метод не повинен бути в CSV Event Source
+    // він юзається в класах які по-ідеї не завязані КОНКРЕТНО на цю реалізацію, а через те що цей метод тут - вони тепер завязані на нього.
     public List<String> getUserIds() throws IllegalStateException, FileNotFoundException {
-        return getCsvPojo().stream()
-                .map(CSVModel::getCustomer_id)
+        final List<EventCSVModel> csvPojo = new CsvToBeanBuilder<EventCSVModel>(new FileReader(csvFile)).withType(EventCSVModel.class)
+                .withSkipLines(1).build().parse();
+        return csvPojo.stream()
+                .map(EventCSVModel::getCustomer_id)
                 .distinct()
                 .collect(Collectors.toList());
     }
 
-    private List<CSVModel> getCsvPojo() throws IllegalStateException, FileNotFoundException {
-        final List<CSVModel> csvPojo = new CsvToBeanBuilder<CSVModel>(new FileReader(csvDir)).withType(CSVModel.class)
-                .withSkipLines(1).build().parse();
-        return csvPojo;
-    }
 
-    private AbstractEvent modelToEvent(CSVModel model) {
+    private AbstractEvent modelToEvent(EventCSVModel model) {
         AbstractEvent event = null;
         try {
             if (model.getEvent_type().equals("FUTURES_ACCOUNT_UPDATE")) {

@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
-import com.example.binanceparser.datasource.models.UserName;
+import com.example.binanceparser.datasource.models.UserNameRel;
 import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.datasource.sources.EventSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
@@ -38,7 +38,7 @@ public class FuturesBalanceStateVisualizer extends BalanceStateVisualizer {
 		final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(appProperties);
 		config.setSubject(List.of(user));
 		final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
-		final DataSource<UserName> nameSource = getNameSource(appProperties.getDataSourceType(), config);
+		final DataSource<UserNameRel> nameSource = getNameSource(appProperties.getDataSourceType(), config);
 		final List<PostProcessor<AbstractEvent>> postProcessors = List.of(new TradeCountPostProcessor(), new NamePostProcessor(nameSource, config));
 		final FuturesBalanceProcessor processor = new FuturesBalanceProcessor(eventSource, config);
 		processor.registerPostProcessor(postProcessors);

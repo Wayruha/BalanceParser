@@ -1,7 +1,7 @@
 package com.example.binanceparser.report.processor;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
-import com.example.binanceparser.datasource.models.UserName;
+import com.example.binanceparser.datasource.models.UserNameRel;
 import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.report.BalanceReport;
@@ -15,9 +15,9 @@ import static java.util.Optional.ofNullable;
 public class NamePostProcessor extends PostProcessor<AbstractEvent> {
     private static final String DEFAULT_NAME = "unknown";
     private final Map<String, String> usersNames;
-    private final DataSource<UserName> dataSource;
+    private final DataSource<UserNameRel> dataSource;
 
-    public NamePostProcessor(DataSource<UserName> dataSource, BalanceVisualizerConfig config) {
+    public NamePostProcessor(DataSource<UserNameRel> dataSource, BalanceVisualizerConfig config) {
         super(config);
         this.dataSource = dataSource;
         this.usersNames = getUsersNames();

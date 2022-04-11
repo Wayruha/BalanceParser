@@ -5,7 +5,7 @@ import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.datasource.filters.SourceFilter;
-import com.example.binanceparser.datasource.models.UserName;
+import com.example.binanceparser.datasource.models.UserNameRel;
 import com.example.binanceparser.datasource.sources.*;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import org.apache.commons.lang3.NotImplementedException;
@@ -27,9 +27,9 @@ public abstract class BalanceStateVisualizer {
 		return filters;
 	}
 
-	public static EventSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
+	public static DataSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
 		final File logsDir = new File(config.getInputFilepath());
-		EventSource<AbstractEvent> eventSource;
+		DataSource<AbstractEvent> eventSource;
 		switch (datasourceType) {
 			case CSV:
 				eventSource = new CSVEventSource(logsDir, config.getSubject());
@@ -43,12 +43,12 @@ public abstract class BalanceStateVisualizer {
 		return eventSource;
 	}
 
-	public static DataSource<UserName> getNameSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
-		final File namesDir = new File(config.getNamesFilePath());
-		DataSource<UserName> nameSource;
+	public static DataSource<UserNameRel> getNameSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
+		final File file = new File(config.getNamesFilePath());
+		DataSource<UserNameRel> nameSource;
 		switch (datasourceType) {
 			case CSV:
-				nameSource = new CSVUserNameSource(namesDir);
+				nameSource = new CSVDataSource<>(file, 1, UserNameRel.class);
 				break;
 			case LOGS:
 				throw new NotImplementedException("nameSource is not yet implemented for logs");

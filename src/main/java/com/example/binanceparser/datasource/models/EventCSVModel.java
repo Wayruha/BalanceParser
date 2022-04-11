@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CSVModel {
+public class EventCSVModel {
   @CsvBindByPosition(position = 0)
   private String customer_id;
   @CsvBindByPosition(position = 1)

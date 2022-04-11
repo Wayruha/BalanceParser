@@ -5,6 +5,7 @@ import com.example.binanceparser.Utils;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.datasource.sources.CSVEventSource;
+import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.statistics.StatsReport;
 import com.example.binanceparser.statistics.StatsVisualizer;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class VisualisationRunner {
     private static final Logger log = Logger.getLogger(VisualisationRunner.class.getName());
@@ -30,7 +32,7 @@ public class VisualisationRunner {
     public static void main(String[] args) throws IOException {
         configureLogger("src/main/resources/jul-logger.properties");
         VisualisationRunner runner = new VisualisationRunner("src/main/resources/spot-balance.properties", "src/main/resources/futures-balance.properties", "src/main/resources/stats-visualisation.properties");
-        runner.runBalancesVisualisation();
+        runner.runVisualisation();
 //        runner.runIncomeVisualization();
 //        runner.runStatsVisualization();
     }
@@ -41,24 +43,22 @@ public class VisualisationRunner {
         this.statsProperties = ConfigUtil.loadAppProperties(statsVisualisationPropertyFile);
         this.spotUsers = spotBalanceProperties.getTrackedPersons();
         this.futuresUsers = futuresBalanceProperties.getTrackedPersons();
-//        this.config = ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
     }
 
-    public void runBalancesVisualisation() throws IOException {
-        futuresUsers = spotBalanceProperties.getTrackedPersons();
-        config = ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
+    public void runVisualisation() throws IOException {
+        config = ConfigUtil.loadVisualizerConfig(futuresBalanceProperties);
         if (futuresUsers.isEmpty()) {
-            futuresUsers = new CSVEventSource(new File(config.getInputFilepath()), Collections.emptyList()).getUserIds();
+            final CSVEventSource redundantEventSource = new CSVEventSource(new File(config.getInputFilepath()), Collections.emptyList());
+            futuresUsers = extractAllUsersIds(redundantEventSource);
         }
-        List<BalanceReport> reports = runFuturesVisualization();
-
+        final List<BalanceReport> reports = runFuturesVisualization(futuresUsers);
         log.info(Utils.toJson(reports));
     }
 
-    private List<BalanceReport> runFuturesVisualization() throws IOException {
+    private List<BalanceReport> runFuturesVisualization(List<String> users) throws IOException {
         FuturesBalanceStateVisualizer futuresVisualiser = new FuturesBalanceStateVisualizer(futuresBalanceProperties);
         List<BalanceReport> reports = new ArrayList<>();
-        for (String user : futuresUsers) {
+        for (String user : users) {
             log.info("----FUTURES----");
             BalanceReport futuresReport = futuresVisualiser.futuresBalanceVisualisation(user);
             reports.add(futuresReport);
@@ -68,16 +68,23 @@ public class VisualisationRunner {
         return reports;
     }
 
-    private List<BalanceReport> runSpotVisualization() throws IOException {
+    private List<BalanceReport> runSpotVisualization(List<String> users) throws IOException {
         SpotBalanceStateVisualizer spotVisualizer = new SpotBalanceStateVisualizer(spotBalanceProperties);
         List<BalanceReport> reports = new ArrayList<>();
-        for (String user : spotUsers) {
+        for (String user : users) {
             log.info("------SPOT------");
             BalanceReport spotReport = spotVisualizer.spotBalanceVisualisation(user);
             log.info("Spot report for " + user + ":");
             log.info(spotReport.toPrettyString());
         }
         return reports;
+    }
+
+    private List<String> extractAllUsersIds(CSVEventSource redundantEventSource) {
+        return redundantEventSource.getData().stream()
+                .map(AbstractEvent::getSource)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     public void runIncomeVisualization() {
