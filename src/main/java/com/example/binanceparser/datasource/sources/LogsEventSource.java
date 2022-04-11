@@ -1,6 +1,7 @@
-package com.example.binanceparser.datasource;
+package com.example.binanceparser.datasource.sources;
 
 import com.example.binanceparser.datasource.filters.Filter;
+import com.example.binanceparser.datasource.sources.EventSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.EventType;
 import com.example.binanceparser.domain.events.TypedEventJsonView;

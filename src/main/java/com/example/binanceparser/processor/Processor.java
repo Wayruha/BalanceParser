@@ -1,7 +1,9 @@
 package com.example.binanceparser.processor;
 
 import com.example.binanceparser.config.Config;
-import com.example.binanceparser.datasource.EventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
+import com.example.binanceparser.datasource.sources.EventSource;
+import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.processor.PostProcessor;
 
@@ -11,10 +13,10 @@ import java.util.Set;
 
 public abstract class Processor<T extends Config, Data> {
     protected final T config;
-    protected final EventSource<Data> dataSource;
+    protected final DataSource<Data> dataSource;
     protected final Set<PostProcessor<Data>> postProcessors;
 
-    public Processor(T config, EventSource<Data> dataSource) {
+    public Processor(T config, DataSource<Data> dataSource) {
         this.config = config;
         this.dataSource = dataSource;
         this.postProcessors = new HashSet<>();

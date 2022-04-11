@@ -2,7 +2,7 @@ package com.example.binanceparser.processor;
 
 import com.example.binanceparser.algorithm.SpotBalanceCalcAlgorithm;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
-import com.example.binanceparser.datasource.EventSource;
+import com.example.binanceparser.datasource.sources.EventSource;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.balance.SpotBalanceState;
 import com.example.binanceparser.domain.events.AbstractEvent;

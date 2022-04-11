@@ -1,4 +1,4 @@
-package com.example.binanceparser.datasource;
+package com.example.binanceparser.datasource.sources;
 
 import com.binance.api.client.FuturesIncomeType;
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
@@ -12,7 +12,7 @@ import java.util.*;
 import static java.time.Instant.ofEpochMilli;
 import static java.util.Optional.ofNullable;
 
-public class BinanceIncomeDataSource implements EventSource<IncomeHistoryItem> {
+public class BinanceIncomeDataSource implements DataSource<IncomeHistoryItem> {
     final String apiKey, secretKey;
     final IncomeConfig config;
     final BinanceClient client;

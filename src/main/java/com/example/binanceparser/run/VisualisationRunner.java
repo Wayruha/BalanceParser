@@ -4,7 +4,7 @@ import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.Utils;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
-import com.example.binanceparser.datasource.CSVEventSource;
+import com.example.binanceparser.datasource.sources.CSVEventSource;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.statistics.StatsReport;
 import com.example.binanceparser.statistics.StatsVisualizer;
@@ -30,9 +30,9 @@ public class VisualisationRunner {
     public static void main(String[] args) throws IOException {
         configureLogger("src/main/resources/jul-logger.properties");
         VisualisationRunner runner = new VisualisationRunner("src/main/resources/spot-balance.properties", "src/main/resources/futures-balance.properties", "src/main/resources/stats-visualisation.properties");
-//        runner.runBalancesVisualisation();
+        runner.runBalancesVisualisation();
 //        runner.runIncomeVisualization();
-        runner.runStatsVisualization();
+//        runner.runStatsVisualization();
     }
 
     public VisualisationRunner(String spotBalancePropertyFile, String futuresBalancePropertyFile, String statsVisualisationPropertyFile) throws IOException {

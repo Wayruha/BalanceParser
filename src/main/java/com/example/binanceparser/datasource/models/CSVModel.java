@@ -1,4 +1,4 @@
-package com.example.binanceparser.datasource;
+package com.example.binanceparser.datasource.models;
 
 import com.opencsv.bean.CsvBindByPosition;
 import lombok.AllArgsConstructor;

@@ -4,11 +4,8 @@ import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.config.IncomeConfig;
-import com.example.binanceparser.datasource.BinanceIncomeDataSource;
-import com.example.binanceparser.datasource.UserApiData;
-import com.example.binanceparser.datasource.CSVUserDataSource;
-import com.example.binanceparser.datasource.EventSource;
-import com.example.binanceparser.datasource.JsonIncomeSource;
+import com.example.binanceparser.datasource.sources.*;
+import com.example.binanceparser.datasource.models.UserApiData;
 import com.example.binanceparser.processor.IncomeProcessor;
 import com.example.binanceparser.report.BalanceReport;
 import lombok.Getter;
@@ -48,12 +45,12 @@ public class FuturesIncomeVisualizerApp {
 	public BalanceReport futuresIncomeVisualisation(String user, IncomeConfig _config) {
 		final IncomeConfig config = ConfigUtil.loadIncomeConfig(appProperties);
 		final UserApiData userData = userApiKeys.get(user);
-		EventSource<IncomeHistoryItem> apiClientSource = getEventSource(userData, config);
+		DataSource<IncomeHistoryItem> apiClientSource = getEventSource(userData, config);
 		IncomeProcessor processor = new IncomeProcessor(apiClientSource, config);
 		return processor.process();
 	}
 
-	public EventSource<IncomeHistoryItem> getEventSource(UserApiData user, IncomeConfig config) {
+	public DataSource<IncomeHistoryItem> getEventSource(UserApiData user, IncomeConfig config) {
 		switch (appProperties.getHistoryItemSourceType()) {
 		case LOGS:
 			return new JsonIncomeSource(new File(config.getInputFilepath()));

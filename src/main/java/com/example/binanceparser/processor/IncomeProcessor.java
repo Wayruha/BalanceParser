@@ -3,7 +3,8 @@ package com.example.binanceparser.processor;
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.example.binanceparser.algorithm.IncomeCalculationAlgorithm;
 import com.example.binanceparser.config.IncomeConfig;
-import com.example.binanceparser.datasource.EventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
+import com.example.binanceparser.datasource.sources.EventSource;
 import com.example.binanceparser.domain.balance.IncomeBalanceState;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.generator.IncomeReportGenerator;
@@ -20,7 +21,7 @@ public class IncomeProcessor extends Processor<IncomeConfig, IncomeHistoryItem> 
     final IncomeReportGenerator reportGenerator;
     final IncomeCalculationAlgorithm algorithm;
 
-    public IncomeProcessor(EventSource<IncomeHistoryItem> eventSource, IncomeConfig config) {
+    public IncomeProcessor(DataSource<IncomeHistoryItem> eventSource, IncomeConfig config) {
         super(config, eventSource);
         this.reportGenerator = new IncomeReportGenerator(config);
         this.algorithm = new IncomeCalculationAlgorithm();

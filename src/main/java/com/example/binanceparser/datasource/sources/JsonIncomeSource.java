@@ -1,8 +1,8 @@
-package com.example.binanceparser.datasource;
+package com.example.binanceparser.datasource.sources;
 
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
+import com.example.binanceparser.datasource.sources.EventSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class JsonIncomeSource implements EventSource<IncomeHistoryItem> {
+public class JsonIncomeSource implements DataSource<IncomeHistoryItem> {
 
     private final ObjectMapper objectMapper;
     private final File logsDir;

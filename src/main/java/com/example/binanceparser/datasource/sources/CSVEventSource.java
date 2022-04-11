@@ -1,9 +1,11 @@
-package com.example.binanceparser.datasource;
+package com.example.binanceparser.datasource.sources;
 
+import com.example.binanceparser.datasource.models.CSVModel;
 import com.example.binanceparser.domain.events.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class CSVEventSource implements EventSource<AbstractEvent> {
     private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final ObjectMapper objectMapper;
@@ -37,7 +40,7 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
                     .map(this::modelToEvent)
                     .collect(Collectors.toList());
         } catch (IOException exception) {
-            exception.printStackTrace();
+            log.warn(exception.getMessage());
         }
         return Collections.emptyList();
     }
@@ -75,7 +78,7 @@ public class CSVEventSource implements EventSource<AbstractEvent> {
             event.setEventType(EventType.valueOf(model.getEvent_type()));
             event.setSource(model.getCustomer_id());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn(e.getMessage());
         }
         return event;
     }

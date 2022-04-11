@@ -1,4 +1,4 @@
-package com.example.binanceparser.datasource;
+package com.example.binanceparser.datasource.writers;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.binanceparser.datasource.models.CSVModel;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,9 +24,9 @@ public class CSVEventWriter implements EventWriter<AbstractEvent> {
 	}
 
 	@Override
-	public void writeEvents(List<AbstractEvent> events) {
+	public void writeEvents(List<AbstractEvent> items) {
 		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		List<CSVModel> models = events.stream().map((event) -> {
+		List<CSVModel> models = items.stream().map((event) -> {
 			CSVModel model = null;
 			try {
 				model = new CSVModel(personId, event.getEventType().toString(),
