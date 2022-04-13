@@ -2,8 +2,6 @@ package com.example.binanceparser.processor;
 
 import com.example.binanceparser.config.Config;
 import com.example.binanceparser.datasource.sources.DataSource;
-import com.example.binanceparser.datasource.sources.EventSource;
-import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.processor.PostProcessor;
 

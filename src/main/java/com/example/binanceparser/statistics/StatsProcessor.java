@@ -3,7 +3,6 @@ package com.example.binanceparser.statistics;
 import com.example.binanceparser.algorithm.FuturesStatsGenerationAlgorithm;
 import com.example.binanceparser.config.StatsVisualizerConfig;
 import com.example.binanceparser.datasource.sources.DataSource;
-import com.example.binanceparser.datasource.sources.EventSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 
 import java.util.EnumSet;

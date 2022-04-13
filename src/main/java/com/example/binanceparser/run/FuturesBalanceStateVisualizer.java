@@ -1,21 +1,21 @@
 package com.example.binanceparser.run;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
-
 import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.datasource.models.UserNameRel;
 import com.example.binanceparser.datasource.sources.DataSource;
-import com.example.binanceparser.datasource.sources.EventSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.processor.FuturesBalanceProcessor;
 import com.example.binanceparser.report.BalanceReport;
+import com.example.binanceparser.report.processor.BalanceReportPostProcessor;
 import com.example.binanceparser.report.processor.NamePostProcessor;
 import com.example.binanceparser.report.processor.PostProcessor;
 import com.example.binanceparser.report.processor.TradeCountPostProcessor;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Logger;
 
 public class FuturesBalanceStateVisualizer extends BalanceStateVisualizer {
 	private static final Logger log = Logger.getLogger(FuturesBalanceStateVisualizer.class.getName());
@@ -37,9 +37,13 @@ public class FuturesBalanceStateVisualizer extends BalanceStateVisualizer {
 	public BalanceReport futuresBalanceVisualisation(String user) throws IOException {
 		final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(appProperties);
 		config.setSubject(List.of(user));
-		final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
+		final DataSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
 		final DataSource<UserNameRel> nameSource = getNameSource(appProperties.getDataSourceType(), config);
-		final List<PostProcessor<AbstractEvent>> postProcessors = List.of(new TradeCountPostProcessor(), new NamePostProcessor(nameSource, config));
+		final List<PostProcessor<AbstractEvent>> postProcessors = List.of(
+				new TradeCountPostProcessor(),
+				new NamePostProcessor(nameSource, config),
+				new BalanceReportPostProcessor(getReportWriter(appProperties.getReportOutputType(), config))
+		);
 		final FuturesBalanceProcessor processor = new FuturesBalanceProcessor(eventSource, config);
 		processor.registerPostProcessor(postProcessors);
 		final BalanceReport testReport = processor.process();

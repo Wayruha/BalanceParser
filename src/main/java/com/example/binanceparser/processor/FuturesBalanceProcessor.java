@@ -2,7 +2,7 @@ package com.example.binanceparser.processor;
 
 import com.example.binanceparser.algorithm.FuturesWalletBalanceCalcAlgorithm;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
-import com.example.binanceparser.datasource.sources.EventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.datasource.filters.DateEventFilter;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
@@ -33,7 +33,7 @@ public class FuturesBalanceProcessor extends Processor<BalanceVisualizerConfig, 
     private final FuturesBalanceReportGenerator balanceReportGenerator;
     private final FuturesWalletBalanceCalcAlgorithm algorithm;
 
-    public FuturesBalanceProcessor(EventSource<AbstractEvent> dataSource, BalanceVisualizerConfig config) {
+    public FuturesBalanceProcessor(DataSource<AbstractEvent> dataSource, BalanceVisualizerConfig config) {
         super(config, dataSource);
         final ChartBuilder<EventBalanceState> chartBuilder = new FuturesBalanceChartBuilder(config.getAssetsToTrack());
         this.balanceReportGenerator = new FuturesBalanceReportGenerator(config, chartBuilder);

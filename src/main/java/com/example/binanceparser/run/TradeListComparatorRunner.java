@@ -5,7 +5,7 @@ import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.Utils;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
-import com.example.binanceparser.datasource.sources.EventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.datasource.filters.DateEventFilter;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
@@ -31,7 +31,7 @@ public class TradeListComparatorRunner {
     private static final String CLONED_ORDER_ENDING = "_cln";
     private final AppProperties appProperties;
     private final BalanceVisualizerConfig config;
-    private final EventSource<AbstractEvent> eventSource;
+    private final DataSource<AbstractEvent> eventSource;
     private String trader;
     private List<String> followers;
 
@@ -53,7 +53,7 @@ public class TradeListComparatorRunner {
     }
 
     public void compareTradeLists() {
-        final EventSource<AbstractEvent> eventSource = BalanceStateVisualizer.getEventSource(appProperties.getDataSourceType(), config);
+        final DataSource<AbstractEvent> eventSource = BalanceStateVisualizer.getEventSource(appProperties.getDataSourceType(), config);
         final List<FuturesOrderTradeUpdateEvent> allEvents = eventSource.getData().stream()
                 .filter(event -> filters(config).stream().allMatch(filter -> filter.filter(event)))
                 .filter(e -> e instanceof FuturesOrderTradeUpdateEvent)

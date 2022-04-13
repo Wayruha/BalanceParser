@@ -7,7 +7,6 @@ import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.config.StatsVisualizerConfig;
 import com.example.binanceparser.datasource.sources.CSVEventSource;
 import com.example.binanceparser.datasource.sources.DataSource;
-import com.example.binanceparser.datasource.sources.EventSource;
 import com.example.binanceparser.datasource.sources.LogsEventSource;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.datasource.filters.FuturesOrderStatusFilter;

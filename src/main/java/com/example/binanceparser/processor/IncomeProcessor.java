@@ -4,7 +4,6 @@ import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.example.binanceparser.algorithm.IncomeCalculationAlgorithm;
 import com.example.binanceparser.config.IncomeConfig;
 import com.example.binanceparser.datasource.sources.DataSource;
-import com.example.binanceparser.datasource.sources.EventSource;
 import com.example.binanceparser.domain.balance.IncomeBalanceState;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.generator.IncomeReportGenerator;

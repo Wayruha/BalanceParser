@@ -14,7 +14,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.example.binanceparser.domain.events.AbstractEvent;
 
-public class CSVEventWriter implements EventWriter<AbstractEvent> {
+//TODO extend CSVDataWriter
+public class CSVEventWriter implements DataWriter<AbstractEvent> {
 	private File outputDir;
 	private String personId;
 

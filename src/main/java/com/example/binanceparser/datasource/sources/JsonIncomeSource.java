@@ -1,7 +1,6 @@
 package com.example.binanceparser.datasource.sources;
 
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
-import com.example.binanceparser.datasource.sources.EventSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;

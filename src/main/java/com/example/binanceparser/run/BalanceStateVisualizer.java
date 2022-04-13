@@ -6,11 +6,21 @@ import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.datasource.filters.SourceFilter;
 import com.example.binanceparser.datasource.models.UserNameRel;
-import com.example.binanceparser.datasource.sources.*;
+import com.example.binanceparser.datasource.sources.CSVDataSource;
+import com.example.binanceparser.datasource.sources.CSVEventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
+import com.example.binanceparser.datasource.sources.LogsEventSource;
+import com.example.binanceparser.datasource.writers.CSVDataWriter;
+import com.example.binanceparser.datasource.writers.DataWriter;
+import com.example.binanceparser.datasource.writers.JsonDataWriter;
 import com.example.binanceparser.domain.events.AbstractEvent;
+import com.example.binanceparser.report.BalanceReport;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -56,5 +66,23 @@ public abstract class BalanceStateVisualizer {
 				throw new RuntimeException("unknown event source type specified");
 		}
 		return nameSource;
+	}
+
+	public static DataWriter<BalanceReport> getReportWriter(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) throws FileNotFoundException {
+		DataWriter<BalanceReport> reportWriter = null;
+		OutputStream out = new FileOutputStream(config.getReportOutputLocation());//TODO
+		switch (datasourceType) {
+			case CSV:
+				reportWriter = new CSVDataWriter<BalanceReport>(out, BalanceReport.class);
+				break;
+			case JSON:
+				reportWriter = new JsonDataWriter<BalanceReport>(out, BalanceReport.class);
+				break;
+			case LOGS:
+				throw new NotImplementedException("nameSource is not yet implemented for logs");
+			default:
+				throw new RuntimeException("unknown event source type specified");
+		}
+		return reportWriter;
 	}
 }

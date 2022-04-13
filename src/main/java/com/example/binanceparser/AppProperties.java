@@ -26,6 +26,8 @@ public class AppProperties {
 	private String incomeInputFilePath;
 	private String outputPath;
 	private String namesFilePath;
+	private DatasourceType reportOutputType;
+	private String reportOutputLocation;
 	private List<String> assetsToTrack;
 	private DatasourceType dataSourceType;
 	private HistoryItemSourceType historyItemSourceType;
@@ -44,6 +46,8 @@ public class AppProperties {
 		this.incomeInputFilePath = props.getProperty("config.income.keys");
 		this.outputPath = props.getProperty("config.file_output_path");
 		this.namesFilePath = props.getProperty("config.names_file_path");
+		this.reportOutputType = ofNullable(props.getProperty("config.report_output_type")).map(DatasourceType::forName).orElse(null);
+		this.reportOutputLocation = props.getProperty("config.report_output_location");
 		this.assetsToTrack = assetsToTrack(props);
 		this.dataSourceType = ofNullable(props.getProperty("config.event_source_type")).map(DatasourceType::forName).orElse(null);
 		this.historyItemSourceType = ofNullable(props.getProperty("config.income.source_type")).map(HistoryItemSourceType::forName).orElse(null);
@@ -78,7 +82,7 @@ public class AppProperties {
 	}
 
 	public enum DatasourceType {
-		LOGS("logs"), CSV("csv");
+		LOGS("logs"), CSV("csv"), JSON("json");
 
 		private final String name;
 

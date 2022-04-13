@@ -1,7 +1,6 @@
 package com.example.binanceparser.datasource.sources;
 
 import com.example.binanceparser.datasource.filters.Filter;
-import com.example.binanceparser.datasource.sources.EventSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.EventType;
 import com.example.binanceparser.domain.events.TypedEventJsonView;
@@ -26,7 +25,7 @@ import static com.example.binanceparser.domain.events.EventType.*;
 /**
  * read directory with logs to provide the events
  */
-public class LogsEventSource implements EventSource<AbstractEvent> {
+public class LogsEventSource implements DataSource<AbstractEvent> {
     private static final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final ObjectMapper objectMapper = new ObjectMapper().addMixIn(AbstractEvent.class, TypedEventJsonView.class);;
     private static final List<EventType> IGNORED_EVENTS = List.of(TRANSACTION, TRANSFER, ACCOUNT_CONFIG_UPDATE, CONVERT_FUNDS, MARGIN_CALL, COIN_SWAP_ORDER);

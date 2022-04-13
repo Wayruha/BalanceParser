@@ -25,11 +25,13 @@ public class ConfigUtil {
 		String inputPath = appProperties.getInputFilePath();
 		String outputPath = appProperties.getOutputPath();
 		String namesFilePath = appProperties.getNamesFilePath();
+		String reportOutputLocation = appProperties.getReportOutputLocation();
 		config.setStartTrackDate(start);
 		config.setFinishTrackDate(finish);
 		config.setInputFilepath(inputPath);
 		config.setOutputDir(outputPath);
 		config.setNamesFilePath(namesFilePath);
+		config.setReportOutputLocation(reportOutputLocation);
 		config.setAssetsToTrack(appProperties.getAssetsToTrack());
 		config.setConvertToUSD(true);
 		return config;
@@ -42,11 +44,13 @@ public class ConfigUtil {
         String outputPath = appProperties.getOutputPath();
         String inputPath = appProperties.getIncomeInputFilePath();
 		String namesFilePath = appProperties.getNamesFilePath();
+		String reportOutputLocation = appProperties.getReportOutputLocation();
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
         config.setOutputDir(outputPath);
         config.setInputFilepath(inputPath);
 		config.setNamesFilePath(namesFilePath);
+		config.setReportOutputLocation(reportOutputLocation);
         config.setIncomeTypes(appProperties.getIncomeTypes());
 		config.setAssetsToTrack(appProperties.getAssetsToTrack());
 		return config;
