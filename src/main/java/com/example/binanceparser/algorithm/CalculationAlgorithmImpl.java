@@ -2,8 +2,8 @@ package com.example.binanceparser.algorithm;
 
 import com.binance.api.client.domain.OrderStatus;
 import com.example.binanceparser.domain.Asset;
-import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.balance.EventBalanceState;
+import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 
@@ -64,9 +64,9 @@ public class CalculationAlgorithmImpl implements CalculationAlgorithm<EventBalan
         return balances;
     }
 
-	@Override
-	public List<EventBalanceState> processEvents(List<AbstractEvent> events) {
-		// TODO Auto-generated method stub
-		return new ArrayList<EventBalanceState>();
-	}
+    @Override
+    public List<EventBalanceState> processEvents(List<AbstractEvent> events) {
+        // TODO Auto-generated method stub
+        return new ArrayList<EventBalanceState>();
+    }
 }
