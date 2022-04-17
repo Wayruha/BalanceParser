@@ -1,6 +1,7 @@
 package com.example.binanceparser.report;
 
 import com.example.binanceparser.Utils;
+import com.example.binanceparser.datasource.Writable;
 import com.example.binanceparser.domain.transaction.Transaction;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +17,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @Builder
-public class BalanceReport {
+public class BalanceReport implements Writable {
     @JsonSerialize(using = Utils.LocalDateTimeSerializer.class)
     private LocalDateTime startTrackDate;
     @JsonSerialize(using = Utils.LocalDateTimeSerializer.class)
@@ -55,11 +56,32 @@ public class BalanceReport {
                 .toString();
     }
 
+    @Override
     public String json() {
         try {
             return new ObjectMapper().writer().writeValueAsString(this);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    @Override
+    public String csv() {
+        StringBuilder csv = new StringBuilder()
+                .append(startTrackDate).append(",")
+                .append(finishTrackDate).append(",")
+                .append(balanceAtStart).append(",")
+                .append(balanceAtEnd).append(",")
+                .append(depositDelta).append(",")
+                .append(max).append(",")
+                .append(min).append(",")
+                .append(outputPath).append(",")
+                .append(balanceDifference).append(",")
+                .append(totalTxCount).append(",")
+                .append(totalTradeTxCount).append(",")
+                .append(totalTradeTxCount_2).append(",")
+                .append(user).append(",")
+                .append(name).append(System.lineSeparator());
+        return csv.toString();
     }
 }

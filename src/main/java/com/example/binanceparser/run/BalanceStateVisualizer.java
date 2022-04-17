@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
-
 public abstract class BalanceStateVisualizer {
 	protected static Set<Filter> filters(BalanceVisualizerConfig config) {
 		final Set<Filter> filters = new HashSet<>();
@@ -62,6 +61,8 @@ public abstract class BalanceStateVisualizer {
 				break;
 			case LOGS:
 				throw new NotImplementedException("nameSource is not yet implemented for logs");
+			case JSON:
+				throw new NotImplementedException("nameSource is not yet implemented for json");
 			default:
 				throw new RuntimeException("unknown event source type specified");
 		}
@@ -69,8 +70,8 @@ public abstract class BalanceStateVisualizer {
 	}
 
 	public static DataWriter<BalanceReport> getReportWriter(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) throws FileNotFoundException {
-		DataWriter<BalanceReport> reportWriter = null;
-		OutputStream out = new FileOutputStream(config.getReportOutputLocation());//TODO
+		DataWriter<BalanceReport> reportWriter;
+		OutputStream out = new FileOutputStream(config.getReportOutputLocation(), true);//TODO
 		switch (datasourceType) {
 			case CSV:
 				reportWriter = new CSVDataWriter<BalanceReport>(out, BalanceReport.class);
