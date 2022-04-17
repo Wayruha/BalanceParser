@@ -4,7 +4,9 @@ import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.Utils;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
+import com.example.binanceparser.datasource.models.UserNameRel;
 import com.example.binanceparser.datasource.sources.CSVEventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.statistics.StatsReport;
@@ -55,12 +57,16 @@ public class VisualisationRunner {
         log.info(Utils.toJson(reports));
     }
 
+    //TODO don't use it. remove
     private List<BalanceReport> runFuturesVisualization(List<String> users) throws IOException {
-        FuturesBalanceStateVisualizer futuresVisualiser = new FuturesBalanceStateVisualizer(futuresBalanceProperties);
+        final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(futuresBalanceProperties);
+        final DataSource<AbstractEvent> eventSource = Helper.getEventSource(futuresBalanceProperties.getDataSourceType(), config);
+        final DataSource<UserNameRel> nameSource = Helper.getNameSource(futuresBalanceProperties.getDataSourceType(), config);
+        FuturesBalanceStateVisualizer futuresVisualiser = new FuturesBalanceStateVisualizer(futuresBalanceProperties, config, eventSource, nameSource);
         List<BalanceReport> reports = new ArrayList<>();
         for (String user : users) {
             log.info("----FUTURES----");
-            BalanceReport futuresReport = futuresVisualiser.futuresBalanceVisualisation(user);
+            BalanceReport futuresReport = futuresVisualiser.singleUserVisualization(user);
             reports.add(futuresReport);
             log.info("Futures report for " + user + ":");
             log.info(futuresReport.toPrettyString());
@@ -68,12 +74,16 @@ public class VisualisationRunner {
         return reports;
     }
 
+    //TODO don't use it. remove
     private List<BalanceReport> runSpotVisualization(List<String> users) throws IOException {
-        SpotBalanceStateVisualizer spotVisualizer = new SpotBalanceStateVisualizer(spotBalanceProperties);
+        final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(futuresBalanceProperties);
+        final DataSource<AbstractEvent> eventSource = Helper.getEventSource(futuresBalanceProperties.getDataSourceType(), config);
+        final DataSource<UserNameRel> nameSource = Helper.getNameSource(futuresBalanceProperties.getDataSourceType(), config);
+        SpotBalanceStateVisualizer spotVisualizer = new SpotBalanceStateVisualizer(spotBalanceProperties, config, eventSource, nameSource);
         List<BalanceReport> reports = new ArrayList<>();
         for (String user : users) {
             log.info("------SPOT------");
-            BalanceReport spotReport = spotVisualizer.spotBalanceVisualisation(user);
+            BalanceReport spotReport = spotVisualizer.spotBalanceVisualisation();
             log.info("Spot report for " + user + ":");
             log.info(spotReport.toPrettyString());
         }

@@ -9,7 +9,6 @@ import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import org.jfree.chart.JFreeChart;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -39,7 +38,7 @@ public class SpotBalanceReportGenerator extends AbstractBalanceReportGenerator<S
         balanceStates.sort(Comparator.comparing(SpotBalanceState::getDateTime));
         final JFreeChart lineChart = chartBuilder.buildLineChart(balanceStates);
 
-        final String subject = !isNull(config.getSubject()) ? config.getSubject().get(0) : DEFAULT_CHART_NAME;
+        final String subject = !isNull(config.getSubjects()) ? config.getSubjects().get(0) : DEFAULT_CHART_NAME;
         final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + subject + CHART_FILE_EXT;
         final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
@@ -48,7 +47,7 @@ public class SpotBalanceReportGenerator extends AbstractBalanceReportGenerator<S
 
         final List<Transaction> transactions = getTransactions(balanceStates);
         return BalanceReport.builder()
-                .user(config.getSubject().get(0))
+                .user(config.getSubjects().get(0))
                 .transactions(transactions)
                 .totalTxCount(transactions.size())
                 .totalTradeTxCount((int) transactions.stream().filter(tx -> tradeTransactionTypes.contains(tx.getType())).count())

@@ -18,8 +18,6 @@ public class AppProperties {
 	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 	private List<String> trackedPersons;
-	private String futuresAccountPrefix;
-	private String spotAccountPrefix;
 	private LocalDateTime startTrackDate;
 	private LocalDateTime endTrackDate;
 	private String inputFilePath;
@@ -38,8 +36,6 @@ public class AppProperties {
 
 	public AppProperties(Properties props) {
 		this.trackedPersons = personsToTrack(props);
-		this.futuresAccountPrefix = props.getProperty("config.futures_prefix");
-		this.spotAccountPrefix = props.getProperty("config.spot_prefix");
 		this.startTrackDate = parse(props.getProperty("config.start_track_date"), formatter);
 		this.endTrackDate = parse(props.getProperty("config.finish_track_date"), formatter);
 		this.inputFilePath = props.getProperty("config.file_input_path");

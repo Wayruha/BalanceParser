@@ -46,14 +46,14 @@ public class TradeListComparatorRunner {
         final List<String> users = appProperties.getTrackedPersons();
         this.appProperties = appProperties;
         this.config = ConfigUtil.loadVisualizerConfig(appProperties);
-        config.setSubject(users);
-        this.eventSource = BalanceStateVisualizer.getEventSource(appProperties.getDataSourceType(), config);
+        config.setSubjects(users);
+        this.eventSource = Helper.getEventSource(appProperties.getDataSourceType(), config);
         this.trader = users.get(0);
         this.followers = users.subList(1, users.size());
     }
 
     public void compareTradeLists() {
-        final DataSource<AbstractEvent> eventSource = BalanceStateVisualizer.getEventSource(appProperties.getDataSourceType(), config);
+        final DataSource<AbstractEvent> eventSource = Helper.getEventSource(appProperties.getDataSourceType(), config);
         final List<FuturesOrderTradeUpdateEvent> allEvents = eventSource.getData().stream()
                 .filter(event -> filters(config).stream().allMatch(filter -> filter.filter(event)))
                 .filter(e -> e instanceof FuturesOrderTradeUpdateEvent)
@@ -96,7 +96,7 @@ public class TradeListComparatorRunner {
         if (config.getStartTrackDate() != null || config.getFinishTrackDate() != null)
             filters.add(new DateEventFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
 
-        if (config.getSubject() != null) filters.add(new SourceFilter(config.getSubject()));
+        if (config.getSubjects() != null) filters.add(new SourceFilter(config.getSubjects()));
 
         if (config.getEventType() != null) filters.add(new EventTypeFilter(config.getEventType()));
         return filters;

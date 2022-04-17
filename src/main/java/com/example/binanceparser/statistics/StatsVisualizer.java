@@ -44,7 +44,7 @@ public class StatsVisualizer {
     public List<StatsReport> calculateStatistics(List<String> users) {
         final StatsVisualizerConfig config = ConfigUtil.loadStatsConfig(appProperties);
         config.setFilters(filters());
-        config.setSubject(users);
+        config.setSubjects(users);
         final DataSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
         final StatsProcessor processor = new StatsProcessor(config, eventSource);
         final List<StatsReport> reports = processor.process();
@@ -63,7 +63,7 @@ public class StatsVisualizer {
         DataSource<AbstractEvent> eventSource;
         switch (datasourceType) {
             case CSV:
-                eventSource = new CSVEventSource(logsDir, config.getSubject());
+                eventSource = new CSVEventSource(logsDir, config.getSubjects());
                 break;
             case LOGS:
                 eventSource = new LogsEventSource(logsDir, filters());

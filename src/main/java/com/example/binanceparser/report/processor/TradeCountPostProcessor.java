@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TradeCountPostProcessor extends PostProcessor<AbstractEvent> {
+public class TradeCountPostProcessor extends PostProcessor<AbstractEvent, BalanceReport> {
 
     @Override
     public void processReport(BalanceReport report, List<AbstractEvent> events) {

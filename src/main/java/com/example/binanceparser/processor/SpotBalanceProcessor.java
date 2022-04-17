@@ -24,13 +24,15 @@ import java.util.stream.Collectors;
 import static com.example.binanceparser.Constants.VIRTUAL_USD;
 import static java.lang.String.format;
 
-public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig, AbstractEvent> {
+public class SpotBalanceProcessor extends Processor<AbstractEvent, BalanceReport> {
     private static final Logger log = Logger.getLogger(SpotBalanceProcessor.class.getName());
     private final SpotBalanceReportGenerator balanceReportGenerator;
     private final SpotBalanceCalcAlgorithm algorithm;
+    private final BalanceVisualizerConfig config;
 
-    public SpotBalanceProcessor(DataSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) throws FileNotFoundException {
-        super(config, eventSource);
+    public SpotBalanceProcessor(DataSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
+        super(eventSource);
+        this.config = config;
         final SpotAssetChartBuilder chartBuilder = new SpotAssetChartBuilder(config.getAssetsToTrack());
         this.balanceReportGenerator = new SpotBalanceReportGenerator(config, chartBuilder);
         this.algorithm = new SpotBalanceCalcAlgorithm();

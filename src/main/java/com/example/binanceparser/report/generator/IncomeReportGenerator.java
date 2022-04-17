@@ -28,7 +28,7 @@ public class IncomeReportGenerator extends AbstractBalanceReportGenerator<Income
 
 		final List<BigDecimal> balances = balanceStates.stream().map(IncomeBalanceState::getAvailableBalance)
 				.collect(Collectors.toList());
-		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + config.getSubject().get(0) + CHART_SUFFIX + CHART_EXTENSIONS;
+		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + config.getSubjects().get(0) + CHART_SUFFIX + CHART_EXTENSIONS;
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
 		final IncomeBalanceState first = balanceStates.get(0);

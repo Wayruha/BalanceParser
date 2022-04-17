@@ -40,14 +40,14 @@ public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerato
 		final List<Asset> assetDataList = balanceStates.stream().flatMap(bal -> bal.getAssets().stream())
 				.collect(Collectors.toList());
 
-		final String subject = !isNull(config.getSubject()) ? config.getSubject().get(0) : DEFAULT_CHART_NAME;
+		final String subject = !isNull(config.getSubjects()) ? config.getSubjects().get(0) : DEFAULT_CHART_NAME;
 		final String chartPath = config.getOutputDir() + "/" + CHART_PREFIX + subject + CHART_SUFFIX  + CHART_FILE_EXT;
 		final String generatedPlotPath = saveChartToFile(lineChart, chartPath);
 
 		final BigDecimal balanceUpdateDelta = calculateBalanceDelta(balanceStates);
 		final List<Transaction> transactions = getTransactions(balanceStates);
 		return BalanceReport.builder()
-				.user(config.getSubject().get(0))
+				.user(config.getSubjects().get(0))
 				.transactions(transactions)
 				.totalTxCount(transactions.size())
 				.startTrackDate(config.getStartTrackDate())

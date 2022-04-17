@@ -1,43 +1,39 @@
 package com.example.binanceparser.processor;
 
-import com.example.binanceparser.config.Config;
 import com.example.binanceparser.datasource.sources.DataSource;
-import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.processor.PostProcessor;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public abstract class Processor<T extends Config, Data> {
-    protected final T config;
-    protected final DataSource<Data> dataSource;
-    protected final Set<PostProcessor<Data>> postProcessors;
+public abstract class Processor<Input, Output> {
+    protected final DataSource<Input> dataSource;
+    protected final Set<PostProcessor<Input, Output>> postProcessors;
 
-    public Processor(T config, DataSource<Data> dataSource) {
-        this.config = config;
+    public Processor(DataSource<Input> dataSource) {
         this.dataSource = dataSource;
         this.postProcessors = new HashSet<>();
     }
 
-    public BalanceReport process() {
-        final List<Data> data = dataSource.getData();
-        final BalanceReport report = process(data);
+    public Output process() {
+        final List<Input> data = dataSource.getData();
+        final Output report = process(data);
         postProcessors.forEach(pp -> pp.processReport(report, data));
         return report;
     }
 
-    abstract protected BalanceReport process(List<Data> data);
+    abstract protected Output process(List<Input> data);
 
-    public boolean registerPostProcessor(PostProcessor<Data> postProcessor) {
+    public boolean registerPostProcessor(PostProcessor<Input, Output> postProcessor) {
         return registerPostProcessor(List.of(postProcessor));
     }
 
-    public boolean registerPostProcessor(List<PostProcessor<Data>> _postProcessors) {
+    public boolean registerPostProcessor(List<PostProcessor<Input, Output>> _postProcessors) {
         return postProcessors.addAll(_postProcessors);
     }
 
-    public boolean removePostProcessor(PostProcessor<Data> postProcessor) {
+    public boolean removePostProcessor(PostProcessor<Input, Output> postProcessor) {
         return postProcessors.remove(postProcessor);
     }
 

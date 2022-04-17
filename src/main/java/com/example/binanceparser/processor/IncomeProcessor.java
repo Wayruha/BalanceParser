@@ -14,14 +14,16 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class IncomeProcessor extends Processor<IncomeConfig, IncomeHistoryItem> {
+public class IncomeProcessor extends Processor<IncomeHistoryItem, BalanceReport> {
     private static final Logger log = Logger.getLogger(IncomeProcessor.class.getName());
 
-    final IncomeReportGenerator reportGenerator;
-    final IncomeCalculationAlgorithm algorithm;
+    private final IncomeReportGenerator reportGenerator;
+    private final IncomeCalculationAlgorithm algorithm;
+    private final IncomeConfig config;
 
     public IncomeProcessor(DataSource<IncomeHistoryItem> eventSource, IncomeConfig config) {
-        super(config, eventSource);
+        super(eventSource);
+        this.config = config;
         this.reportGenerator = new IncomeReportGenerator(config);
         this.algorithm = new IncomeCalculationAlgorithm();
     }

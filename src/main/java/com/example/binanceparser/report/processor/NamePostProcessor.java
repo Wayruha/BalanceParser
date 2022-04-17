@@ -12,7 +12,7 @@ import java.util.Map;
 
 import static java.util.Optional.ofNullable;
 
-public class NamePostProcessor extends PostProcessor<AbstractEvent> {
+public class NamePostProcessor extends PostProcessor<AbstractEvent, BalanceReport> {
     private static final String DEFAULT_NAME = "unknown";
     private final Map<String, String> usersNames;
     private final DataSource<UserNameRel> dataSource;

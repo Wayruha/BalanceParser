@@ -58,7 +58,7 @@ public class FuturesIncomeVisualizerApp {
                 return new JsonIncomeSource(new File(config.getInputFilepath()));
             case BINANCE:
                 config.setLimit(1000);
-                config.setSubject(of(user.getUserId()));
+                config.setSubjects(of(user.getUserId()));
                 config.setIncomeTypes(config.getIncomeTypes());
                 String apiKey = user.getApiKey();
                 String secretKey = user.getSecretKey();
