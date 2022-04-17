@@ -23,67 +23,69 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
+
 public abstract class BalanceStateVisualizer {
-	protected static Set<Filter> filters(BalanceVisualizerConfig config) {
-		final Set<Filter> filters = new HashSet<>();
-		if (config.getSubject() != null) {
-			filters.add(new SourceFilter(config.getSubject()));
-		}
+    protected static Set<Filter> filters(BalanceVisualizerConfig config) {
+        final Set<Filter> filters = new HashSet<>();
+        if (config.getSubject() != null) {
+            filters.add(new SourceFilter(config.getSubject()));
+        }
 
-		if (config.getEventType() != null) {
-			filters.add(new EventTypeFilter(config.getEventType()));
-		}
-		return filters;
-	}
+        if (config.getEventType() != null) {
+            filters.add(new EventTypeFilter(config.getEventType()));
+        }
+        return filters;
+    }
 
-	public static DataSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
-		final File logsDir = new File(config.getInputFilepath());
-		DataSource<AbstractEvent> eventSource;
-		switch (datasourceType) {
-			case CSV:
-				eventSource = new CSVEventSource(logsDir, config.getSubject());
-				break;
-			case LOGS:
-				eventSource = new LogsEventSource(logsDir, filters(config));
-				break;
-			default:
-				throw new RuntimeException("unknown event source type specified");
-		}
-		return eventSource;
-	}
+    public static DataSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
+        final File logsDir = new File(config.getInputFilepath());
+        DataSource<AbstractEvent> eventSource;
+        switch (datasourceType) {
+            case CSV:
+                eventSource = new CSVEventSource(logsDir, config.getSubject());
+                break;
+            case LOGS:
+                eventSource = new LogsEventSource(logsDir, filters(config));
+                break;
+            default:
+                throw new RuntimeException("unknown event source type specified");
+        }
+        return eventSource;
+    }
 
-	public static DataSource<UserNameRel> getNameSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
-		final File file = new File(config.getNamesFilePath());
-		DataSource<UserNameRel> nameSource;
-		switch (datasourceType) {
-			case CSV:
-				nameSource = new CSVDataSource<>(file, 1, UserNameRel.class);
-				break;
-			case LOGS:
-				throw new NotImplementedException("nameSource is not yet implemented for logs");
-			case JSON:
-				throw new NotImplementedException("nameSource is not yet implemented for json");
-			default:
-				throw new RuntimeException("unknown event source type specified");
-		}
-		return nameSource;
-	}
+    public static DataSource<UserNameRel> getNameSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
+        final File file = new File(config.getNamesFilePath());
+        DataSource<UserNameRel> nameSource;
+        switch (datasourceType) {
+            case CSV:
+                nameSource = new CSVDataSource<>(file, 1, UserNameRel.class);
+                break;
+            case LOGS:
+                throw new NotImplementedException("nameSource is not yet implemented for logs");
+            case JSON:
+                throw new NotImplementedException("nameSource is not yet implemented for json");
+            default:
+                throw new RuntimeException("unknown event source type specified");
+        }
+        return nameSource;
+    }
 
-	public static DataWriter<BalanceReport> getReportWriter(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) throws FileNotFoundException {
-		DataWriter<BalanceReport> reportWriter;
-		OutputStream out = new FileOutputStream(config.getReportOutputLocation(), true);//TODO
-		switch (datasourceType) {
-			case CSV:
-				reportWriter = new CSVDataWriter<BalanceReport>(out, BalanceReport.class);
-				break;
-			case JSON:
-				reportWriter = new JsonDataWriter<BalanceReport>(out, BalanceReport.class);
-				break;
-			case LOGS:
-				throw new NotImplementedException("nameSource is not yet implemented for logs");
-			default:
-				throw new RuntimeException("unknown event source type specified");
-		}
-		return reportWriter;
-	}
+    public static DataWriter<BalanceReport> getReportWriter(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) throws FileNotFoundException {
+        DataWriter<BalanceReport> reportWriter;
+        boolean empty = new File(config.getReportOutputLocation()).length() == 0;
+        OutputStream out = new FileOutputStream(config.getReportOutputLocation(), true);//TODO
+        switch (datasourceType) {
+            case CSV:
+                reportWriter = new CSVDataWriter<BalanceReport>(out, BalanceReport.class, empty);
+                break;
+            case JSON:
+                reportWriter = new JsonDataWriter<BalanceReport>(out, BalanceReport.class);
+                break;
+            case LOGS:
+                throw new NotImplementedException("nameSource is not yet implemented for logs");
+            default:
+                throw new RuntimeException("unknown event source type specified");
+        }
+        return reportWriter;
+    }
 }

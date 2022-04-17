@@ -1,6 +1,7 @@
 package com.example.binanceparser.report;
 
 import com.example.binanceparser.Utils;
+import com.example.binanceparser.datasource.Readable;
 import com.example.binanceparser.datasource.Writable;
 import com.example.binanceparser.domain.transaction.Transaction;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,7 +18,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @Builder
-public class BalanceReport implements Writable {
+public class BalanceReport implements Writable, Readable {
     @JsonSerialize(using = Utils.LocalDateTimeSerializer.class)
     private LocalDateTime startTrackDate;
     @JsonSerialize(using = Utils.LocalDateTimeSerializer.class)
@@ -83,5 +84,41 @@ public class BalanceReport implements Writable {
                 .append(user).append(",")
                 .append(name).append(System.lineSeparator());
         return csv.toString();
+    }
+
+    @Override
+    public String header() {
+        StringBuilder header = new StringBuilder()
+                .append("startTrackDate").append(",")
+                .append("finishTrackDate").append(",")
+                .append("balanceAtStart").append(",")
+                .append("balanceAtEnd").append(",")
+                .append("depositDelta").append(",")
+                .append("max").append(",")
+                .append("min").append(",")
+                .append("outputPath").append(",")
+                .append("balanceDifference").append(",")
+                .append("totalTxCount").append(",")
+                .append("totalTradeTxCount").append(",")
+                .append("totalTradeTxCount_2").append(",")
+                .append("user").append(",")
+                .append("name").append(System.lineSeparator());
+        return header.toString();
+    }
+
+    @Override
+    public boolean matches(String header) {
+        String[] local = header().split(",");
+        String[] headerAsArray = header.split(",");
+        if (local.length == headerAsArray.length) {
+            for (int i = 0; i < headerAsArray.length; i++) {
+                if (!local[i].equalsIgnoreCase(headerAsArray[i])){
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+        return true;
     }
 }
