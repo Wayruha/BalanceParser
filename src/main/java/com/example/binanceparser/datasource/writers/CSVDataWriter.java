@@ -2,7 +2,8 @@ package com.example.binanceparser.datasource.writers;
 
 import com.example.binanceparser.datasource.Readable;
 import com.example.binanceparser.datasource.Writable;
-import com.opencsv.bean.FuzzyMappingStrategy;
+import com.opencsv.bean.HeaderColumnNameMappingStrategy;
+import com.opencsv.bean.MappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
@@ -22,12 +23,10 @@ import java.util.List;
 public class CSVDataWriter<T extends Writable & Readable> implements DataWriter<T> {
     private final OutputStream output;
     private final Class<T> type;
-    private final boolean empty;
 
-    public CSVDataWriter(OutputStream output, Class<T> type, boolean append) {
+    public CSVDataWriter(OutputStream output, Class<T> type) {
         this.output = output;
         this.type = type;
-        this.empty = append;
     }
 
     @Override
@@ -41,22 +40,16 @@ public class CSVDataWriter<T extends Writable & Readable> implements DataWriter<
         } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException e) {
             log.warn("Exception writing data to csv:" + e.getMessage());
         }
-       /* try (PrintWriter pw = new PrintWriter(output)) {
-            if (empty && !items.isEmpty()) {
-                pw.write(items.get(0).header());
-            } else if (!empty && !items.isEmpty()) {
-                //check header match
-            }
-            items.stream().forEach(item -> pw.write(item.csv()));
-        }*/
     }
 
-    private FuzzyMappingStrategy<T> getStrategy() {
+    private MappingStrategy<T> getStrategy() {
         MultiValuedMap<Class<?>, Field> map = new ArrayListValuedHashMap<>();
-        Arrays.stream(type.getFields()).filter(field -> Modifier.isTransient(field.getModifiers())).forEach(field -> map.put(type, field));
-        FuzzyMappingStrategy<T> mappingStrategy = new FuzzyMappingStrategy<>();
-        mappingStrategy.setType(type);
+        Arrays.stream(type.getDeclaredFields())
+                .filter(field -> Modifier.isTransient(field.getModifiers()))
+                .forEach(field -> map.put(type, field));
+        HeaderColumnNameMappingStrategy<T> mappingStrategy = new HeaderColumnNameMappingStrategy<>();
         mappingStrategy.ignoreFields(map);
+        mappingStrategy.setType(type);
         return mappingStrategy;
     }
 
@@ -64,4 +57,15 @@ public class CSVDataWriter<T extends Writable & Readable> implements DataWriter<
     public void write(T item) {
         write(List.of(item));
     }
+
+    /* private void manualWrite(List<T> items) {
+         try (PrintWriter pw = new PrintWriter(output)) {
+             if (empty && !items.isEmpty()) {
+                 pw.write(items.get(0).header());
+             } else if (!empty && !items.isEmpty()) {
+                 //check header match
+             }
+             items.stream().forEach(item -> pw.write(item.csv()));
+         }
+     }*/
 }
