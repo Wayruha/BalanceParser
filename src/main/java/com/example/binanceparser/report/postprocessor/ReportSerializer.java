@@ -1,4 +1,4 @@
-package com.example.binanceparser.report.processor;
+package com.example.binanceparser.report.postprocessor;
 
 import com.example.binanceparser.datasource.writers.DataWriter;
 import com.example.binanceparser.domain.events.AbstractEvent;
@@ -13,6 +13,6 @@ public class ReportSerializer<T> extends PostProcessor<AbstractEvent, T> {
     }
 
     public void processReport(T report, List<AbstractEvent> events) {
-        dataWriter.writeEvents(List.of(report));
+        dataWriter.write(List.of(report));
     }
 }

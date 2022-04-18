@@ -60,6 +60,7 @@ public class Helper {
 
     public static DataSource<UserNameRel> getNameSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
         final File file = new File(config.getNamesFilePath());
+        if(!file.exists()) return null;
         DataSource<UserNameRel> nameSource;
         switch (datasourceType) {
             case CSV:
@@ -67,6 +68,8 @@ public class Helper {
                 break;
             case LOGS:
                 throw new NotImplementedException("nameSource is not yet implemented for logs");
+            case JSON:
+                throw new NotImplementedException("nameSource is not yet implemented for json");
             default:
                 throw new RuntimeException("unknown event source type specified");
         }
@@ -74,11 +77,12 @@ public class Helper {
     }
 
     public static DataWriter<BalanceReport> getReportWriter(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) throws FileNotFoundException {
-        DataWriter<BalanceReport> reportWriter = null;
-        OutputStream out = new FileOutputStream(config.getReportOutputLocation());//TODO
+        DataWriter<BalanceReport> reportWriter;
+        boolean empty = new File(config.getReportOutputLocation()).length() == 0;
+        OutputStream out = new FileOutputStream(config.getReportOutputLocation(), false);
         switch (datasourceType) {
             case CSV:
-                reportWriter = new CSVDataWriter<>(out, BalanceReport.class);
+                reportWriter = new CSVDataWriter<>(out, BalanceReport.class, empty);
                 break;
             case JSON:
                 reportWriter = new JsonDataWriter<>(out, BalanceReport.class);

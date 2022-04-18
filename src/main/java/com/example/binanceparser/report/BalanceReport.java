@@ -4,7 +4,6 @@ import com.example.binanceparser.Utils;
 import com.example.binanceparser.datasource.Readable;
 import com.example.binanceparser.datasource.Writable;
 import com.example.binanceparser.domain.transaction.Transaction;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
@@ -32,11 +31,9 @@ public class BalanceReport implements Writable, Readable {
     private BigDecimal balanceDifference;
     private int totalTxCount;
     private int totalTradeTxCount;
-    private int totalTradeTxCount_2;
     private String user;
     private String name;
-    @JsonIgnore
-    private List<Transaction> transactions;
+    transient private List<Transaction> transactions;
 
     public BalanceReport() {
     }
@@ -52,7 +49,6 @@ public class BalanceReport implements Writable, Readable {
                 .append("Balance Delta: ").append(balanceDifference).append("\n")
                 .append("Total transactions: ").append(totalTxCount).append("\n")
                 .append("Total trade transactions: ").append(totalTradeTxCount).append("\n")
-                .append("Total trade transactions (2): ").append(totalTradeTxCount_2).append("\n")
                 .append("Chart: ").append(outputPath).append("\n")
                 .toString();
     }
@@ -80,7 +76,6 @@ public class BalanceReport implements Writable, Readable {
                 .append(balanceDifference).append(",")
                 .append(totalTxCount).append(",")
                 .append(totalTradeTxCount).append(",")
-                .append(totalTradeTxCount_2).append(",")
                 .append(user).append(",")
                 .append(name).append(System.lineSeparator());
         return csv.toString();

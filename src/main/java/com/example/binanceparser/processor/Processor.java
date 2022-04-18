@@ -1,7 +1,7 @@
 package com.example.binanceparser.processor;
 
 import com.example.binanceparser.datasource.sources.DataSource;
-import com.example.binanceparser.report.processor.PostProcessor;
+import com.example.binanceparser.report.postprocessor.PostProcessor;
 
 import java.util.HashSet;
 import java.util.List;

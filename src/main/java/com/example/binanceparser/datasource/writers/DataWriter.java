@@ -2,7 +2,11 @@ package com.example.binanceparser.datasource.writers;
 
 import java.util.List;
 
-//provides any serialization/writing to db etc.
+/**
+ * provides any serialization/writing to db etc.
+ */
 public interface DataWriter<T> {
-    void writeEvents(List<T> items);
+    void write(List<T> items);
+
+    void write(T item);
 }

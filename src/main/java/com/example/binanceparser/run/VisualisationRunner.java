@@ -22,6 +22,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+// todo completely remove this entry-point
 public class VisualisationRunner {
     private static final Logger log = Logger.getLogger(VisualisationRunner.class.getName());
     private AppProperties spotBalanceProperties;
@@ -70,22 +71,6 @@ public class VisualisationRunner {
             reports.add(futuresReport);
             log.info("Futures report for " + user + ":");
             log.info(futuresReport.toPrettyString());
-        }
-        return reports;
-    }
-
-    //TODO don't use it. remove
-    private List<BalanceReport> runSpotVisualization(List<String> users) throws IOException {
-        final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(futuresBalanceProperties);
-        final DataSource<AbstractEvent> eventSource = Helper.getEventSource(futuresBalanceProperties.getDataSourceType(), config);
-        final DataSource<UserNameRel> nameSource = Helper.getNameSource(futuresBalanceProperties.getDataSourceType(), config);
-        SpotBalanceStateVisualizer spotVisualizer = new SpotBalanceStateVisualizer(spotBalanceProperties, config, eventSource, nameSource);
-        List<BalanceReport> reports = new ArrayList<>();
-        for (String user : users) {
-            log.info("------SPOT------");
-            BalanceReport spotReport = spotVisualizer.spotBalanceVisualisation();
-            log.info("Spot report for " + user + ":");
-            log.info(spotReport.toPrettyString());
         }
         return reports;
     }

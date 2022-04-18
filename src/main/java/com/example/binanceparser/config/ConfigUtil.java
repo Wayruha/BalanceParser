@@ -20,12 +20,12 @@ public class ConfigUtil {
 
 	public static BalanceVisualizerConfig loadVisualizerConfig(AppProperties appProperties) {
 		final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
-		LocalDateTime start = appProperties.getStartTrackDate();
-		LocalDateTime finish = appProperties.getEndTrackDate();
-		String inputPath = appProperties.getInputFilePath();
-		String outputPath = appProperties.getOutputPath();
-		String namesFilePath = appProperties.getNamesFilePath();
-		String reportOutputLocation = appProperties.getReportOutputLocation();
+		final LocalDateTime start = appProperties.getStartTrackDate();
+		final LocalDateTime finish = appProperties.getEndTrackDate();
+		final String inputPath = appProperties.getInputFilePath();
+		final String outputPath = appProperties.getOutputPath();
+		final String namesFilePath = appProperties.getNamesFilePath();
+		final String reportOutputLocation = appProperties.getReportOutputLocation();
 		config.setStartTrackDate(start);
 		config.setFinishTrackDate(finish);
 		config.setInputFilepath(inputPath);
@@ -34,6 +34,7 @@ public class ConfigUtil {
 		config.setReportOutputLocation(reportOutputLocation);
 		config.setAssetsToTrack(appProperties.getAssetsToTrack());
 		config.setConvertToUSD(true);
+		config.setSubjects(appProperties.getTrackedPersons());
 		return config;
 	}
 
@@ -53,6 +54,7 @@ public class ConfigUtil {
 		config.setReportOutputLocation(reportOutputLocation);
         config.setIncomeTypes(appProperties.getIncomeTypes());
 		config.setAssetsToTrack(appProperties.getAssetsToTrack());
+		config.setSubjects(appProperties.getTrackedPersons());
 		return config;
 	}
 
@@ -68,6 +70,7 @@ public class ConfigUtil {
 		config.setOutputDir(outputPath);
 		config.setDelayPrecision(appProperties.getDelayPrecision());
 		config.setRelativeContext(new MathContext(appProperties.getPercentagePrecision(), appProperties.getRoundingMode()));
+		config.setSubjects(appProperties.getTrackedPersons());
 		return config;
 	}
 }

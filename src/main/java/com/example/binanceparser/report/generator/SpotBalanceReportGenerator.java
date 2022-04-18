@@ -50,7 +50,6 @@ public class SpotBalanceReportGenerator extends AbstractBalanceReportGenerator<S
                 .user(config.getSubjects().get(0))
                 .transactions(transactions)
                 .totalTxCount(transactions.size())
-                .totalTradeTxCount((int) transactions.stream().filter(tx -> tradeTransactionTypes.contains(tx.getType())).count())
                 .startTrackDate(config.getStartTrackDate())
                 .finishTrackDate(config.getFinishTrackDate())
                 .balanceAtStart(getStartBalance(balanceStates))

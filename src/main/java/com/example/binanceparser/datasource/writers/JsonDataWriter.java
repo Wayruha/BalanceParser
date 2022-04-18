@@ -20,11 +20,16 @@ public class JsonDataWriter<T> implements DataWriter<T> {
     }
 
     @Override
-    public void writeEvents(List<T> items) {
+    public void write(List<T> items) {
         try {
             mapper.writerFor(type).writeValues(output).writeAll(items);
         } catch (IOException e) {
             log.warn("Exception writing data to json:" + e.getMessage());
         }
+    }
+
+    @Override
+    public void write(T item) {
+        //TODO
     }
 }

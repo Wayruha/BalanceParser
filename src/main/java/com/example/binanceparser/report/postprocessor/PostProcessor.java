@@ -1,4 +1,4 @@
-package com.example.binanceparser.report.processor;
+package com.example.binanceparser.report.postprocessor;
 
 import com.example.binanceparser.config.Config;
 import lombok.Getter;

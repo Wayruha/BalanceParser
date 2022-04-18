@@ -25,7 +25,7 @@ public class CSVEventWriter implements DataWriter<AbstractEvent> {
 	}
 
 	@Override
-	public void writeEvents(List<AbstractEvent> items) {
+	public void write(List<AbstractEvent> items) {
 		DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		List<EventCSVModel> models = items.stream().map((event) -> {
 			EventCSVModel model = null;
@@ -48,5 +48,10 @@ public class CSVEventWriter implements DataWriter<AbstractEvent> {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void write(AbstractEvent item) {
+		//TODO
 	}
 }

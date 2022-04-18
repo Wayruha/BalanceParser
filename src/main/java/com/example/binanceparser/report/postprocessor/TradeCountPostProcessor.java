@@ -1,4 +1,4 @@
-package com.example.binanceparser.report.processor;
+package com.example.binanceparser.report.postprocessor;
 
 import com.binance.api.client.domain.ExecutionType;
 import com.example.binanceparser.domain.events.AbstractEvent;
@@ -19,6 +19,6 @@ public class TradeCountPostProcessor extends PostProcessor<AbstractEvent, Balanc
                 .filter(trade -> trade.getExecutionType() == ExecutionType.TRADE)
                 .map(FuturesOrderTradeUpdateEvent::getNewClientOrderId)
                 .collect(Collectors.toSet());
-        report.setTotalTradeTxCount_2(tradeIds.size());
+        report.setTotalTradeTxCount(tradeIds.size());
     }
 }
