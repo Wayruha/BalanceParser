@@ -79,7 +79,7 @@ public class Helper {
     public static DataWriter<BalanceReport> getReportWriter(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) throws FileNotFoundException {
         DataWriter<BalanceReport> reportWriter;
         boolean empty = new File(config.getReportOutputLocation()).length() == 0;
-        OutputStream out = new FileOutputStream(config.getReportOutputLocation(), false);
+        OutputStream out = new FileOutputStream(config.getReportOutputLocation(), true);
         switch (datasourceType) {
             case CSV:
                 reportWriter = new CSVDataWriter<>(out, BalanceReport.class, empty);

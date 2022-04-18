@@ -8,9 +8,14 @@ import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -28,12 +33,9 @@ public class CSVDataWriter<T extends Writable & Readable> implements DataWriter<
     @Override
     public void write(List<T> items) {
         try (PrintWriter writer = new PrintWriter(output)) {
-            FuzzyMappingStrategy<T> mappingStrategy = new FuzzyMappingStrategy<>();
-            mappingStrategy.setType(type);
-            // mappingStrategy.ignoreFields(); //TODO need to load all transient fields and ignore them
             StatefulBeanToCsv<T> beanToCsv = new StatefulBeanToCsvBuilder<T>(writer)
                     .withApplyQuotesToAll(false)
-                    .withMappingStrategy(mappingStrategy)
+                    .withMappingStrategy(getStrategy())
                     .build();
             beanToCsv.write(items);
         } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException e) {
@@ -47,6 +49,15 @@ public class CSVDataWriter<T extends Writable & Readable> implements DataWriter<
             }
             items.stream().forEach(item -> pw.write(item.csv()));
         }*/
+    }
+
+    private FuzzyMappingStrategy<T> getStrategy() {
+        MultiValuedMap<Class<?>, Field> map = new ArrayListValuedHashMap<>();
+        Arrays.stream(type.getFields()).filter(field -> Modifier.isTransient(field.getModifiers())).forEach(field -> map.put(type, field));
+        FuzzyMappingStrategy<T> mappingStrategy = new FuzzyMappingStrategy<>();
+        mappingStrategy.setType(type);
+        mappingStrategy.ignoreFields(map);
+        return mappingStrategy;
     }
 
     @Override
