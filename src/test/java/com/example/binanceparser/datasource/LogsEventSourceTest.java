@@ -1,6 +1,7 @@
 package com.example.binanceparser.datasource;
 
 import com.binance.api.client.domain.OrderStatus;
+import com.example.binanceparser.datasource.sources.LogsEventSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 import org.junit.jupiter.api.Test;

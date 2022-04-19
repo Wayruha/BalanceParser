@@ -20,7 +20,6 @@ class StatsReportGenerator {
     private final StatsChartBuilder chartBuilder;
     private final StatsVisualizerConfig config;
 
-
     public StatsReportGenerator(StatsVisualizerConfig config) {
         this.config = config;
         chartBuilder = new StatsChartBuilder();

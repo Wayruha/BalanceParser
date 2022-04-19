@@ -2,7 +2,7 @@ package com.example.binanceparser.processor;
 
 import com.example.binanceparser.algorithm.FuturesWalletBalanceCalcAlgorithm;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
-import com.example.binanceparser.datasource.EventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.datasource.filters.DateEventFilter;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
@@ -28,13 +28,15 @@ import static com.example.binanceparser.domain.AccountUpdateReasonType.DEPOSIT;
 import static com.example.binanceparser.domain.AccountUpdateReasonType.WITHDRAW;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
-public class FuturesBalanceProcessor extends Processor<BalanceVisualizerConfig, AbstractEvent> {
+public class FuturesBalanceProcessor extends Processor<AbstractEvent, BalanceReport> {
     private static final Logger log = Logger.getLogger(FuturesBalanceProcessor.class.getName());
     private final FuturesBalanceReportGenerator balanceReportGenerator;
     private final FuturesWalletBalanceCalcAlgorithm algorithm;
+    private final BalanceVisualizerConfig config;
 
-    public FuturesBalanceProcessor(EventSource<AbstractEvent> dataSource, BalanceVisualizerConfig config) {
-        super(config, dataSource);
+    public FuturesBalanceProcessor(DataSource<AbstractEvent> dataSource, BalanceVisualizerConfig config) {
+        super(dataSource);
+        this.config = config;
         final ChartBuilder<EventBalanceState> chartBuilder = new FuturesBalanceChartBuilder(config.getAssetsToTrack());
         this.balanceReportGenerator = new FuturesBalanceReportGenerator(config, chartBuilder);
         this.algorithm = new FuturesWalletBalanceCalcAlgorithm(config, STABLECOIN_RATE);
@@ -84,14 +86,12 @@ public class FuturesBalanceProcessor extends Processor<BalanceVisualizerConfig, 
         return FuturesWalletBalanceCalcAlgorithm.totalBalance(assets).orElse(BigDecimal.ZERO);
     }
 
-    //TODO 1st: one filter can be applied at eventSource level
-    // 2nd: another filter should be applied at generator level (because SPOT calculator wants to know the state before the target dates)
     private static Set<Filter> filters(BalanceVisualizerConfig config) {
         final Set<Filter> filters = new HashSet<>();
         if (config.getStartTrackDate() != null || config.getFinishTrackDate() != null)
             filters.add(new DateEventFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
 
-        if (config.getSubject() != null) filters.add(new SourceFilter(config.getSubject()));
+        if (config.getSubjects() != null) filters.add(new SourceFilter(config.getSubjects()));
 
         if (config.getEventType() != null) filters.add(new EventTypeFilter(config.getEventType()));
         return filters;

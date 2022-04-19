@@ -18,14 +18,14 @@ public class AppProperties {
 	private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 	private List<String> trackedPersons;
-	private String futuresAccountPrefix;
-	private String spotAccountPrefix;
 	private LocalDateTime startTrackDate;
 	private LocalDateTime endTrackDate;
 	private String inputFilePath;
 	private String incomeInputFilePath;
 	private String outputPath;
 	private String namesFilePath;
+	private DatasourceType reportOutputType;
+	private String reportOutputLocation;
 	private List<String> assetsToTrack;
 	private DatasourceType dataSourceType;
 	private HistoryItemSourceType historyItemSourceType;
@@ -36,16 +36,16 @@ public class AppProperties {
 
 	public AppProperties(Properties props) {
 		this.trackedPersons = personsToTrack(props);
-		this.futuresAccountPrefix = props.getProperty("config.futures_prefix");
-		this.spotAccountPrefix = props.getProperty("config.spot_prefix");
 		this.startTrackDate = parse(props.getProperty("config.start_track_date"), formatter);
 		this.endTrackDate = parse(props.getProperty("config.finish_track_date"), formatter);
-		this.inputFilePath = props.getProperty("config.file_input_path");
+		this.inputFilePath = props.getProperty("config.input.path");
 		this.incomeInputFilePath = props.getProperty("config.income.keys");
-		this.outputPath = props.getProperty("config.file_output_path");
-		this.namesFilePath = props.getProperty("config.names_file_path");
+		this.outputPath = props.getProperty("config.output.path");
+		this.namesFilePath = props.getProperty("config.input.names.path");
+		this.reportOutputType = ofNullable(props.getProperty("config.report.output.type")).map(DatasourceType::forName).orElse(null);
+		this.reportOutputLocation = props.getProperty("config.report.output.location");
 		this.assetsToTrack = assetsToTrack(props);
-		this.dataSourceType = ofNullable(props.getProperty("config.event_source_type")).map(DatasourceType::forName).orElse(null);
+		this.dataSourceType = ofNullable(props.getProperty("config.input.type")).map(DatasourceType::forName).orElse(null);
 		this.historyItemSourceType = ofNullable(props.getProperty("config.income.source_type")).map(HistoryItemSourceType::forName).orElse(null);
 		this.incomeTypes = parseIncomeTypes(props.getProperty("config.income.income_types"));
 		this.delayPrecision = ofNullable(props.getProperty("config.delay_precision")).map(Integer::valueOf).orElse(null);
@@ -78,7 +78,7 @@ public class AppProperties {
 	}
 
 	public enum DatasourceType {
-		LOGS("logs"), CSV("csv");
+		LOGS("logs"), CSV("csv"), JSON("json");
 
 		private final String name;
 

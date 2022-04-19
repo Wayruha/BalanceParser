@@ -12,6 +12,10 @@ public class SourceFilter implements Filter {
         this.acceptableNames = acceptableNames;
     }
 
+    public SourceFilter(String... acceptableNames) {
+        this(List.of(acceptableNames));
+    }
+
     @Override
     public boolean filter(AbstractEvent event) {
         return acceptableNames.stream().anyMatch(name -> event.getSource().contains(name));

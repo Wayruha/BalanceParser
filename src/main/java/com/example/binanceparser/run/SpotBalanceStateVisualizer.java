@@ -3,29 +3,51 @@ package com.example.binanceparser.run;
 import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
-import com.example.binanceparser.datasource.EventSource;
+import com.example.binanceparser.datasource.models.UserNameRel;
+import com.example.binanceparser.datasource.sources.DataSource;
+import com.example.binanceparser.datasource.writers.DataWriter;
 import com.example.binanceparser.domain.events.AbstractEvent;
-import com.example.binanceparser.processor.SpotBalanceProcessor;
+import com.example.binanceparser.processor.MultipleUsersSpotBalProcessor;
+import com.example.binanceparser.report.AggregatedBalanceReport;
 import com.example.binanceparser.report.BalanceReport;
-import com.example.binanceparser.report.processor.NamePostProcessor;
+import com.example.binanceparser.report.postprocessor.AggregatedBalReportSerializer;
 
 import java.io.IOException;
-import java.util.*;
 
-public class SpotBalanceStateVisualizer extends BalanceStateVisualizer {
-	private AppProperties appProperties;
+public class SpotBalanceStateVisualizer {
+    private final AppProperties appProperties;
+    private final BalanceVisualizerConfig config;
+    private final DataSource<AbstractEvent> eventSource;
+    private final DataSource<UserNameRel> nameSource;
 
-	public SpotBalanceStateVisualizer(AppProperties properties) {
-		this.appProperties = properties;
-	}
+    public SpotBalanceStateVisualizer(AppProperties appProperties, BalanceVisualizerConfig config,
+                                      DataSource<AbstractEvent> eventSource, DataSource<UserNameRel> nameSource) {
+        this.appProperties = appProperties;
+        this.config = config;
+        this.eventSource = eventSource;
+        this.nameSource = nameSource;
+    }
 
-	public BalanceReport spotBalanceVisualisation(String user) throws IOException {
-		final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(appProperties);
-		config.setSubject(List.of(user));
-		final EventSource<AbstractEvent> eventSource = getEventSource(appProperties.getDataSourceType(), config);
-		final SpotBalanceProcessor processor = new SpotBalanceProcessor(eventSource, config);
-		processor.registerPostProcessor(new NamePostProcessor(config));
-		final BalanceReport testReport = processor.process();
-		return testReport;
-	}
+    public static void main(String[] args) throws IOException {
+        final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/spot-balance.properties");
+
+        final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(appProperties);
+        final DataSource<AbstractEvent> eventSource = Helper.getEventSource(appProperties.getDataSourceType(), config);
+        final DataSource<UserNameRel> nameSource = Helper.getNameSource(appProperties.getDataSourceType(), config);
+        final SpotBalanceStateVisualizer visualizer = new SpotBalanceStateVisualizer(appProperties, config, eventSource, nameSource);
+
+        final AggregatedBalanceReport report = visualizer.spotBalanceVisualisation();
+        report.getReports().forEach(r -> System.out.println(r.toPrettyString() + "\n"));
+
+    }
+
+    public AggregatedBalanceReport spotBalanceVisualisation() throws IOException {
+        final DataWriter<BalanceReport> reportWriter = Helper.getReportWriter(appProperties.getReportOutputType(), config);
+        final var processor = new MultipleUsersSpotBalProcessor(eventSource, config, nameSource);
+        final var reportSerializer = new AggregatedBalReportSerializer(reportWriter);
+        processor.registerPostProcessor(reportSerializer);
+
+        final AggregatedBalanceReport testReport = processor.process();
+        return testReport;
+    }
 }

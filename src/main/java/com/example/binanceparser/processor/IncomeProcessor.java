@@ -3,7 +3,7 @@ package com.example.binanceparser.processor;
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.example.binanceparser.algorithm.IncomeCalculationAlgorithm;
 import com.example.binanceparser.config.IncomeConfig;
-import com.example.binanceparser.datasource.EventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.domain.balance.IncomeBalanceState;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.generator.IncomeReportGenerator;
@@ -14,14 +14,16 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class IncomeProcessor extends Processor<IncomeConfig, IncomeHistoryItem> {
+public class IncomeProcessor extends Processor<IncomeHistoryItem, BalanceReport> {
     private static final Logger log = Logger.getLogger(IncomeProcessor.class.getName());
 
-    final IncomeReportGenerator reportGenerator;
-    final IncomeCalculationAlgorithm algorithm;
+    private final IncomeReportGenerator reportGenerator;
+    private final IncomeCalculationAlgorithm algorithm;
+    private final IncomeConfig config;
 
-    public IncomeProcessor(EventSource<IncomeHistoryItem> eventSource, IncomeConfig config) {
-        super(config, eventSource);
+    public IncomeProcessor(DataSource<IncomeHistoryItem> eventSource, IncomeConfig config) {
+        super(eventSource);
+        this.config = config;
         this.reportGenerator = new IncomeReportGenerator(config);
         this.algorithm = new IncomeCalculationAlgorithm();
     }

@@ -2,7 +2,7 @@ package com.example.binanceparser.processor;
 
 import com.example.binanceparser.algorithm.SpotBalanceCalcAlgorithm;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
-import com.example.binanceparser.datasource.EventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.balance.SpotBalanceState;
 import com.example.binanceparser.domain.events.AbstractEvent;
@@ -24,13 +24,15 @@ import java.util.stream.Collectors;
 import static com.example.binanceparser.Constants.VIRTUAL_USD;
 import static java.lang.String.format;
 
-public class SpotBalanceProcessor extends Processor<BalanceVisualizerConfig, AbstractEvent> {
+public class SpotBalanceProcessor extends Processor<AbstractEvent, BalanceReport> {
     private static final Logger log = Logger.getLogger(SpotBalanceProcessor.class.getName());
     private final SpotBalanceReportGenerator balanceReportGenerator;
     private final SpotBalanceCalcAlgorithm algorithm;
+    private final BalanceVisualizerConfig config;
 
-    public SpotBalanceProcessor(EventSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) throws FileNotFoundException {
-        super(config, eventSource);
+    public SpotBalanceProcessor(DataSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
+        super(eventSource);
+        this.config = config;
         final SpotAssetChartBuilder chartBuilder = new SpotAssetChartBuilder(config.getAssetsToTrack());
         this.balanceReportGenerator = new SpotBalanceReportGenerator(config, chartBuilder);
         this.algorithm = new SpotBalanceCalcAlgorithm();

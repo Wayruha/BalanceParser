@@ -5,7 +5,7 @@ import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.Utils;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
-import com.example.binanceparser.datasource.EventSource;
+import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.datasource.filters.DateEventFilter;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
@@ -31,7 +31,7 @@ public class TradeListComparatorRunner {
     private static final String CLONED_ORDER_ENDING = "_cln";
     private final AppProperties appProperties;
     private final BalanceVisualizerConfig config;
-    private final EventSource<AbstractEvent> eventSource;
+    private final DataSource<AbstractEvent> eventSource;
     private String trader;
     private List<String> followers;
 
@@ -46,14 +46,14 @@ public class TradeListComparatorRunner {
         final List<String> users = appProperties.getTrackedPersons();
         this.appProperties = appProperties;
         this.config = ConfigUtil.loadVisualizerConfig(appProperties);
-        config.setSubject(users);
-        this.eventSource = BalanceStateVisualizer.getEventSource(appProperties.getDataSourceType(), config);
+        config.setSubjects(users);
+        this.eventSource = Helper.getEventSource(appProperties.getDataSourceType(), config);
         this.trader = users.get(0);
         this.followers = users.subList(1, users.size());
     }
 
     public void compareTradeLists() {
-        final EventSource<AbstractEvent> eventSource = BalanceStateVisualizer.getEventSource(appProperties.getDataSourceType(), config);
+        final DataSource<AbstractEvent> eventSource = Helper.getEventSource(appProperties.getDataSourceType(), config);
         final List<FuturesOrderTradeUpdateEvent> allEvents = eventSource.getData().stream()
                 .filter(event -> filters(config).stream().allMatch(filter -> filter.filter(event)))
                 .filter(e -> e instanceof FuturesOrderTradeUpdateEvent)
@@ -96,7 +96,7 @@ public class TradeListComparatorRunner {
         if (config.getStartTrackDate() != null || config.getFinishTrackDate() != null)
             filters.add(new DateEventFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
 
-        if (config.getSubject() != null) filters.add(new SourceFilter(config.getSubject()));
+        if (config.getSubjects() != null) filters.add(new SourceFilter(config.getSubjects()));
 
         if (config.getEventType() != null) filters.add(new EventTypeFilter(config.getEventType()));
         return filters;

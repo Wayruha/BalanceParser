@@ -20,18 +20,21 @@ public class ConfigUtil {
 
 	public static BalanceVisualizerConfig loadVisualizerConfig(AppProperties appProperties) {
 		final BalanceVisualizerConfig config = new BalanceVisualizerConfig();
-		LocalDateTime start = appProperties.getStartTrackDate();
-		LocalDateTime finish = appProperties.getEndTrackDate();
-		String inputPath = appProperties.getInputFilePath();
-		String outputPath = appProperties.getOutputPath();
-		String namesFilePath = appProperties.getNamesFilePath();
+		final LocalDateTime start = appProperties.getStartTrackDate();
+		final LocalDateTime finish = appProperties.getEndTrackDate();
+		final String inputPath = appProperties.getInputFilePath();
+		final String outputPath = appProperties.getOutputPath();
+		final String namesFilePath = appProperties.getNamesFilePath();
+		final String reportOutputLocation = appProperties.getReportOutputLocation();
 		config.setStartTrackDate(start);
 		config.setFinishTrackDate(finish);
 		config.setInputFilepath(inputPath);
 		config.setOutputDir(outputPath);
 		config.setNamesFilePath(namesFilePath);
+		config.setReportOutputLocation(reportOutputLocation);
 		config.setAssetsToTrack(appProperties.getAssetsToTrack());
 		config.setConvertToUSD(true);
+		config.setSubjects(appProperties.getTrackedPersons());
 		return config;
 	}
 
@@ -42,13 +45,16 @@ public class ConfigUtil {
         String outputPath = appProperties.getOutputPath();
         String inputPath = appProperties.getIncomeInputFilePath();
 		String namesFilePath = appProperties.getNamesFilePath();
+		String reportOutputLocation = appProperties.getReportOutputLocation();
         config.setStartTrackDate(start);
         config.setFinishTrackDate(finish);
         config.setOutputDir(outputPath);
         config.setInputFilepath(inputPath);
 		config.setNamesFilePath(namesFilePath);
+		config.setReportOutputLocation(reportOutputLocation);
         config.setIncomeTypes(appProperties.getIncomeTypes());
 		config.setAssetsToTrack(appProperties.getAssetsToTrack());
+		config.setSubjects(appProperties.getTrackedPersons());
 		return config;
 	}
 
@@ -64,6 +70,7 @@ public class ConfigUtil {
 		config.setOutputDir(outputPath);
 		config.setDelayPrecision(appProperties.getDelayPrecision());
 		config.setRelativeContext(new MathContext(appProperties.getPercentagePrecision(), appProperties.getRoundingMode()));
+		config.setSubjects(appProperties.getTrackedPersons());
 		return config;
 	}
 }
