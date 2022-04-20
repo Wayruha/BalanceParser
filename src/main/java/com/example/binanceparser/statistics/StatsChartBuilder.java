@@ -10,12 +10,14 @@ import org.jfree.chart.LegendItemCollection;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Service
 class StatsChartBuilder {
     public JFreeChart buildDelayChart(List<Integer> items, int precision) {
         final ChartConfig chartConfig = new ChartConfig("Cloning delay", "Delay", "Occur");

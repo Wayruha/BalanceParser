@@ -5,7 +5,6 @@ import com.example.binanceparser.binance.BinanceClient;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +14,10 @@ public class Constants {
     public static final String BINANCE_SECRET_KEY = "VIn9YBUN107QLJznKeFXmNnxY6kgmY0i7ol4JbwIXmCi6wDCD24z5kBGjHe3poQf";
     public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static final String CLONE_POSTFIX = "_cln";
+    //paths
+    public static final String FUTURES_PROPS_PATH = "src/main/resources/futures-balance.properties";
+    public static final String SPOT_PROPS_PATH = "src/main/resources/spot-balance.properties";
+    public static final String STATS_PROPS_PATH = "src/main/resources/stats-visualisation.properties";
     //coins
     public static final String USD = "USD";
     public static final String USDT = "USDT";

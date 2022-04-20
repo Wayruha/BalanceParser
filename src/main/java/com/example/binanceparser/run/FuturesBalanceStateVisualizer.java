@@ -21,9 +21,9 @@ public class FuturesBalanceStateVisualizer {
     private static final Logger log = Logger.getLogger(FuturesBalanceStateVisualizer.class.getName());
 
     private final AppProperties appProperties;
-    final BalanceVisualizerConfig config;
-    final DataSource<AbstractEvent> eventSource;
-    final DataSource<UserNameRel> nameSource;
+    private final BalanceVisualizerConfig config;
+    private final DataSource<AbstractEvent> eventSource;
+    private final DataSource<UserNameRel> nameSource;
 
     public FuturesBalanceStateVisualizer(AppProperties appProperties, BalanceVisualizerConfig config,
                                          DataSource<AbstractEvent> eventSource, DataSource<UserNameRel> nameSource) {

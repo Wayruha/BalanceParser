@@ -6,6 +6,7 @@ import com.example.binanceparser.domain.events.*;
 import com.example.binanceparser.domain.balance.SpotBalanceState;
 import com.example.binanceparser.domain.transaction.Transaction;
 import com.example.binanceparser.domain.transaction.TransactionType;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -25,6 +26,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
+@Service
 public class SpotBalanceCalcAlgorithm implements CalculationAlgorithm<SpotBalanceState> {
     private final int MAX_SECONDS_DELAY_FOR_VALID_EVENTS = 1;
     private static final Logger log = Logger.getLogger(SpotBalanceCalcAlgorithm.class.getName());

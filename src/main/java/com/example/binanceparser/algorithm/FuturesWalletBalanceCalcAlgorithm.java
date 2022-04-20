@@ -1,12 +1,15 @@
 package com.example.binanceparser.algorithm;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
+import com.example.binanceparser.config.spring.BeanNames;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.balance.EventBalanceState;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent;
 import com.example.binanceparser.domain.events.FuturesAccountUpdateEvent.Position;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -20,11 +23,14 @@ import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 /*
  * this algorithm just uses AccUpdate.walletBalance, without any calculations
  */
+@Service
 public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<EventBalanceState> {
     private static final Logger LOGGER = Logger.getLogger(FuturesWalletBalanceCalcAlgorithm.class.getName());
     private final BalanceVisualizerConfig config;
 
-    public FuturesWalletBalanceCalcAlgorithm(BalanceVisualizerConfig config, Map<String, BigDecimal> currencyRate) {
+    public FuturesWalletBalanceCalcAlgorithm(@Qualifier(BeanNames.FUTURES_CONFIG) BalanceVisualizerConfig config
+                                             //, Map<String, BigDecimal> currencyRate
+    ) {
         this.config = config;
     }
 

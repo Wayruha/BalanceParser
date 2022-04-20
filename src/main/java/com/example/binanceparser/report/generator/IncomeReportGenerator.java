@@ -1,26 +1,32 @@
 package com.example.binanceparser.report.generator;
 
 import com.example.binanceparser.config.IncomeConfig;
+import com.example.binanceparser.config.spring.BeanNames;
 import com.example.binanceparser.domain.balance.IncomeBalanceState;
 import com.example.binanceparser.plot.FuturesIncomeChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Service
 public class IncomeReportGenerator extends AbstractBalanceReportGenerator<IncomeBalanceState, IncomeConfig> {
 	private static final String CHART_EXTENSIONS = ".jpg";
 	private static final String CHART_PREFIX = "";
 	private static final String CHART_SUFFIX = "_FuturesIncome";
 
-	private final FuturesIncomeChartBuilder futuresIncomeChartBuilder = new FuturesIncomeChartBuilder();
+	private final FuturesIncomeChartBuilder futuresIncomeChartBuilder;
 
-	public IncomeReportGenerator(IncomeConfig config) {
+	public IncomeReportGenerator(@Qualifier(BeanNames.INCOME_CONFIG) IncomeConfig config, @Qualifier(BeanNames.FUTURES_INCOME_CHART_BUILDER) FuturesIncomeChartBuilder futuresIncomeChartBuilder) {
 		super(config);
+		this.futuresIncomeChartBuilder = futuresIncomeChartBuilder;
 	}
 
 	public BalanceReport getBalanceReport(List<IncomeBalanceState> balanceStates) throws IOException {

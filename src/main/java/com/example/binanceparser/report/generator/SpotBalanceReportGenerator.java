@@ -1,6 +1,7 @@
 package com.example.binanceparser.report.generator;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
+import com.example.binanceparser.config.spring.BeanNames;
 import com.example.binanceparser.domain.*;
 import com.example.binanceparser.domain.balance.SpotBalanceState;
 import com.example.binanceparser.domain.transaction.Transaction;
@@ -8,6 +9,8 @@ import com.example.binanceparser.domain.transaction.TransactionType;
 import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import org.jfree.chart.JFreeChart;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -20,6 +23,7 @@ import static com.example.binanceparser.report.generator.FuturesBalanceReportGen
 import static java.math.BigDecimal.ZERO;
 import static java.util.Objects.isNull;
 
+@Service
 public class SpotBalanceReportGenerator extends AbstractBalanceReportGenerator<SpotBalanceState, BalanceVisualizerConfig> {
     private static EnumSet<TransactionType> tradeTransactionTypes = EnumSet.of(TransactionType.BUY, TransactionType.SELL, TransactionType.CONVERT);
 
@@ -28,7 +32,7 @@ public class SpotBalanceReportGenerator extends AbstractBalanceReportGenerator<S
     private static final String CHART_PREFIX = "Spot_";
     private final ChartBuilder<SpotBalanceState> chartBuilder;
 
-    public SpotBalanceReportGenerator(BalanceVisualizerConfig config, ChartBuilder<SpotBalanceState> chartBuilder) {
+    public SpotBalanceReportGenerator(@Qualifier(BeanNames.SPOT_CONFIG) BalanceVisualizerConfig config, @Qualifier(BeanNames.SPOT_CHART_BUILDER) ChartBuilder<SpotBalanceState> chartBuilder) {
         super(config);
         this.chartBuilder = chartBuilder;
     }

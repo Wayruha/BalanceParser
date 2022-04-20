@@ -6,6 +6,7 @@ import com.example.binanceparser.domain.ComplexEvent;
 import com.example.binanceparser.statistics.StatsDataHolder;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
+import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 import static com.example.binanceparser.Constants.CLONE_POSTFIX;
 
+@Service
 public class FuturesStatsGenerationAlgorithm implements StatsGenerationAlgorithm<StatsDataHolder> {
   private final StatsVisualizerConfig config;
 

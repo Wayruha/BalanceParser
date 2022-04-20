@@ -11,8 +11,8 @@ import com.example.binanceparser.domain.transaction.TransactionType;
 import com.example.binanceparser.plot.SpotAssetChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.generator.SpotBalanceReportGenerator;
+import org.springframework.stereotype.Service;
 
-import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -24,18 +24,20 @@ import java.util.stream.Collectors;
 import static com.example.binanceparser.Constants.VIRTUAL_USD;
 import static java.lang.String.format;
 
+@Service
 public class SpotBalanceProcessor extends Processor<AbstractEvent, BalanceReport> {
     private static final Logger log = Logger.getLogger(SpotBalanceProcessor.class.getName());
     private final SpotBalanceReportGenerator balanceReportGenerator;
     private final SpotBalanceCalcAlgorithm algorithm;
     private final BalanceVisualizerConfig config;
 
-    public SpotBalanceProcessor(DataSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
+    public SpotBalanceProcessor(DataSource<AbstractEvent> eventSource, SpotBalanceReportGenerator balanceReportGenerator,
+                                SpotBalanceCalcAlgorithm algorithm, BalanceVisualizerConfig config) {
         super(eventSource);
         this.config = config;
         final SpotAssetChartBuilder chartBuilder = new SpotAssetChartBuilder(config.getAssetsToTrack());
-        this.balanceReportGenerator = new SpotBalanceReportGenerator(config, chartBuilder);
-        this.algorithm = new SpotBalanceCalcAlgorithm();
+        this.balanceReportGenerator = balanceReportGenerator;//new SpotBalanceReportGenerator(config, chartBuilder);
+        this.algorithm = algorithm;//new SpotBalanceCalcAlgorithm();
     }
 
     @Override

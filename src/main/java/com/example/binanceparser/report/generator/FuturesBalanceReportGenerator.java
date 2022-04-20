@@ -1,6 +1,7 @@
 package com.example.binanceparser.report.generator;
 
 import com.example.binanceparser.config.BalanceVisualizerConfig;
+import com.example.binanceparser.config.spring.BeanNames;
 import com.example.binanceparser.domain.*;
 import com.example.binanceparser.domain.balance.EventBalanceState;
 import com.example.binanceparser.domain.transaction.Transaction;
@@ -9,6 +10,9 @@ import com.example.binanceparser.plot.ChartBuilder;
 import com.example.binanceparser.report.BalanceReport;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -17,6 +21,7 @@ import java.util.stream.Collectors;
 import static com.example.binanceparser.Constants.*;
 import static java.util.Objects.isNull;
 
+@Service
 public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerator<EventBalanceState, BalanceVisualizerConfig> {
 	private static EnumSet<TransactionType> tradeTransactionTypes = EnumSet.of(TransactionType.BUY, TransactionType.SELL, TransactionType.CONVERT);
 	private static EnumSet<TransactionType> transferTxTypes = EnumSet.of(TransactionType.DEPOSIT, TransactionType.WITHDRAW);
@@ -27,7 +32,7 @@ public class FuturesBalanceReportGenerator extends AbstractBalanceReportGenerato
 
 	private ChartBuilder<EventBalanceState> chartBuilder;
 
-	public FuturesBalanceReportGenerator(BalanceVisualizerConfig config, ChartBuilder<EventBalanceState> chartBuilder) {
+	public FuturesBalanceReportGenerator(@Qualifier(BeanNames.FUTURES_CONFIG) BalanceVisualizerConfig config, @Qualifier(BeanNames.FUTURES_CHART_BUILDER) ChartBuilder<EventBalanceState> chartBuilder) {
 		super(config);
 		this.chartBuilder = chartBuilder;
 	}
