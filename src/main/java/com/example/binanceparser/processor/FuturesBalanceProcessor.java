@@ -35,13 +35,12 @@ public class FuturesBalanceProcessor extends Processor<AbstractEvent, BalanceRep
     private final FuturesWalletBalanceCalcAlgorithm algorithm;
     private final BalanceVisualizerConfig config;
 
-    public FuturesBalanceProcessor(DataSource<AbstractEvent> dataSource, FuturesBalanceReportGenerator balanceReportGenerator,
-                                   FuturesWalletBalanceCalcAlgorithm algorithm, BalanceVisualizerConfig config) {
+    public FuturesBalanceProcessor(DataSource<AbstractEvent> dataSource, BalanceVisualizerConfig config) {
         super(dataSource);
         this.config = config;
         final ChartBuilder<EventBalanceState> chartBuilder = new FuturesBalanceChartBuilder(config.getAssetsToTrack());
-        this.balanceReportGenerator = balanceReportGenerator;//new FuturesBalanceReportGenerator(config, chartBuilder);
-        this.algorithm = algorithm;//new FuturesWalletBalanceCalcAlgorithm(config, STABLECOIN_RATE);
+        this.balanceReportGenerator = new FuturesBalanceReportGenerator(config, chartBuilder);
+        this.algorithm = new FuturesWalletBalanceCalcAlgorithm(config);
     }
 
     @Override

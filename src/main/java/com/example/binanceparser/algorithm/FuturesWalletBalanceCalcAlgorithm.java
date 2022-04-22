@@ -29,7 +29,7 @@ public class FuturesWalletBalanceCalcAlgorithm implements CalculationAlgorithm<E
     private final BalanceVisualizerConfig config;
 
     public FuturesWalletBalanceCalcAlgorithm(@Qualifier(BeanNames.FUTURES_CONFIG) BalanceVisualizerConfig config
-                                             //, Map<String, BigDecimal> currencyRate
+            //, Map<String, BigDecimal> currencyRate
     ) {
         this.config = config;
     }

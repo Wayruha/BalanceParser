@@ -18,6 +18,7 @@ public class Constants {
     public static final String FUTURES_PROPS_PATH = "src/main/resources/futures-balance.properties";
     public static final String SPOT_PROPS_PATH = "src/main/resources/spot-balance.properties";
     public static final String STATS_PROPS_PATH = "src/main/resources/stats-visualisation.properties";
+    public static final String FUTURES_INCOME_PROPS_PATH = "src/main/resources/futures-income.properties";
     //coins
     public static final String USD = "USD";
     public static final String USDT = "USDT";

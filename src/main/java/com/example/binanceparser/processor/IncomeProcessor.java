@@ -21,12 +21,11 @@ public class IncomeProcessor extends Processor<IncomeHistoryItem, BalanceReport>
     private final IncomeCalculationAlgorithm algorithm;
     private final IncomeConfig config;
 
-    public IncomeProcessor(DataSource<IncomeHistoryItem> eventSource, IncomeReportGenerator reportGenerator,
-                           IncomeCalculationAlgorithm algorithm, IncomeConfig config) {
+    public IncomeProcessor(DataSource<IncomeHistoryItem> eventSource, IncomeConfig config) {
         super(eventSource);
         this.config = config;
-        this.reportGenerator = reportGenerator;//new IncomeReportGenerator(config);
-        this.algorithm = algorithm;//new IncomeCalculationAlgorithm();
+        this.reportGenerator = new IncomeReportGenerator(config);
+        this.algorithm = new IncomeCalculationAlgorithm();
     }
 
     @Override

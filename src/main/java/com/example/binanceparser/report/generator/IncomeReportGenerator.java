@@ -24,9 +24,10 @@ public class IncomeReportGenerator extends AbstractBalanceReportGenerator<Income
 
 	private final FuturesIncomeChartBuilder futuresIncomeChartBuilder;
 
-	public IncomeReportGenerator(@Qualifier(BeanNames.INCOME_CONFIG) IncomeConfig config, @Qualifier(BeanNames.FUTURES_INCOME_CHART_BUILDER) FuturesIncomeChartBuilder futuresIncomeChartBuilder) {
+	public IncomeReportGenerator(@Qualifier(BeanNames.INCOME_CONFIG) IncomeConfig config//, @Qualifier(BeanNames.FUTURES_INCOME_CHART_BUILDER) FuturesIncomeChartBuilder futuresIncomeChartBuilder
+	) {
 		super(config);
-		this.futuresIncomeChartBuilder = futuresIncomeChartBuilder;
+		this.futuresIncomeChartBuilder = new FuturesIncomeChartBuilder();
 	}
 
 	public BalanceReport getBalanceReport(List<IncomeBalanceState> balanceStates) throws IOException {

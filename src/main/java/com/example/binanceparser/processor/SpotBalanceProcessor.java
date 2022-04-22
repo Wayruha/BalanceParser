@@ -31,13 +31,12 @@ public class SpotBalanceProcessor extends Processor<AbstractEvent, BalanceReport
     private final SpotBalanceCalcAlgorithm algorithm;
     private final BalanceVisualizerConfig config;
 
-    public SpotBalanceProcessor(DataSource<AbstractEvent> eventSource, SpotBalanceReportGenerator balanceReportGenerator,
-                                SpotBalanceCalcAlgorithm algorithm, BalanceVisualizerConfig config) {
+    public SpotBalanceProcessor(DataSource<AbstractEvent> eventSource, BalanceVisualizerConfig config) {
         super(eventSource);
         this.config = config;
         final SpotAssetChartBuilder chartBuilder = new SpotAssetChartBuilder(config.getAssetsToTrack());
-        this.balanceReportGenerator = balanceReportGenerator;//new SpotBalanceReportGenerator(config, chartBuilder);
-        this.algorithm = algorithm;//new SpotBalanceCalcAlgorithm();
+        this.balanceReportGenerator = new SpotBalanceReportGenerator(config, chartBuilder);
+        this.algorithm = new SpotBalanceCalcAlgorithm();
     }
 
     @Override

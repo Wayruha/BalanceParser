@@ -1,7 +1,6 @@
 package com.example.binanceparser.statistics;
 
 import com.example.binanceparser.algorithm.FuturesStatsGenerationAlgorithm;
-import com.example.binanceparser.config.StatsVisualizerConfig;
 import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,8 @@ class StatsProcessor {
     private FuturesStatsGenerationAlgorithm algorithm;
     private Set<StatisticType> statisticTypes = EnumSet.of(DELAY, ORDER_PRICE_DEVIATION, POSITION_PROFIT_DEVIATION);
 
-    public StatsProcessor(StatsVisualizerConfig config, DataSource<AbstractEvent> eventSource,
+    public StatsProcessor(//StatsVisualizerConfig config,
+                          DataSource<AbstractEvent> eventSource,
                           StatsReportGenerator reportGenerator, FuturesStatsGenerationAlgorithm algorithm) {
         this.eventSource = eventSource;
         this.reportGenerator = reportGenerator;//new StatsReportGenerator(config);

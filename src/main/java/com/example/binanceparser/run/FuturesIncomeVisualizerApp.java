@@ -12,6 +12,7 @@ import com.example.binanceparser.datasource.sources.JsonIncomeSource;
 import com.example.binanceparser.processor.IncomeProcessor;
 import com.example.binanceparser.report.BalanceReport;
 import lombok.Getter;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static java.util.List.of;
 
+@Service
 public class FuturesIncomeVisualizerApp {
     private static final Logger log = Logger.getLogger(FuturesIncomeVisualizerApp.class.getName());
     private AppProperties appProperties;
@@ -33,7 +35,7 @@ public class FuturesIncomeVisualizerApp {
         final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/futures-income.properties");
         FuturesIncomeVisualizerApp visualizer = new FuturesIncomeVisualizerApp(appProperties);
         final String trackedPerson = appProperties.getTrackedPersons().get(0);
-        final BalanceReport report = visualizer.futuresIncomeVisualisation(trackedPerson, null);
+        final BalanceReport report = visualizer.futuresIncomeVisualisation(trackedPerson);
         log.info("FuturesIncome report for " + trackedPerson + ":");
         log.info(report.toPrettyString());
     }
@@ -44,12 +46,15 @@ public class FuturesIncomeVisualizerApp {
         this.userApiKeys = userData.stream().collect(Collectors.toMap(UserApiData::getUserId, Function.identity()));
     }
 
-    public BalanceReport futuresIncomeVisualisation(String user, IncomeConfig _config) {
+    public BalanceReport futuresIncomeVisualisation(String user) {
         final IncomeConfig config = ConfigUtil.loadIncomeConfig(appProperties);
         final UserApiData userData = userApiKeys.get(user);
         DataSource<IncomeHistoryItem> apiClientSource = getEventSource(userData, config);
         IncomeProcessor processor = new IncomeProcessor(apiClientSource, config);
-        return processor.process();
+        BalanceReport report = processor.process();
+        log.info("FuturesIncome report for " + user + ":");
+        log.info(report.toPrettyString());
+        return report;
     }
 
     public DataSource<IncomeHistoryItem> getEventSource(UserApiData user, IncomeConfig config) {
