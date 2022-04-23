@@ -4,6 +4,7 @@ import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.config.IncomeConfig;
+import com.example.binanceparser.config.spring.BeanNames;
 import com.example.binanceparser.datasource.models.UserApiData;
 import com.example.binanceparser.datasource.sources.BinanceIncomeDataSource;
 import com.example.binanceparser.datasource.sources.CSVDataSource;
@@ -12,10 +13,10 @@ import com.example.binanceparser.datasource.sources.JsonIncomeSource;
 import com.example.binanceparser.processor.IncomeProcessor;
 import com.example.binanceparser.report.BalanceReport;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -31,16 +32,16 @@ public class FuturesIncomeVisualizerApp {
     @Getter
     private Map<String, UserApiData> userApiKeys;
 
-    public static void main(String[] args) throws IOException {
-        final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/futures-income.properties");
-        FuturesIncomeVisualizerApp visualizer = new FuturesIncomeVisualizerApp(appProperties);
-        final String trackedPerson = appProperties.getTrackedPersons().get(0);
-        final BalanceReport report = visualizer.futuresIncomeVisualisation(trackedPerson);
-        log.info("FuturesIncome report for " + trackedPerson + ":");
-        log.info(report.toPrettyString());
-    }
+//    public static void main(String[] args) throws IOException {
+//        final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/futures-income.properties");
+//        FuturesIncomeVisualizerApp visualizer = new FuturesIncomeVisualizerApp(appProperties);
+//        final String trackedPerson = appProperties.getTrackedPersons().get(0);
+//        final BalanceReport report = visualizer.futuresIncomeVisualisation(trackedPerson);
+//        log.info("FuturesIncome report for " + trackedPerson + ":");
+//        log.info(report.toPrettyString());
+//    }
 
-    public FuturesIncomeVisualizerApp(AppProperties appProperties) {
+    public FuturesIncomeVisualizerApp(@Qualifier(BeanNames.INCOME_PROPS) AppProperties appProperties) {
         this.appProperties = appProperties;
         final List<UserApiData> userData = getUserData(appProperties);
         this.userApiKeys = userData.stream().collect(Collectors.toMap(UserApiData::getUserId, Function.identity()));

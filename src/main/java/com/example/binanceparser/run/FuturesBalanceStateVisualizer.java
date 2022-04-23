@@ -1,7 +1,9 @@
 package com.example.binanceparser.run;
 
+import com.example.binanceparser.config.spring.BeanNames;
 import com.example.binanceparser.processor.MultiUserGenericProcessor;
 import com.example.binanceparser.report.AggregatedBalanceReport;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,7 +22,7 @@ public class FuturesBalanceStateVisualizer {
 
     public FuturesBalanceStateVisualizer(//AppProperties appProperties, BalanceVisualizerConfig config,
                                          //DataSource<AbstractEvent> eventSource, DataSource<UserNameRel> nameSource,
-                                         MultiUserGenericProcessor processor) {
+                                         @Qualifier(BeanNames.FUTURES_BALANCE_MULTIUSER_PROCESSOR) MultiUserGenericProcessor processor) {
 //        this.appProperties = appProperties;
 //        this.config = config;
 //        this.eventSource = eventSource;

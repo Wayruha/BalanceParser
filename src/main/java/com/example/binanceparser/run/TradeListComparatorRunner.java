@@ -4,20 +4,21 @@ import com.binance.api.client.domain.ExecutionType;
 import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.Utils;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
-import com.example.binanceparser.config.ConfigUtil;
-import com.example.binanceparser.datasource.sources.DataSource;
+import com.example.binanceparser.config.spring.BeanNames;
 import com.example.binanceparser.datasource.filters.DateEventFilter;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.datasource.filters.SourceFilter;
+import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.domain.events.FuturesOrderTradeUpdateEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.SetUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@Service
 public class TradeListComparatorRunner {
     private static final Logger log = Logger.getLogger(TradeListComparatorRunner.class.getName());
 
@@ -36,18 +38,18 @@ public class TradeListComparatorRunner {
     private List<String> followers;
 
 
-    public static void main(String[] args) throws IOException {
-        final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/trades-comparator.properties");
-        final TradeListComparatorRunner inst = new TradeListComparatorRunner(appProperties);
-        inst.compareTradeLists();
-    }
+//    public static void main(String[] args) throws IOException {
+//        final AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/trades-comparator.properties");
+//        final TradeListComparatorRunner inst = new TradeListComparatorRunner(appProperties);
+//        inst.compareTradeLists();
+//    }
 
-    public TradeListComparatorRunner(AppProperties appProperties) {
+    public TradeListComparatorRunner(@Qualifier(BeanNames.TRADES_COMPARATOR_PROPS) AppProperties appProperties, @Qualifier(BeanNames.TRADES_COMPARATOR_CONFIG) BalanceVisualizerConfig config, @Qualifier(BeanNames.TRADES_COMPARATOR_EVENT_SOURCE) DataSource<AbstractEvent> eventSource) {
         final List<String> users = appProperties.getTrackedPersons();
         this.appProperties = appProperties;
-        this.config = ConfigUtil.loadVisualizerConfig(appProperties);
+        this.config = config;//ConfigUtil.loadVisualizerConfig(appProperties);
         config.setSubjects(users);
-        this.eventSource = Helper.getEventSource(appProperties.getDataSourceType(), config);
+        this.eventSource = eventSource;//Helper.getEventSource(appProperties.getDataSourceType(), config);
         this.trader = users.get(0);
         this.followers = users.subList(1, users.size());
     }

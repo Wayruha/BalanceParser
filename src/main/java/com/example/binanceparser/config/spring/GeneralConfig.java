@@ -43,7 +43,7 @@ public class GeneralConfig {
         return ConfigUtil.loadAppProperties(Constants.FUTURES_PROPS_PATH);
     }
 
-    @Bean(BeanNames.INCOME_CONFIG)
+    @Bean(BeanNames.INCOME_PROPS)
     public AppProperties incomeProps() throws IOException {
         return ConfigUtil.loadAppProperties(Constants.FUTURES_INCOME_PROPS_PATH);
     }
@@ -56,6 +56,11 @@ public class GeneralConfig {
     @Bean(BeanNames.STATS_PROPS)
     public AppProperties statsProps() throws IOException {
         return ConfigUtil.loadAppProperties(Constants.STATS_PROPS_PATH);
+    }
+
+    @Bean(BeanNames.TRADES_COMPARATOR_PROPS)
+    public AppProperties comparatorProps() throws IOException {
+        return ConfigUtil.loadAppProperties(Constants.TRADES_COMPARATOR_PROPS_PATH);
     }
 
     @Bean(name = BeanNames.FUTURES_CONFIG)
@@ -74,6 +79,12 @@ public class GeneralConfig {
     @DependsOn({"spotProps"})
     public BalanceVisualizerConfig spotConfig(@Autowired AppProperties spotBalanceProperties) {
         return ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
+    }
+
+    @Bean(name = BeanNames.TRADES_COMPARATOR_CONFIG)
+    @DependsOn({"comparatorProps"})
+    public BalanceVisualizerConfig comparatorConfig(@Autowired AppProperties comparatorConfig) {
+        return ConfigUtil.loadVisualizerConfig(comparatorConfig);
     }
 
     @Bean(name = BeanNames.STATS_CONFIG)
@@ -133,16 +144,16 @@ public class GeneralConfig {
 
     @Bean(name = BeanNames.SPOT_BALANCE_MULTIUSER_PROCESSOR)
     @DependsOn({"spotReportSerializer", "spotConfig", "spotEventSource", "spotNameSource"})
-    public MultiUserGenericProcessor spotGenericProcessor(@Autowired AggregatedBalReportSerializer reportSerializer, @Autowired BalanceVisualizerConfig config, @Autowired DataSource<AbstractEvent> spotEventSource, @Autowired DataSource<UserNameRel> spotNameSource) {
-        MultiUserGenericProcessor processor = new MultipleUsersSpotBalProcessor(spotEventSource, config, spotNameSource);
+    public MultiUserGenericProcessor spotGenericProcessor(@Autowired AggregatedBalReportSerializer reportSerializer, @Autowired BalanceVisualizerConfig config, @Autowired DataSource<AbstractEvent> eventSource, @Autowired DataSource<UserNameRel> spotNameSource) {
+        MultiUserGenericProcessor processor = new MultipleUsersSpotBalProcessor(eventSource, config, spotNameSource);
         processor.registerPostProcessor(reportSerializer);
         return processor;
     }
 
     @Bean(name = BeanNames.FUTURES_BALANCE_MULTIUSER_PROCESSOR)
     @DependsOn({"futuresReportSerializer", "futuresConfig", "futuresEventSource", "futuresNameSource"})
-    public MultiUserGenericProcessor futuresGenericProcessor(@Autowired AggregatedBalReportSerializer reportSerializer, @Autowired BalanceVisualizerConfig config, @Autowired DataSource<AbstractEvent> spotEventSource, @Autowired DataSource<UserNameRel> spotNameSource) {
-        MultiUserGenericProcessor processor = new MultipleUsersFuturesBalProcessor(spotEventSource, config, spotNameSource);
+    public MultiUserGenericProcessor futuresGenericProcessor(@Autowired AggregatedBalReportSerializer reportSerializer, @Autowired BalanceVisualizerConfig config, @Autowired DataSource<AbstractEvent> eventSource, @Autowired DataSource<UserNameRel> futuresNameSource) {
+        MultiUserGenericProcessor processor = new MultipleUsersFuturesBalProcessor(eventSource, config, futuresNameSource);
         processor.registerPostProcessor(reportSerializer);
         return processor;
     }
@@ -153,9 +164,27 @@ public class GeneralConfig {
         return Helper.getEventSource(appProperties.getDataSourceType(), config);
     }
 
+    @Bean(BeanNames.FUTURES_EVENT_SOURCE)
+    @DependsOn({"futuresProps", "futuresConfig"})
+    public DataSource<AbstractEvent> futuresEventSource(@Autowired AppProperties appProperties, @Autowired BalanceVisualizerConfig config) {
+        return Helper.getEventSource(appProperties.getDataSourceType(), config);
+    }
+
+    @Bean(BeanNames.TRADES_COMPARATOR_EVENT_SOURCE)
+    @DependsOn({"comparatorProps", "comparatorConfig"})
+    public DataSource<AbstractEvent> comparatorEventSource(@Autowired AppProperties appProperties, @Autowired BalanceVisualizerConfig config) {
+        return Helper.getEventSource(appProperties.getDataSourceType(), config);
+    }
+
     @Bean(BeanNames.SPOT_NAME_SOURCE)
     @DependsOn({"spotProps", "spotConfig"})
     public DataSource<UserNameRel> spotNameSource(@Autowired AppProperties appProperties, @Autowired BalanceVisualizerConfig config) {
+        return Helper.getNameSource(appProperties.getDataSourceType(), config);
+    }
+
+    @Bean(BeanNames.FUTURES_NAMES_SOURCE)
+    @DependsOn({"futuresProps", "futuresConfig"})
+    public DataSource<UserNameRel> futuresNameSource(@Autowired AppProperties appProperties, @Autowired BalanceVisualizerConfig config) {
         return Helper.getNameSource(appProperties.getDataSourceType(), config);
     }
 
