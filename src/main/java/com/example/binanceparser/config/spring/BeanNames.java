@@ -20,6 +20,11 @@ public class BeanNames {
     public static final String FUTURES_INCOME_CHART_BUILDER = "FUTURES_INCOME_CHART_BUILDER";
     public static final String SPOT_CHART_BUILDER = "SPOT_CHART_BUILDER";
 
+    //runners
+    public static final String FUTURES_RUNNER = "FUTURES_RUNNER";
+    public static final String SPOT_RUNNER = "SPOT_RUNNER";
+    public static final String INCOME_RUNNER = "INCOME_RUNNER";
+
     //data
     public static final String SPOT_REPORT_WRITER = "SPOT_REPORT_WRITER";
     public static final String FUTURES_REPORT_WRITER = "FUTURES_REPORT_WRITER";
@@ -27,6 +32,7 @@ public class BeanNames {
     public static final String FUTURES_REPORT_SERIALIZER = "FUTURES_REPORT_SERIALIZER";
     public static final String SPOT_EVENT_SOURCE = "SPOT_EVENT_SOURCE";
     public static final String FUTURES_EVENT_SOURCE = "FUTURES_EVENT_SOURCE";
+    public static final String INCOME_EVENT_SOURCE = "INCOME_EVENT_SOURCE";
     public static final String TRADES_COMPARATOR_EVENT_SOURCE = "TRADES_COMPARATOR_EVENT_SOURCE";
     public static final String SPOT_NAME_SOURCE = "SPOT_NAME_SOURCE";
     public static final String FUTURES_NAMES_SOURCE = "FUTURES_NAMES_SOURCE";

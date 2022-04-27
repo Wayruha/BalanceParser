@@ -9,12 +9,10 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Service
 public class FuturesIncomeChartBuilder extends ChartBuilder<IncomeBalanceState> {
     @Override
     public JFreeChart buildLineChart(List<IncomeBalanceState> incomeBalanceStates) {

@@ -3,6 +3,7 @@ package com.example.binanceparser.processor;
 import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.filters.SourceFilter;
 import com.example.binanceparser.datasource.models.UserNameRel;
+import com.example.binanceparser.datasource.sources.CSVEventSource;
 import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.datasource.sources.InMemorySource;
 import com.example.binanceparser.domain.events.AbstractEvent;
@@ -11,10 +12,13 @@ import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.postprocessor.NamePostProcessor;
 import com.example.binanceparser.report.postprocessor.TradeCountPostProcessor;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public abstract class MultiUserGenericProcessor extends Processor<AbstractEvent, AggregatedBalanceReport> {
     private static final Logger log = Logger.getLogger(MultipleUsersFuturesBalProcessor.class.getName());
@@ -34,8 +38,13 @@ public abstract class MultiUserGenericProcessor extends Processor<AbstractEvent,
     @Override
     protected AggregatedBalanceReport process(List<AbstractEvent> events) {
         final List<BalanceReport> reports = new ArrayList<>();
-        final List<String> users = config.getSubjects();
+        List<String> users = config.getSubjects();
         final List<UserNameRel> nameRelations = nameSource != null ? nameSource.getData() : List.of();
+
+        if (users.isEmpty()) {
+            final DataSource<AbstractEvent> redundantEventSource = new CSVEventSource(new File(config.getInputFilepath()), Collections.emptyList());
+            users = extractAllUsersIds(redundantEventSource);
+        }
 
         users.forEach(user -> {
             final SourceFilter nameFilter = new SourceFilter(user);
@@ -62,10 +71,15 @@ public abstract class MultiUserGenericProcessor extends Processor<AbstractEvent,
 
     private Processor<AbstractEvent, BalanceReport> buildProcessorByType(ProcessorType type, DataSource<AbstractEvent> dataSource, BalanceVisualizerConfig config) {
         if (type == ProcessorType.FUTURES) return new FuturesBalanceProcessor(dataSource, config);
+        else if (type != ProcessorType.SPOT)
+            throw new UnsupportedOperationException("type:" + type + " is not allowed here");
         return new SpotBalanceProcessor(dataSource, config);
     }
 
-    protected enum ProcessorType {
-        SPOT, FUTURES;
+    private List<String> extractAllUsersIds(DataSource<AbstractEvent> redundantEventSource) {
+        return redundantEventSource.getData().stream()
+                .map(AbstractEvent::getSource)
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

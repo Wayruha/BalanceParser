@@ -1,25 +1,26 @@
 package com.example.binanceparser.plot;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.LegendItemSource;
-import org.jfree.chart.title.LegendTitle;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimeSeries;
 import com.example.binanceparser.config.ChartBuilderConfig;
 import com.example.binanceparser.domain.Asset;
 import com.example.binanceparser.domain.balance.SpotBalanceState;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.LegendItemSource;
+import org.jfree.chart.title.LegendTitle;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.TimeSeries;
 
-import static com.example.binanceparser.Constants.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.example.binanceparser.Constants.VIRTUAL_USD;
 
 public class SpotAssetChartBuilder extends ChartBuilder<SpotBalanceState> {
 	protected List<PointTime> specialPointTimes;

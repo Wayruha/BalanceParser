@@ -40,4 +40,8 @@ public abstract class Processor<Input, Output> {
     public void removePostProcessors() {
         postProcessors.clear();
     }
+
+    protected enum ProcessorType {
+        SPOT, FUTURES, INCOME;
+    }
 }
