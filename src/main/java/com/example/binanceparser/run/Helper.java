@@ -42,6 +42,15 @@ public class Helper {
         return filters;
     }
 
+    private static Set<Filter> filters(AppProperties properties) {
+        final Set<Filter> filters = new HashSet<>();
+        if (properties.getTrackedPersons() != null || !properties.getTrackedPersons().isEmpty()) {
+            filters.add(new SourceFilter(properties.getTrackedPersons()));
+        }
+
+        return filters;
+    }
+
     public static DataSource<AbstractEvent> getEventSource(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) {
         final File logsDir = new File(config.getInputFilepath());
         DataSource<AbstractEvent> eventSource;
@@ -51,6 +60,22 @@ public class Helper {
                 break;
             case LOGS:
                 eventSource = new LogsEventSource(logsDir, filters(config));
+                break;
+            default:
+                throw new RuntimeException("unknown event source type specified");
+        }
+        return eventSource;
+    }
+
+    public static DataSource<AbstractEvent> getEventSource(AppProperties properties) {
+        final File logsDir = new File(properties.getInputFilePath());
+        DataSource<AbstractEvent> eventSource;
+        switch (properties.getDataSourceType()) {
+            case CSV:
+                eventSource = new CSVEventSource(logsDir, properties.getTrackedPersons());
+                break;
+            case LOGS:
+                eventSource = new LogsEventSource(logsDir, filters(properties));
                 break;
             default:
                 throw new RuntimeException("unknown event source type specified");
@@ -76,10 +101,46 @@ public class Helper {
         return nameSource;
     }
 
+    public static DataSource<UserNameRel> getNameSource(AppProperties props) {
+        final File file = new File(props.getNamesFilePath());
+        if(!file.exists()) return null;
+        DataSource<UserNameRel> nameSource;
+        switch (props.getDataSourceType()) {
+            case CSV:
+                nameSource = new CSVDataSource<>(file, 1, UserNameRel.class);
+                break;
+            case LOGS:
+                throw new NotImplementedException("nameSource is not yet implemented for logs");
+            case JSON:
+                throw new NotImplementedException("nameSource is not yet implemented for json");
+            default:
+                throw new RuntimeException("unknown event source type specified");
+        }
+        return nameSource;
+    }
+
     public static DataWriter<BalanceReport> getReportWriter(AppProperties.DatasourceType datasourceType, BalanceVisualizerConfig config) throws FileNotFoundException {
         DataWriter<BalanceReport> reportWriter;
         OutputStream out = new FileOutputStream(config.getReportOutputLocation());
         switch (datasourceType) {
+            case CSV:
+                reportWriter = new CSVDataWriter<>(out, BalanceReport.class);
+                break;
+            case JSON:
+                reportWriter = new JsonDataWriter<>(out, BalanceReport.class);
+                break;
+            case LOGS:
+                throw new NotImplementedException("nameSource is not yet implemented for logs");
+            default:
+                throw new RuntimeException("unknown event source type specified");
+        }
+        return reportWriter;
+    }
+
+    public static DataWriter<BalanceReport> getReportWriter(AppProperties props) throws FileNotFoundException {
+        DataWriter<BalanceReport> reportWriter;
+        OutputStream out = new FileOutputStream(props.getReportOutputLocation());
+        switch (props.getDataSourceType()) {
             case CSV:
                 reportWriter = new CSVDataWriter<>(out, BalanceReport.class);
                 break;

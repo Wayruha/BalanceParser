@@ -10,6 +10,7 @@ import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.processor.MultiUserGenericProcessor;
 import com.example.binanceparser.processor.MultipleUsersFuturesBalProcessor;
 import com.example.binanceparser.report.AggregatedBalanceReport;
+import com.example.binanceparser.report.postprocessor.AggregatedBalReportSerializer;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -25,11 +26,14 @@ public class SpotRunner implements RunnerService {
     private final DataSource<AbstractEvent> eventSource;
     @Qualifier(BeanNames.SPOT_NAME_SOURCE)
     private final DataSource<UserNameRel> userSource;
+    @Qualifier(BeanNames.SPOT_REPORT_SERIALIZER)
+    private final AggregatedBalReportSerializer reportSerializer;
     @Override
     public AggregatedBalanceReport getReport(List<String> trackedPersons) {
         BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(props);
         config.setSubjects(trackedPersons);
         MultiUserGenericProcessor processor = new MultipleUsersFuturesBalProcessor(eventSource, config, userSource);
+        processor.registerPostProcessor(reportSerializer);
         return processor.process();
     }
 }

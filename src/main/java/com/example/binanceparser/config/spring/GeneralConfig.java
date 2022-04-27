@@ -2,12 +2,13 @@ package com.example.binanceparser.config.spring;
 
 import com.example.binanceparser.AppProperties;
 import com.example.binanceparser.Constants;
-import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.config.ConfigUtil;
-import com.example.binanceparser.config.IncomeConfig;
 import com.example.binanceparser.datasource.models.UserNameRel;
 import com.example.binanceparser.datasource.sources.DataSource;
+import com.example.binanceparser.datasource.writers.DataWriter;
 import com.example.binanceparser.domain.events.AbstractEvent;
+import com.example.binanceparser.report.BalanceReport;
+import com.example.binanceparser.report.postprocessor.AggregatedBalReportSerializer;
 import com.example.binanceparser.run.Helper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -45,23 +46,23 @@ public class GeneralConfig {
 //        return ConfigUtil.loadAppProperties(Constants.TRADES_COMPARATOR_PROPS_PATH);
 //    }
 //
-    @Bean(name = FUTURES_CONFIG)
-    @DependsOn({FUTURES_PROPS})
-    public BalanceVisualizerConfig futuresConfig(@Qualifier(FUTURES_PROPS) AppProperties futuresBalanceProperties) {
-        return ConfigUtil.loadVisualizerConfig(futuresBalanceProperties);
-    }
-
-    @Bean(name = INCOME_CONFIG)
-    @DependsOn({INCOME_PROPS})
-    public IncomeConfig futuresIncomeConfig(@Qualifier(INCOME_PROPS) AppProperties futuresIncomeProperties) {
-        return ConfigUtil.loadIncomeConfig(futuresIncomeProperties);
-    }
-
-    @Bean(name = SPOT_CONFIG)
-    @DependsOn({SPOT_PROPS})
-    public BalanceVisualizerConfig spotConfig(@Qualifier(SPOT_PROPS) AppProperties spotBalanceProperties) {
-        return ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
-    }
+//    @Bean(name = FUTURES_CONFIG)
+//    @DependsOn({FUTURES_PROPS})
+//    public BalanceVisualizerConfig futuresConfig(@Qualifier(FUTURES_PROPS) AppProperties futuresBalanceProperties) {
+//        return ConfigUtil.loadVisualizerConfig(futuresBalanceProperties);
+//    }
+//
+//    @Bean(name = INCOME_CONFIG)
+//    @DependsOn({INCOME_PROPS})
+//    public IncomeConfig futuresIncomeConfig(@Qualifier(INCOME_PROPS) AppProperties futuresIncomeProperties) {
+//        return ConfigUtil.loadIncomeConfig(futuresIncomeProperties);
+//    }
+//
+//    @Bean(name = SPOT_CONFIG)
+//    @DependsOn({SPOT_PROPS})
+//    public BalanceVisualizerConfig spotConfig(@Qualifier(SPOT_PROPS) AppProperties spotBalanceProperties) {
+//        return ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
+//    }
 //
 //    @Bean(name = BeanNames.TRADES_COMPARATOR_CONFIG)
 //    @DependsOn({"comparatorProps"})
@@ -100,29 +101,29 @@ public class GeneralConfig {
 //        return eventSource;
 //    }
 
-//    @Bean(name = BeanNames.SPOT_REPORT_WRITER)
-//    @DependsOn({"spotProps", "spotConfig"})
-//    public DataWriter<BalanceReport> spotReportWriter(@Autowired AppProperties appProperties, @Autowired BalanceVisualizerConfig config) throws IOException {
-//        return Helper.getReportWriter(appProperties.getReportOutputType(), config);
-//    }
-//
-//    @Bean(name = BeanNames.FUTURES_REPORT_WRITER)
-//    @DependsOn({"futuresProps", "futuresConfig"})
-//    public DataWriter<BalanceReport> futuresReportWriter(@Autowired AppProperties appProperties, @Autowired BalanceVisualizerConfig config) throws IOException {
-//        return Helper.getReportWriter(appProperties.getReportOutputType(), config);
-//    }
+    @Bean(name = BeanNames.SPOT_REPORT_WRITER)
+    @DependsOn({SPOT_PROPS})
+    public DataWriter<BalanceReport> spotReportWriter(@Qualifier(SPOT_PROPS) AppProperties appProperties) throws IOException {
+        return Helper.getReportWriter(appProperties);
+    }
 
-//    @Bean(name = BeanNames.SPOT_REPORT_SERIALIZER)
-//    @DependsOn({"spotReportWriter"})
-//    public AggregatedBalReportSerializer spotReportSerializer(@Autowired DataWriter<BalanceReport> reportWriter) {
-//        return new AggregatedBalReportSerializer(reportWriter);
-//    }
-//
-//    @Bean(name = BeanNames.FUTURES_REPORT_SERIALIZER)
-//    @DependsOn({"futuresReportWriter"})
-//    public AggregatedBalReportSerializer futuresReportSerializer(@Autowired DataWriter<BalanceReport> reportWriter) {
-//        return new AggregatedBalReportSerializer(reportWriter);
-//    }
+    @Bean(name = BeanNames.FUTURES_REPORT_WRITER)
+    @DependsOn({FUTURES_PROPS})
+    public DataWriter<BalanceReport> futuresReportWriter(@Qualifier(FUTURES_PROPS) AppProperties appProperties) throws IOException {
+        return Helper.getReportWriter(appProperties);
+    }
+
+    @Bean(name = BeanNames.SPOT_REPORT_SERIALIZER)
+    @DependsOn({SPOT_REPORT_WRITER})
+    public AggregatedBalReportSerializer spotReportSerializer(@Qualifier(SPOT_REPORT_WRITER) DataWriter<BalanceReport> reportWriter) {
+        return new AggregatedBalReportSerializer(reportWriter);
+    }
+
+    @Bean(name = BeanNames.FUTURES_REPORT_SERIALIZER)
+    @DependsOn({FUTURES_REPORT_WRITER})
+    public AggregatedBalReportSerializer futuresReportSerializer(@Qualifier(FUTURES_REPORT_WRITER) DataWriter<BalanceReport> reportWriter) {
+        return new AggregatedBalReportSerializer(reportWriter);
+    }
 
 //    @Bean(name = BeanNames.SPOT_BALANCE_MULTIUSER_PROCESSOR)
 //    @DependsOn({"spotReportSerializer", "spotConfig", "spotEventSource", "spotNameSource"})
@@ -141,15 +142,15 @@ public class GeneralConfig {
 //    }
 
     @Bean(SPOT_EVENT_SOURCE)
-    @DependsOn({SPOT_PROPS, SPOT_CONFIG})
-    public DataSource<AbstractEvent> spotEventSource(@Qualifier(SPOT_PROPS) AppProperties appProperties, @Qualifier(SPOT_CONFIG) BalanceVisualizerConfig config) {
-        return Helper.getEventSource(appProperties.getDataSourceType(), config);
+    @DependsOn({SPOT_PROPS})
+    public DataSource<AbstractEvent> spotEventSource(@Qualifier(SPOT_PROPS) AppProperties appProperties) {
+        return Helper.getEventSource(appProperties);
     }
 
     @Bean(FUTURES_EVENT_SOURCE)
-    @DependsOn({FUTURES_PROPS, FUTURES_CONFIG})
-    public DataSource<AbstractEvent> futuresEventSource(@Qualifier(FUTURES_PROPS) AppProperties appProperties, @Qualifier(FUTURES_CONFIG) BalanceVisualizerConfig config) {
-        return Helper.getEventSource(appProperties.getDataSourceType(), config);
+    @DependsOn({FUTURES_PROPS})
+    public DataSource<AbstractEvent> futuresEventSource(@Qualifier(FUTURES_PROPS) AppProperties appProperties) {
+        return Helper.getEventSource(appProperties);
     }
 
 //    @Bean(TRADES_COMPARATOR_EVENT_SOURCE)
@@ -159,15 +160,15 @@ public class GeneralConfig {
 //    }
 
     @Bean(SPOT_NAME_SOURCE)
-    @DependsOn({SPOT_PROPS, SPOT_CONFIG})
-    public DataSource<UserNameRel> spotNameSource(@Qualifier(SPOT_PROPS) AppProperties appProperties, @Qualifier(SPOT_CONFIG) BalanceVisualizerConfig config) {
-        return Helper.getNameSource(appProperties.getDataSourceType(), config);
+    @DependsOn({SPOT_PROPS})
+    public DataSource<UserNameRel> spotNameSource(@Qualifier(SPOT_PROPS) AppProperties appProperties) {
+        return Helper.getNameSource(appProperties);
     }
 
     @Bean(FUTURES_NAMES_SOURCE)
-    @DependsOn({FUTURES_PROPS, FUTURES_CONFIG})
-    public DataSource<UserNameRel> futuresNameSource(@Qualifier(FUTURES_PROPS) AppProperties appProperties, @Qualifier(FUTURES_CONFIG) BalanceVisualizerConfig config) {
-        return Helper.getNameSource(appProperties.getDataSourceType(), config);
+    @DependsOn({FUTURES_PROPS})
+    public DataSource<UserNameRel> futuresNameSource(@Qualifier(FUTURES_PROPS) AppProperties appProperties) {
+        return Helper.getNameSource(appProperties);
     }
 
 //    @Bean(BeanNames.API_CLIENT_SOURCE)

@@ -60,7 +60,7 @@ public class VisualisationRunner {
     private List<BalanceReport> runFuturesVisualization(List<String> users) throws IOException {
         final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(futuresBalanceProperties);
         final DataSource<AbstractEvent> eventSource = Helper.getEventSource(futuresBalanceProperties.getDataSourceType(), config);
-        final DataSource<UserNameRel> nameSource = Helper.getNameSource(futuresBalanceProperties.getDataSourceType(), config);
+        final DataSource<UserNameRel> nameSource = Helper.getNameSource(futuresBalanceProperties);
         FuturesBalanceStateVisualizer futuresVisualiser = new FuturesBalanceStateVisualizer(futuresBalanceProperties, config, eventSource, nameSource);
         List<BalanceReport> reports = new ArrayList<>();
         for (String user : users) {

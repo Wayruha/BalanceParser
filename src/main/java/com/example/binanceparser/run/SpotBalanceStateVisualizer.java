@@ -33,7 +33,7 @@ public class SpotBalanceStateVisualizer {
 
         final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(appProperties);
         final DataSource<AbstractEvent> eventSource = Helper.getEventSource(appProperties.getDataSourceType(), config);
-        final DataSource<UserNameRel> nameSource = Helper.getNameSource(appProperties.getDataSourceType(), config);
+        final DataSource<UserNameRel> nameSource = Helper.getNameSource(appProperties);
         final SpotBalanceStateVisualizer visualizer = new SpotBalanceStateVisualizer(appProperties, config, eventSource, nameSource);
 
         final AggregatedBalanceReport report = visualizer.spotBalanceVisualisation();
@@ -42,7 +42,7 @@ public class SpotBalanceStateVisualizer {
     }
 
     public AggregatedBalanceReport spotBalanceVisualisation() throws IOException {
-        final DataWriter<BalanceReport> reportWriter = Helper.getReportWriter(appProperties.getReportOutputType(), config);
+        final DataWriter<BalanceReport> reportWriter = Helper.getReportWriter(appProperties);
         final var processor = new MultipleUsersSpotBalProcessor(eventSource, config, nameSource);
         final var reportSerializer = new AggregatedBalReportSerializer(reportWriter);
         processor.registerPostProcessor(reportSerializer);

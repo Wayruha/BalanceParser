@@ -43,7 +43,8 @@ public abstract class MultiUserGenericProcessor extends Processor<AbstractEvent,
 
         if (users.isEmpty()) {
             final DataSource<AbstractEvent> redundantEventSource = new CSVEventSource(new File(config.getInputFilepath()), Collections.emptyList());
-            users = extractAllUsersIds(redundantEventSource);
+            config.setSubjects(extractAllUsersIds(redundantEventSource));
+            users = config.getSubjects();
         }
 
         users.forEach(user -> {

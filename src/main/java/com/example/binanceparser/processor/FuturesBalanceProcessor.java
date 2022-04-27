@@ -92,7 +92,7 @@ public class FuturesBalanceProcessor extends Processor<AbstractEvent, BalanceRep
         if (config.getStartTrackDate() != null || config.getFinishTrackDate() != null)
             filters.add(new DateEventFilter(config.getStartTrackDate(), config.getFinishTrackDate()));
 
-        if (config.getSubjects() != null) filters.add(new SourceFilter(config.getSubjects()));
+        if (config.getSubjects() != null && !config.getSubjects().isEmpty()) filters.add(new SourceFilter(config.getSubjects()));
 
         if (config.getEventType() != null) filters.add(new EventTypeFilter(config.getEventType()));
         return filters;

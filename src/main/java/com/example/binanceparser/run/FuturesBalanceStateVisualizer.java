@@ -38,7 +38,7 @@ public class FuturesBalanceStateVisualizer {
 
         final BalanceVisualizerConfig config = ConfigUtil.loadVisualizerConfig(appProperties);
         final DataSource<AbstractEvent> eventSource = Helper.getEventSource(appProperties.getDataSourceType(), config);
-        final DataSource<UserNameRel> nameSource = Helper.getNameSource(appProperties.getDataSourceType(), config);
+        final DataSource<UserNameRel> nameSource = Helper.getNameSource(appProperties);
         final FuturesBalanceStateVisualizer visualizer = new FuturesBalanceStateVisualizer(appProperties, config, eventSource, nameSource);
 
         final AggregatedBalanceReport reports = visualizer.futuresBalanceVisualisation();
@@ -46,7 +46,7 @@ public class FuturesBalanceStateVisualizer {
     }
 
     public AggregatedBalanceReport futuresBalanceVisualisation() throws IOException {
-        final DataWriter<BalanceReport> reportWriter = Helper.getReportWriter(appProperties.getReportOutputType(), config);
+        final DataWriter<BalanceReport> reportWriter = Helper.getReportWriter(appProperties);
         final var reportSerializer = new AggregatedBalReportSerializer(reportWriter);
 
         final var processor = new MultipleUsersFuturesBalProcessor(eventSource, config, nameSource);
@@ -58,7 +58,7 @@ public class FuturesBalanceStateVisualizer {
     // it's not needed as we can easily use MultiUser* wrapper
     public BalanceReport singleUserVisualization(String user) throws IOException {
         config.setSubjects(List.of(user));
-        final DataWriter<BalanceReport> reportWriter = Helper.getReportWriter(appProperties.getReportOutputType(), config);
+        final DataWriter<BalanceReport> reportWriter = Helper.getReportWriter(appProperties);
         final List<PostProcessor<AbstractEvent, BalanceReport>> postProcessors = List.of(
                 new TradeCountPostProcessor(),
                 new NamePostProcessor(nameSource, config),
