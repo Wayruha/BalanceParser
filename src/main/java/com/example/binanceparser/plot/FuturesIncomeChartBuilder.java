@@ -31,7 +31,7 @@ public class FuturesIncomeChartBuilder extends ChartBuilder<IncomeBalanceState> 
         return chart;
     }
 
-    private TimeSeriesCollection createTimeSeries(List<IncomeBalanceState> incomeBalanceStates, XYPlot plot) {
+    protected TimeSeriesCollection createTimeSeries(List<IncomeBalanceState> incomeBalanceStates, XYPlot plot) {
         TimeSeriesCollection dataset = new TimeSeriesCollection();
         final TimeSeries series = new TimeSeries("USD");
         XYLineAndShapeRenderer renderer;
@@ -44,7 +44,7 @@ public class FuturesIncomeChartBuilder extends ChartBuilder<IncomeBalanceState> 
         return dataset;
     }
 
-    private Day dateTimeToDay(LocalDate dateTime) {
+    protected Day dateTimeToDay(LocalDate dateTime) {
         return new Day(dateTime.getDayOfMonth(), dateTime.getMonthValue(),
                 dateTime.getYear());
     }

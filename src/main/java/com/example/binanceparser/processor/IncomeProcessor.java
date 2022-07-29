@@ -32,7 +32,7 @@ public class IncomeProcessor extends Processor<IncomeHistoryItem, BalanceReport>
     protected BalanceReport process(List<IncomeHistoryItem> incomes) {
         try {
             incomes = incomes.stream()
-                    .filter(item -> config.getAssetsToTrack().contains(item.getAsset()))
+                    .filter(item -> config.getAssetsToTrack().isEmpty() || config.getAssetsToTrack().contains(item.getAsset()))
                     .collect(Collectors.toList());
             if (incomes.size() == 0) throw new RuntimeException("No data!");
             Collections.sort(incomes, Comparator.comparing(IncomeHistoryItem::getTime));

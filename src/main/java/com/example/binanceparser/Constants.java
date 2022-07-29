@@ -5,7 +5,6 @@ import com.example.binanceparser.binance.BinanceClient;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +25,8 @@ public class Constants {
     public static final String VIRTUAL_USD = "VIRTUAL_USD";
     //...
 
-    public static final ExchangeInfo EXCHANGE_INFO = new BinanceClient(BINANCE_API_KEY, BINANCE_SECRET_KEY).loadExchangeInfo();
+    public static final BinanceClient BINANCE_CLIENT = new BinanceClient(BINANCE_API_KEY, BINANCE_SECRET_KEY);
+    public static final ExchangeInfo EXCHANGE_INFO = BINANCE_CLIENT.loadExchangeInfo();
     public static final MathContext MATH_CONTEXT = MathContext.DECIMAL32;
     public static final Map<String, BigDecimal> STABLECOIN_RATE = new HashMap<>();
 

@@ -4,6 +4,7 @@ import com.binance.api.client.ApiRestClient;
 import com.binance.api.client.BinanceApiClientFactory;
 import com.binance.api.client.FuturesIncomeType;
 import com.binance.api.client.FuturesRestClient;
+import com.binance.api.client.domain.account.request.FuturesAccountInfo;
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.binance.api.client.domain.general.ExchangeInfo;
 
@@ -29,8 +30,12 @@ public class BinanceClient {
         return incomeHistory;
     }
 
-    public ExchangeInfo loadExchangeInfo(){
+    public ExchangeInfo loadExchangeInfo() {
         final ApiRestClient dummyClient = new BinanceApiClientFactory(null, null, false).newRestClient();
         return dummyClient.getExchangeInfo();
+    }
+
+    public FuturesAccountInfo getAccountInfo() {
+        return restClient.getAccountInfo();
     }
 }
