@@ -9,11 +9,17 @@ import com.example.binanceparser.datasource.sources.BinanceIncomeDataSource;
 import com.example.binanceparser.datasource.sources.CSVDataSource;
 import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.datasource.sources.JsonIncomeSource;
+import com.example.binanceparser.datasource.writers.CSVDataWriter;
+import com.example.binanceparser.datasource.writers.DataWriter;
+import com.example.binanceparser.domain.balance.IncomeBalanceState;
 import com.example.binanceparser.processor.IncomeProcessor;
 import com.example.binanceparser.report.BalanceReport;
+import com.example.binanceparser.report.postprocessor.IncomeHistorySerializer;
 import lombok.Getter;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -44,11 +50,14 @@ public class FuturesIncomeVisualizerApp {
         this.userApiKeys = userData.stream().collect(Collectors.toMap(UserApiData::getUserId, Function.identity()));
     }
 
-    public BalanceReport futuresIncomeVisualisation(String user, IncomeConfig _config) {
+    public BalanceReport futuresIncomeVisualisation(String user, IncomeConfig _config) throws FileNotFoundException {
         final IncomeConfig config = ConfigUtil.loadIncomeConfig(appProperties);
         final UserApiData userData = userApiKeys.get(user);
         DataSource<IncomeHistoryItem> apiClientSource = getEventSource(userData, config);
         IncomeProcessor processor = new IncomeProcessor(apiClientSource, config);
+
+        DataWriter<IncomeBalanceState> serializer = new CSVDataWriter<>(new FileOutputStream(appProperties.getReportOutputLocation()), IncomeBalanceState.class);
+        processor.registerPostProcessor(new IncomeHistorySerializer(serializer));
         return processor.process();
     }
 

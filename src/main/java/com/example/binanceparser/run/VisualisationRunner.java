@@ -82,7 +82,7 @@ public class VisualisationRunner {
                 .collect(Collectors.toList());
     }
 
-    public void runIncomeVisualization() {
+    public void runIncomeVisualization() throws Exception {
         futuresUsers = spotBalanceProperties.getTrackedPersons();
         config = ConfigUtil.loadVisualizerConfig(spotBalanceProperties);
         FuturesIncomeVisualizerApp incomeVisualizer = new FuturesIncomeVisualizerApp(spotBalanceProperties);

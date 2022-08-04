@@ -4,7 +4,6 @@ import com.example.binanceparser.Utils;
 import com.example.binanceparser.datasource.Readable;
 import com.example.binanceparser.datasource.Writable;
 import com.example.binanceparser.domain.transaction.Transaction;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -53,14 +52,14 @@ public class BalanceReport implements Writable, Readable {
                 .toString();
     }
 
-    @Override
-    public String json() {
-        try {
-            return new ObjectMapper().writer().writeValueAsString(this);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+//    @Override
+//    public String json() {
+//        try {
+//            return new ObjectMapper().writer().writeValueAsString(this);
+//        } catch (Exception ex) {
+//            throw new RuntimeException(ex);
+//        }
+//    }
 
     @Override
     public String csv() {
@@ -101,19 +100,19 @@ public class BalanceReport implements Writable, Readable {
         return header.toString();
     }
 
-    @Override
-    public boolean matches(String header) {
-        String[] local = header().split(",");
-        String[] headerAsArray = header.split(",");
-        if (local.length == headerAsArray.length) {
-            for (int i = 0; i < headerAsArray.length; i++) {
-                if (!local[i].equalsIgnoreCase(headerAsArray[i])){
-                    return false;
-                }
-            }
-        } else {
-            return false;
-        }
-        return true;
-    }
+//    @Override
+//    public boolean matches(String header) {
+//        String[] local = header().split(",");
+//        String[] headerAsArray = header.split(",");
+//        if (local.length == headerAsArray.length) {
+//            for (int i = 0; i < headerAsArray.length; i++) {
+//                if (!local[i].equalsIgnoreCase(headerAsArray[i])){
+//                    return false;
+//                }
+//            }
+//        } else {
+//            return false;
+//        }
+//        return true;
+//    }
 }
