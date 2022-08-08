@@ -15,8 +15,8 @@ import java.io.IOException;
 public class BinanceSynchronizer {
     public static void main(String[] args) throws IOException {
         AppProperties appProperties = ConfigUtil.loadAppProperties("src/main/resources/synchronizer.properties");
-        DataSource<AbstractEvent> source = null;
         File data = new File(appProperties.getInputFilePath());
+        DataSource<AbstractEvent> source = null;
         DataSynchronizer<AbstractEvent> synchronizer = new CSVEventSynchronizer(appProperties.getTrackedPersons(), source, data);
         synchronizer.synchronize();
     }
