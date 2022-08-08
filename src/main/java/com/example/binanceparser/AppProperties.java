@@ -26,6 +26,7 @@ public class AppProperties {
 	private String namesFilePath;
 	private DatasourceType reportOutputType;
 	private String reportOutputLocation;
+	private String reportOutputDir;
 	private List<String> assetsToTrack;
 	private DatasourceType dataSourceType;
 	private HistoryItemSourceType historyItemSourceType;
@@ -44,6 +45,7 @@ public class AppProperties {
 		this.namesFilePath = props.getProperty("config.input.names.path");
 		this.reportOutputType = ofNullable(props.getProperty("config.report.output.type")).map(DatasourceType::forName).orElse(null);
 		this.reportOutputLocation = props.getProperty("config.report.output.location");
+		this.reportOutputDir = props.getProperty("config.report.output.dir");
 		this.assetsToTrack = assetsToTrack(props);
 		this.dataSourceType = ofNullable(props.getProperty("config.input.type")).map(DatasourceType::forName).orElse(null);
 		this.historyItemSourceType = ofNullable(props.getProperty("config.income.source_type")).map(HistoryItemSourceType::forName).orElse(null);

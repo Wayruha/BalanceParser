@@ -56,7 +56,7 @@ public class FuturesIncomeVisualizerApp {
         DataSource<IncomeHistoryItem> apiClientSource = getEventSource(userData, config);
         IncomeProcessor processor = new IncomeProcessor(apiClientSource, config);
 
-        DataWriter<IncomeBalanceState> serializer = new CSVDataWriter<>(new FileOutputStream(appProperties.getReportOutputLocation()), IncomeBalanceState.class);
+        DataWriter<IncomeBalanceState> serializer = new CSVDataWriter<>(new FileOutputStream(appProperties.getReportOutputDir() + "/" + user + ".csv"), IncomeBalanceState.class);
         processor.registerPostProcessor(new IncomeHistorySerializer(serializer));
         return processor.process();
     }
