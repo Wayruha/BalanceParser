@@ -13,16 +13,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public class CSVEventSynchronizer implements DataSynchronizer<IncomeHistoryItem> {
+public class CSVIncomeHistorySynchronizer implements DataSynchronizer<IncomeHistoryItem> {
     private final List<String> persons;
-    private final DataSource<AbstractEvent> dataSource;
+    private final DataSource<IncomeHistoryItem> dataSource;
     private final File storedData;
 
     @Override
     public void synchronize() {
-        DataSource<AbstractEvent> storedDataSource = new CSVEventSource(storedData, persons);
-        List<AbstractEvent> storedEvents = storedDataSource.getData();
-        List<AbstractEvent> newData = dataSource.getData();
+        DataSource<IncomeHistoryItem> storedDataSource = new CSVEventSource(storedData, persons);
+        List<IncomeHistoryItem> storedEvents = storedDataSource.getData();
+        List<IncomeHistoryItem> newData = dataSource.getData();
 
         for (String person : persons(newData)) {
             DataWriter<AbstractEvent> storedDataWriter = new CSVEventWriter(storedData, person);
@@ -36,7 +36,7 @@ public class CSVEventSynchronizer implements DataSynchronizer<IncomeHistoryItem>
         }
     }
 
-    private List<String> persons(List<AbstractEvent> events) {
+    private List<String> persons(List<IncomeHistoryItem> events) {
         return events.stream().map(AbstractEvent::getSource).distinct()
                 .filter(source -> persons.isEmpty() || persons.contains(source)).collect(Collectors.toList());
     }
