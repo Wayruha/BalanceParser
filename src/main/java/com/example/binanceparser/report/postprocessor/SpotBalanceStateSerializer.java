@@ -45,7 +45,7 @@ public class SpotBalanceStateSerializer extends PostProcessor<AbstractEvent, Bal
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    private class SpotBalancePoint implements Writable, Readable {
+    public class SpotBalancePoint implements Writable, Readable {
         private LocalDateTime date;
         private BigDecimal balance;
 
