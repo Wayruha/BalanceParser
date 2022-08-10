@@ -1,16 +1,11 @@
 package com.example.binanceparser.datasource.synchronizers;
 
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
-import com.example.binanceparser.datasource.sources.CSVEventSource;
 import com.example.binanceparser.datasource.sources.DataSource;
-import com.example.binanceparser.datasource.writers.CSVEventWriter;
-import com.example.binanceparser.datasource.writers.DataWriter;
-import com.example.binanceparser.domain.events.AbstractEvent;
 import lombok.RequiredArgsConstructor;
 
 import java.io.File;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class CSVIncomeHistorySynchronizer implements DataSynchronizer<IncomeHistoryItem> {
@@ -20,24 +15,15 @@ public class CSVIncomeHistorySynchronizer implements DataSynchronizer<IncomeHist
 
     @Override
     public void synchronize() {
-        DataSource<IncomeHistoryItem> storedDataSource = new CSVEventSource(storedData, persons);
-        List<IncomeHistoryItem> storedEvents = storedDataSource.getData();
-        List<IncomeHistoryItem> newData = dataSource.getData();
-
-        for (String person : persons(newData)) {
-            DataWriter<AbstractEvent> storedDataWriter = new CSVEventWriter(storedData, person);
-            List<AbstractEvent> personalizedEvents = storedEvents.stream().filter(event -> event.getSource().equals(person)).collect(Collectors.toList());
-            List<AbstractEvent> personalizedNewData = newData.stream().filter(event -> event.getSource().equals(person)).collect(Collectors.toList());
-            if (personalizedEvents.size() > 0) {
-                AbstractEvent lastStoredEvent = personalizedEvents.get(personalizedEvents.size() - 1);
-                personalizedNewData = personalizedNewData.stream().filter(event -> event.getEventTime().compareTo(lastStoredEvent.getEventTime()) > 0).collect(Collectors.toList());
-            }
-            storedDataWriter.write(personalizedNewData);
-        }
-    }
-
-    private List<String> persons(List<IncomeHistoryItem> events) {
-        return events.stream().map(AbstractEvent::getSource).distinct()
-                .filter(source -> persons.isEmpty() || persons.contains(source)).collect(Collectors.toList());
+//        DataSource<IncomeHistoryItem> storedDataSource = new CSVIncomeSource(storedData, persons);
+//        List<IncomeHistoryItem> storedEvents = storedDataSource.getData();
+//        List<IncomeHistoryItem> newData = dataSource.getData();
+//
+//        DataWriter<IncomeHistoryItem> storedDataWriter = new CSVIncomeWriter(storedData, person);
+//        if (storedEvents.size() > 0) {
+//            IncomeHistoryItem lastStoredEvent = storedEvents.get(storedEvents.size() - 1);
+//            newData = newData.stream().filter(event -> event.getTime() > lastStoredEvent.getTime()).collect(Collectors.toList());
+//        }
+//        storedDataWriter.write(newData);
     }
 }
