@@ -5,7 +5,6 @@ import com.example.binanceparser.AppProperties;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.MathContext;
-import java.math.MathContext;
 import java.time.LocalDateTime;
 import java.util.Properties;
 
@@ -26,12 +25,14 @@ public class ConfigUtil {
 		final String outputPath = appProperties.getOutputPath();
 		final String namesFilePath = appProperties.getNamesFilePath();
 		final String reportOutputLocation = appProperties.getReportOutputLocation();
+		final String reportOutputDir = appProperties.getReportOutputDir();
 		config.setStartTrackDate(start);
 		config.setFinishTrackDate(finish);
 		config.setInputFilepath(inputPath);
 		config.setOutputDir(outputPath);
 		config.setNamesFilePath(namesFilePath);
 		config.setReportOutputLocation(reportOutputLocation);
+		config.setReportOutputDir(reportOutputDir);
 		config.setAssetsToTrack(appProperties.getAssetsToTrack());
 		config.setConvertToUSD(true);
 		config.setSubjects(appProperties.getTrackedPersons());

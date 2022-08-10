@@ -2,6 +2,7 @@ package com.example.binanceparser.run;
 
 import com.binance.api.client.domain.account.request.IncomeHistoryItem;
 import com.example.binanceparser.AppProperties;
+import com.example.binanceparser.Constants;
 import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.config.IncomeConfig;
 import com.example.binanceparser.datasource.models.UserApiData;
@@ -53,6 +54,7 @@ public class FuturesIncomeVisualizerApp {
     public BalanceReport futuresIncomeVisualisation(String user, IncomeConfig _config) throws FileNotFoundException {
         final IncomeConfig config = ConfigUtil.loadIncomeConfig(appProperties);
         final UserApiData userData = userApiKeys.get(user);
+        Constants.updateBinanceClient(userData.getApiKey(), userData.getSecretKey());
         DataSource<IncomeHistoryItem> apiClientSource = getEventSource(userData, config);
         IncomeProcessor processor = new IncomeProcessor(apiClientSource, config);
 

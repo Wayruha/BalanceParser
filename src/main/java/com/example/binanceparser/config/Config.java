@@ -17,5 +17,6 @@ public abstract class Config {
     private String outputDir;
     private String namesFilePath;
     private String reportOutputLocation;
+    private String reportOutputDir;
     private List<String> subjects;
 }

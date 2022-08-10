@@ -9,8 +9,11 @@ import com.example.binanceparser.domain.events.AbstractEvent;
 import com.example.binanceparser.report.AggregatedBalanceReport;
 import com.example.binanceparser.report.BalanceReport;
 import com.example.binanceparser.report.postprocessor.NamePostProcessor;
+import com.example.binanceparser.report.postprocessor.SpotBalanceStateSerializer;
 import com.example.binanceparser.report.postprocessor.TradeCountPostProcessor;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -41,17 +44,22 @@ public abstract class MultiUserGenericProcessor extends Processor<AbstractEvent,
             final SourceFilter nameFilter = new SourceFilter(user);
             final var eventSource = new InMemoryEventSource(events.stream(), nameFilter);
 
-            final var processor = buildProcessorByType(type, eventSource, config);
-
-            processor.registerPostProcessor(new TradeCountPostProcessor());
-            if (!nameRelations.isEmpty()) {
-                final var nameSource = new InMemorySource<>(nameRelations.stream());
-                processor.registerPostProcessor(new NamePostProcessor(nameSource, config));
-            }
+            final Processor<AbstractEvent, BalanceReport> processor;
 
             try {
+                processor = buildProcessorByType(type, eventSource, config, user);
+                processor.registerPostProcessor(new TradeCountPostProcessor());
+
+                if (!nameRelations.isEmpty()) {
+                    final var nameSource = new InMemorySource<>(nameRelations.stream());
+                    processor.registerPostProcessor(new NamePostProcessor(nameSource, config));
+                }
+
                 final BalanceReport report = processor.process();
                 reports.add(report);
+
+            } catch (FileNotFoundException e) {
+                log.log(Level.SEVERE, "Can't build processor for " + user, e);
             } catch (Exception ex) {
                 log.log(Level.SEVERE, "Can't prepare report for " + user, ex);
             }
@@ -60,9 +68,18 @@ public abstract class MultiUserGenericProcessor extends Processor<AbstractEvent,
         return new AggregatedBalanceReport(reports);
     }
 
-    private Processor<AbstractEvent, BalanceReport> buildProcessorByType(ProcessorType type, DataSource<AbstractEvent> dataSource, BalanceVisualizerConfig config) {
-        if (type == ProcessorType.FUTURES) return new FuturesBalanceProcessor(dataSource, config);
-        return new SpotBalanceProcessor(dataSource, config);
+    private Processor<AbstractEvent, BalanceReport> buildProcessorByType(ProcessorType type, DataSource<AbstractEvent> dataSource, BalanceVisualizerConfig config, String user) throws FileNotFoundException {
+        Processor<AbstractEvent, BalanceReport> processor;
+        if (type == ProcessorType.FUTURES) {
+            processor = new FuturesBalanceProcessor(dataSource, config);
+        } else {
+            processor = new SpotBalanceProcessor(dataSource, config);
+        }
+
+        if (type == ProcessorType.SPOT) {
+            processor.registerPostProcessor(new SpotBalanceStateSerializer(new FileOutputStream(config.getReportOutputDir() + "/" + user + "_points.csv")));
+        }
+        return processor;
     }
 
     protected enum ProcessorType {
