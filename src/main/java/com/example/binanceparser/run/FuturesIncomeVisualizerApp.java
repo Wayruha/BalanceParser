@@ -6,7 +6,6 @@ import com.example.binanceparser.config.ConfigUtil;
 import com.example.binanceparser.config.IncomeConfig;
 import com.example.binanceparser.datasource.models.UserApiData;
 import com.example.binanceparser.datasource.sources.BinanceIncomeDataSource;
-import com.example.binanceparser.datasource.sources.CSVDataSource;
 import com.example.binanceparser.datasource.sources.DataSource;
 import com.example.binanceparser.datasource.sources.JsonIncomeSource;
 import com.example.binanceparser.processor.IncomeProcessor;
@@ -40,7 +39,7 @@ public class FuturesIncomeVisualizerApp {
 
     public FuturesIncomeVisualizerApp(AppProperties appProperties) {
         this.appProperties = appProperties;
-        final List<UserApiData> userData = getUserData(appProperties);
+        final List<UserApiData> userData = Helper.getUserData(appProperties);
         this.userApiKeys = userData.stream().collect(Collectors.toMap(UserApiData::getUserId, Function.identity()));
     }
 
@@ -68,12 +67,12 @@ public class FuturesIncomeVisualizerApp {
         }
     }
 
-    private List<UserApiData> getUserData(AppProperties appProperties) {
-        try {
-            final File userAPIInput = new File(appProperties.getIncomeInputFilePath());
-            return new CSVDataSource<>(userAPIInput, UserApiData.class).getData();
-        } catch (IllegalStateException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    private List<UserApiData> getUserData(AppProperties appProperties) {
+//        try {
+//            final File userAPIInput = new File(appProperties.getIncomeInputFilePath());
+//            return new CSVDataSource<>(userAPIInput, UserApiData.class).getData();
+//        } catch (IllegalStateException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }

@@ -5,6 +5,7 @@ import com.example.binanceparser.config.BalanceVisualizerConfig;
 import com.example.binanceparser.datasource.filters.EventTypeFilter;
 import com.example.binanceparser.datasource.filters.Filter;
 import com.example.binanceparser.datasource.filters.SourceFilter;
+import com.example.binanceparser.datasource.models.UserApiData;
 import com.example.binanceparser.datasource.models.UserNameRel;
 import com.example.binanceparser.datasource.sources.CSVDataSource;
 import com.example.binanceparser.datasource.sources.CSVEventSource;
@@ -22,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 //TODO конкретні обєкти датасорсів повинні отримуватися не таким чином.
@@ -92,5 +94,14 @@ public class Helper {
                 throw new RuntimeException("unknown event source type specified");
         }
         return reportWriter;
+    }
+
+    public static List<UserApiData> getUserData(AppProperties appProperties) {
+        try {
+            final File userAPIInput = new File(appProperties.getIncomeInputFilePath());
+            return new CSVDataSource<>(userAPIInput, UserApiData.class).getData();
+        } catch (IllegalStateException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
