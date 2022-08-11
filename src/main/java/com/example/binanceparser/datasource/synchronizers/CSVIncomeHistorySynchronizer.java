@@ -30,6 +30,7 @@ public class CSVIncomeHistorySynchronizer implements DataSynchronizer<IncomeHist
             IncomeHistoryItem lastStoredEvent = storedEvents.get(storedEvents.size() - 1);
             newData = newData.stream().filter(event -> event.getTime() > lastStoredEvent.getTime()).collect(Collectors.toList());
         }
-        storedDataWriter.write(newData);
+        storedEvents.addAll(newData);
+        storedDataWriter.write(storedEvents);
     }
 }
